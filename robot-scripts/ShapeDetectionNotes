@@ -1,7 +1,0 @@
-convert to grayscale
-blur to reduce noise
-binarization using thresholding
-CMD sudo pip install imutils        *Note CMD is given exactly as is, ready for ctrlC ctrlV :)
-New python script shapeCenter.py
-
-
