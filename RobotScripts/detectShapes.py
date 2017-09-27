@@ -21,7 +21,7 @@ blurredImage = cv2.GaussianBlur(grayedImage, (5, 5), 0)
 binImage = cv2.threshold(blurredImage, 60, 255, cv2.THRESH_BINARY)[1]
 
 #Create a shape detector
-shapeDetector = ShapeDetector()
+#shapeDetector = ShapeDetector()
 
 #returns a set of contours on the shapes.  Always use both lines
 contours = cv2.findContours(binImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -36,7 +36,12 @@ for c in contours:
 	moments = cv2.moments(c)
 	cX = int(moments["m10"] / (moments["m00"] * ratio)) if moments["m00"] != 0 else 0
 	cY = int(moments["m01"] / (moments["m00"] * ratio)) if moments["m00"] != 0 else 0
-	shape = shapeDetector.detect(c)
+	perimeter = cv2.arcLength(contour, True)
+	shapeVertices = cv2.approxPolyDP(contour, .04*perimeter, True)
+    if len(shapeVertices) == 4: #square or rectangle
+        (x, y, w, h) = cv2.boundingRect(shapeVertices)
+        aspectRatio = w / float(h) 
+        shape = "square" if aspectRatio >= .95 and aspectRatio <= 1.05 else "rectangle"		
 	
 	#Resize the contours to the original image size
 	c = c.astype("float")
@@ -46,10 +51,6 @@ for c in contours:
 	cv2.putText(image, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 	
 cv2.imshow("Processed Image", image)
-cv2.imshow("Binary Image", binImage)
-cv2.imshow("Blurred Image", blurredImage)
-cv2.imshow("Grayed Image", grayedImage)
-cv2.imshow("Original Image", rImage)
 cv2.waitKey(0)
 
 

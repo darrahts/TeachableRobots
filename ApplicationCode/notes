@@ -1,0 +1,11 @@
+#(cX, cY) = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))                
+#cv2.rectangle(self.frame,(x,y),(x+w,y+h),(0,255,0),1)
+                #rect = cv2.minAreaRect(cont)
+                #box = cv2.boxPoints(rect)
+                #((x, y), radius) = cv2.minEnclosingCircle(cont)
+                #cv2.circle(self.frame, (cX,cY), 2, (0,0,255), 2)
+                #cv2.circle(self.frame, (int(x + (.5*w)), int(y + .5*h)), 2, (255,0,0), 2)
+                #cv2.drawContours(self.frame, [box], 0, (0,0,255), 2)
+                #return(cX, cY)
+
+

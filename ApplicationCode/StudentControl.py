@@ -31,7 +31,6 @@ class Communicate(object):
         self.address = ""
         self.port = 5580
         self.finished = False
-        self.inbox = deque()
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.getMessagesThread = Thread(target=self.getMessages)
         print(self.address)
