@@ -183,7 +183,7 @@ int CheckDistance()
       Backward();
       delay(100);
        Stop();
-      Right(100);
+      Left(100);
        Stop();
     }
       else if(state == 4)
@@ -191,7 +191,7 @@ int CheckDistance()
       Backward();
       delay(100);
        Stop();
-      Left(100);
+      Right(100);
        Stop();
     }
   }
