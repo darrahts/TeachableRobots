@@ -1,4 +1,5 @@
 #include <Servo.h>
+#include <NewPing.h>
 /********************************************************************************************************
  *                                             PIN DEFINITIONS                                          *                                                  
  ********************************************************************************************************/
@@ -14,7 +15,7 @@
 #define MTR_B_B 10
 
 //sonic range sensor
-#define TRIG 6
+#define TRIG 4
 #define ECHO 12
 
 //line sensors
@@ -37,8 +38,8 @@ Servo tilt;
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-#define OFFSET 35 
-#define SPEED 155
+#define OFFSET 25 
+#define SPEED 105
 
 //pan range of motion
 #define PAN_LEFT_MAX 170
@@ -79,6 +80,9 @@ long duration;
 
 //used for sonic range sensor, distance to obj in cm
 int distance;
+
+//IR baseline readings. adjust these to your sensors and environment
+int readings[] = {500,400,700};
 
 
 /********************************************************************************************************
@@ -159,47 +163,6 @@ void Right(int duration)
   delay(duration); 
   Stop();
   state = 4;
-}
-
-/*                         CHECK DISTANCE          
- *        Obstacle detection, uses the robots current state
- *        to respond with appropriate avoidance movement
- */
-int CheckDistance()
-{
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(5);
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-  duration = pulseIn(ECHO, HIGH);
-  distance = duration / 29 / 2;
-  if(distance < 20 && distance >10)
-  {
-    if(state == 1)
-    {
-      Backward();
-      delay(500);
-       Stop();
-    }
-    else if(state == 3)
-    {
-      Backward();
-      delay(100);
-       Stop();
-      Left(100);
-       Stop();
-    }
-      else if(state == 4)
-    {
-      Backward();
-      delay(100);
-       Stop();
-      Right(100);
-       Stop();
-    }
-  }
-  return distance;
 }
 
 /*                         PARSE COMMAND          
@@ -318,6 +281,59 @@ void ExecuteCommand()
     }
 }
 
+/*                            READ LINE SENSORS          
+ *        Takes an analog reading of the IR sensors and computes
+ *        course correction movements if necessary
+ */
+void ReadLineSensors()
+{
+    readings[0] = analogRead(LEFT_IR);
+    readings[1] = analogRead(MIDDLE_IR);
+    readings[2] = analogRead(RIGHT_IR);
+}
+
+
+/*                         CHECK DISTANCE          
+ *        Obstacle detection, uses the robots current state
+ *        to respond with appropriate avoidance movement
+ */
+int CheckDistance()
+{
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(5);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  duration = pulseIn(ECHO, HIGH);
+  distance = duration / 29 / 2;
+  if(distance < 20 && distance >10)
+  {
+    if(state == 1)
+    {
+      Backward();
+      delay(500);
+       Stop();
+    }
+    else if(state == 3)
+    {
+      Backward();
+      delay(100);
+       Stop();
+      Left(100);
+       Stop();
+    }
+      else if(state == 4)
+    {
+      Backward();
+      delay(100);
+       Stop();
+      Right(100);
+       Stop();
+    }
+  }
+  return distance;
+}
+
 
 /********************************************************************************************************
  *                                               SETUP                                                  *                                                  
@@ -358,20 +374,53 @@ void setup()
  *                                                MAIN                                                  *                                                  
  ********************************************************************************************************/
 
-char cmd[INPUT_SIZE + 1];
+
+int cmd = 0;
 
 void loop() 
 {
-//      if(Serial1.available())
-//      {
-//          byte size_ = Serial1.readBytes(cmd, INPUT_SIZE);
-//          Serial.println(cmd);
-//      }
-     
-    //Serial.println(analogRead(MIDDLE_IR));
+    ReadLineSensors();
+    if(readings[0] > 700 && readings[1] > 70 && readings[2] > 820)
+    {
+      cmd = 0;
+      Stop();
+    }
+    if(Serial.available() > 0)
+    {
+        cmd = int(Serial.read());
+        Serial.println(cmd);
+    }
+    if(cmd == 48)
+    {
+        Stop();
+    }
+    else if (cmd == 49)
+    {
+        Forward();
+    }
+    else if (cmd == 50)
+    {
+        Backward();
+    }
+    else if (cmd == 51)
+    {
+        Left(195);
+    }
+    else if (cmd == 52)
+    {
+        Right(195);
+    }
+    else
+    {
+        Stop();
+    }
+    //ReadLineSensors();
+    //Serial.println(CheckDistance());
+    //NewPing sonar(TRIG, ECHO, 100);
+    //Serial.println(sonar.ping_cm());
     //delay(250);
-    ParseCommand();
-    ExecuteCommand();
+    //ParseCommand();
+    //ExecuteCommand();
 }
 
 
