@@ -1,5 +1,4 @@
 #include <Servo.h>
-#include <NewPing.h>
 /********************************************************************************************************
  *                                             PIN DEFINITIONS                                          *                                                  
  ********************************************************************************************************/
@@ -60,7 +59,7 @@ Servo tilt;
  *                                             GLOBAL VARIABLES                                         *                                                  
  ********************************************************************************************************/
 //if the robot is stopped (0) going forward (1) backward (2) left (3) right (4)
-byte state = 0;
+byte dir = 0;
 
 //holds the input received from serial
 char input[INPUT_SIZE + 1];
@@ -98,7 +97,7 @@ void Stop()
     {
       digitalWrite(motorPins[i], LOW);
     }
-    state = 0;
+    dir = 0;
 }
 
 /*                         FORWARD                
@@ -109,11 +108,11 @@ void Forward()
 {
   analogWrite(MTR_A_EN, SPEED);
   analogWrite(MTR_B_EN, SPEED - OFFSET);
-  digitalWrite(MTR_A_A, HIGH);
-  digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, HIGH);
   digitalWrite(MTR_B_B, LOW);
-  state = 1;
+  digitalWrite(MTR_A_A, HIGH);
+  digitalWrite(MTR_A_B, LOW);
+  dir = 1;
 }
 
 /*                         BACKWARD                
@@ -128,12 +127,13 @@ void Backward()
   digitalWrite(MTR_A_B, HIGH);
   digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, HIGH);
-  state = 2;
+  dir = 2;
 }
 
-/*                         LEFT               
+/*                         LEFT   / LEFT ADJUST            
  *        uses duration in a delay to adjust the angle
  *        195 is for right angle turns while in motion
+ *        adjust is used for line tracking
  */
 void Left(int duration)
 {
@@ -145,12 +145,24 @@ void Left(int duration)
   digitalWrite(MTR_B_B, HIGH);
   delay(duration); 
    Stop();
-  state = 3;
+  dir = 3;
 }
 
-/*                         RIGHT             
+void LeftAdjust(int duration)
+{
+  analogWrite(MTR_A_EN, SPEED+20);
+  analogWrite(MTR_B_EN, LOW);
+  digitalWrite(MTR_A_A, HIGH);
+  digitalWrite(MTR_A_B, LOW);
+  digitalWrite(MTR_B_A, LOW);
+  digitalWrite(MTR_B_B, LOW);
+  delay(duration);
+}
+
+/*                         RIGHT   / RIGHT ADJUST          
  *        uses duration in a delay to adjust the angle
  *        195 is for right angle turns while in motion
+ *        adjust is used for line tracking
  */
 void Right(int duration)
 {
@@ -162,7 +174,18 @@ void Right(int duration)
   digitalWrite(MTR_B_B, LOW);
   delay(duration); 
   Stop();
-  state = 4;
+  dir = 4;
+}
+
+void RightAdjust(int duration)
+{
+  analogWrite(MTR_A_EN, LOW);
+  analogWrite(MTR_B_EN, SPEED+20);
+  digitalWrite(MTR_A_A, LOW);
+  digitalWrite(MTR_A_B, LOW);
+  digitalWrite(MTR_B_A, HIGH);
+  digitalWrite(MTR_B_B, LOW);
+  delay(duration);
 }
 
 /*                         PARSE COMMAND          
@@ -294,7 +317,7 @@ void ReadLineSensors()
 
 
 /*                         CHECK DISTANCE          
- *        Obstacle detection, uses the robots current state
+ *        Obstacle detection, uses the robots current dir
  *        to respond with appropriate avoidance movement
  */
 int CheckDistance()
@@ -308,13 +331,13 @@ int CheckDistance()
   distance = duration / 29 / 2;
   if(distance < 20 && distance >10)
   {
-    if(state == 1)
+    if(dir == 1)
     {
       Backward();
       delay(500);
        Stop();
     }
-    else if(state == 3)
+    else if(dir == 3)
     {
       Backward();
       delay(100);
@@ -322,7 +345,7 @@ int CheckDistance()
       Left(100);
        Stop();
     }
-      else if(state == 4)
+      else if(dir == 4)
     {
       Backward();
       delay(100);
@@ -376,15 +399,75 @@ void setup()
 
 
 int cmd = 0;
-
+int state = 0;
+long t1 = millis();
+long t2 = t1;
 void loop() 
 {
+    test();
+    //LeftAdjust(100);
+    //RightAdjust(100);
+    //Stop();
+    //delay(500);
+    //ReadLineSensors();
+    //Serial.println(CheckDistance());
+    //NewPing sonar(TRIG, ECHO, 100);
+    //Serial.println(sonar.ping_cm());
+    //delay(250);
+    //ParseCommand();
+    //ExecuteCommand();
+}
+
+
+void test()
+{
+    byte leftAdj = 0;
+    byte rightAdj = 0;
+    t2 = millis();
     ReadLineSensors();
-    if(readings[0] > 700 && readings[1] > 70 && readings[2] > 820)
+    
+    if (state == 1 && readings[0] < 600 && readings[1] > 700 && readings[2] < 800)
     {
-      cmd = 0;
-      Stop();
+        state = 0;
     }
+    else if(state == 0 && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    {
+        cmd = 0;
+        Stop();
+        state = 1;
+    }
+    
+                   
+    else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
+    {
+        if(dir == 1)
+        {
+            LeftAdjustfwd(30);
+        }
+        if(dir == 2)
+        {
+             
+        }       
+    }
+    else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
+    {    
+              LeftAdjust(50);
+            
+    }
+    
+    else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
+    {
+              RightAdjust(30);
+
+    }
+    else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
+    {
+              RightAdjust(50);
+           
+    }
+
+    
+    
     if(Serial.available() > 0)
     {
         cmd = int(Serial.read());
@@ -414,15 +497,7 @@ void loop()
     {
         Stop();
     }
-    //ReadLineSensors();
-    //Serial.println(CheckDistance());
-    //NewPing sonar(TRIG, ECHO, 100);
-    //Serial.println(sonar.ping_cm());
-    //delay(250);
-    //ParseCommand();
-    //ExecuteCommand();
 }
-
 
 
 
