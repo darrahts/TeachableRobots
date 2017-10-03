@@ -1,4 +1,4 @@
-#include <Servo.h>
+//#include <Servo.h>
 /********************************************************************************************************
  *                                             PIN DEFINITIONS                                          *                                                  
  ********************************************************************************************************/
@@ -83,6 +83,12 @@ int distance;
 //IR baseline readings. adjust these to your sensors and environment
 int readings[] = {500,400,700};
 
+//The most recent command executed
+int cmd = 0;
+
+//used for logic control with line following
+int state = 0;
+
 
 /********************************************************************************************************
  *                                               FUNCTIONS                                              *                                                  
@@ -148,7 +154,7 @@ void Left(int duration)
   dir = 3;
 }
 
-void LeftAdjust(int duration)
+void LeftAdjustFwd(int duration)
 {
   analogWrite(MTR_A_EN, SPEED+20);
   analogWrite(MTR_B_EN, LOW);
@@ -156,6 +162,17 @@ void LeftAdjust(int duration)
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, LOW);
+  delay(duration);
+}
+
+void LeftAdjustBk(int duration)
+{
+  analogWrite(MTR_A_EN, LOW);
+  analogWrite(MTR_B_EN, SPEED+20);
+  digitalWrite(MTR_A_A, LOW);
+  digitalWrite(MTR_A_B, LOW);
+  digitalWrite(MTR_B_A, LOW);
+  digitalWrite(MTR_B_B, HIGH);
   delay(duration);
 }
 
@@ -177,13 +194,24 @@ void Right(int duration)
   dir = 4;
 }
 
-void RightAdjust(int duration)
+void RightAdjustFwd(int duration)
 {
   analogWrite(MTR_A_EN, LOW);
   analogWrite(MTR_B_EN, SPEED+20);
   digitalWrite(MTR_A_A, LOW);
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, HIGH);
+  digitalWrite(MTR_B_B, LOW);
+  delay(duration);
+}
+
+void RightAdjustBk(int duration)
+{
+  analogWrite(MTR_A_EN, SPEED+20);
+  analogWrite(MTR_B_EN, LOW);
+  digitalWrite(MTR_A_A, LOW);
+  digitalWrite(MTR_A_B, HIGH);
+  digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, LOW);
   delay(duration);
 }
@@ -358,6 +386,66 @@ int CheckDistance()
 }
 
 
+void AssertCourse()
+{
+    if (state == 1 && readings[0] < 600 && readings[1] > 700 && readings[2] < 800)
+    {
+        state = 0;
+    }
+    else if(state == 0 && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    {
+        Stop();
+        state = 1;
+    }
+    
+                   
+    else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
+    {
+        if(dir == 1)
+        {
+            LeftAdjustFwd(30);
+        }
+        if(dir == 2)
+        {
+            LeftAdjustBk(30);
+        }       
+    }
+    else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
+    {    
+        if(dir == 1)
+        {
+            LeftAdjustFwd(50);
+        }
+        if(dir == 2)
+        {
+            LeftAdjustBk(50);
+        }            
+    }
+    
+    else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
+    {
+        if(dir == 1)
+        {
+            RightAdjustFwd(30);
+        }
+        if(dir == 2)
+        {
+            RightAdjustBk(30);
+        }  
+    }
+    else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
+    {
+        if(dir == 1)
+        {
+            RightAdjustFwd(50);
+        }
+        if(dir == 2)
+        {
+            RightAdjustBk(50);
+        }  
+    }
+}
+
 /********************************************************************************************************
  *                                               SETUP                                                  *                                                  
  ********************************************************************************************************/
@@ -398,10 +486,6 @@ void setup()
  ********************************************************************************************************/
 
 
-int cmd = 0;
-int state = 0;
-long t1 = millis();
-long t2 = t1;
 void loop() 
 {
     test();
@@ -421,50 +505,8 @@ void loop()
 
 void test()
 {
-    byte leftAdj = 0;
-    byte rightAdj = 0;
-    t2 = millis();
     ReadLineSensors();
-    
-    if (state == 1 && readings[0] < 600 && readings[1] > 700 && readings[2] < 800)
-    {
-        state = 0;
-    }
-    else if(state == 0 && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
-    {
-        cmd = 0;
-        Stop();
-        state = 1;
-    }
-    
-                   
-    else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
-    {
-        if(dir == 1)
-        {
-            LeftAdjustfwd(30);
-        }
-        if(dir == 2)
-        {
-             
-        }       
-    }
-    else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
-    {    
-              LeftAdjust(50);
-            
-    }
-    
-    else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
-    {
-              RightAdjust(30);
-
-    }
-    else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
-    {
-              RightAdjust(50);
-           
-    }
+    AssertCourse();
 
     
     
