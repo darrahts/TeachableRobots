@@ -306,9 +306,9 @@ void ExecuteCommand()
             else if(commands[i] == 2)
             {
                 //Serial.println("bk");
-                Backward();
                 while(count != amounts[i])
                 {
+                    Backward();
                     ReadLineSensors();
                     AssertCourse();
                 }
