@@ -168,7 +168,7 @@ void LeftAdjustFwd(int duration)
   delayMicroseconds(1000*duration);
 }
 
-void LeftAdjustBk(int duration)
+void LeftAdjustBk(int duration) //needs fixed
 {
   analogWrite(MTR_A_EN, LOW);
   analogWrite(MTR_B_EN, SPEED+20);
@@ -208,7 +208,7 @@ void RightAdjustFwd(int duration)
   delayMicroseconds(1000*duration);
 }
 
-void RightAdjustBk(int duration)
+void RightAdjustBk(int duration) //needs fixed
 {
   analogWrite(MTR_A_EN, SPEED+20);
   analogWrite(MTR_B_EN, LOW);
@@ -254,11 +254,11 @@ void ParseCommand()
         
         while (command != 0)
         {
-            // Split the command in two values
+            // Split the input command in two values (command and amount)
             char* separator = strchr(command, '-');
             if (separator != 0)
             {
-                // Actually split the string in 2: replace ':' with 0
+                //split the string in 2: replace '_' with 0
                 *separator = 0;
                 
                 //put the command in the commands array at the same
@@ -401,7 +401,7 @@ void AssertCourse()
     //if the robot is on course
     if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
-        Serial.print("-\\");
+        //Serial.print("-\\");
         state = 0;
     }
     //if the robot reaches an intersection
@@ -409,14 +409,8 @@ void AssertCourse()
     {
         count += 1;
         state = 1;
-        Serial.println();
-        Serial.println("here");
-        //if(count == checkPoint)
-        //{
-        //    Stop();
-        //    state = 1;
-        //   cmd = 48;
-        //}
+        //Serial.println();
+        //Serial.println("here");
     }
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
@@ -428,7 +422,7 @@ void AssertCourse()
         }
         if(dir == 2)
         {
-            LeftAdjustBk(30);
+            LeftAdjustBk(15);
         }       
     }
     //if the left sensor reads the line and the middle and right do not
@@ -441,7 +435,7 @@ void AssertCourse()
         }
         if(dir == 2)
         {
-            LeftAdjustBk(50);
+            LeftAdjustBk(30);
         }            
     }
     //if the right and middle sensor read the line and the left sensor does not
@@ -454,7 +448,7 @@ void AssertCourse()
         }
         if(dir == 2)
         {
-            RightAdjustBk(30);
+            RightAdjustBk(15);
         }  
     }
     //if the right sensor reads the line and the middle and left do not
@@ -467,7 +461,7 @@ void AssertCourse()
         }
         if(dir == 2)
         {
-            RightAdjustBk(50);
+            RightAdjustBk(30);
         }  
     }
 }
@@ -482,8 +476,8 @@ void setup()
   //Serial1.begin(9600);
 
   //configure sonic range sensor
-  pinMode(TRIG, OUTPUT);
-  pinMode(ECHO, INPUT);
+  //pinMode(TRIG, OUTPUT);
+  //pinMode(ECHO, INPUT);
 
   //configure servos
   //pan.attach(PAN_SERVO);
@@ -502,6 +496,8 @@ void setup()
   
   //turn motors off and center the ptu
   Stop();
+  //pan.write(PAN_CENTER);
+  //tilt.write(TILT_CENTER); 
 }
 
 
