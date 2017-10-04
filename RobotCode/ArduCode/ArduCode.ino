@@ -23,10 +23,10 @@
 #define MIDDLE_IR A4
 
 //pan and tilt servo
-#define PAN_SERVO A0
-#define TILT_SERVO A1
-Servo pan;
-Servo tilt;
+//#define PAN_SERVO A0
+//#define TILT_SERVO A1
+//Servo pan;
+//Servo tilt;
 
 
 /********************************************************************************************************
@@ -41,14 +41,14 @@ Servo tilt;
 #define SPEED 105
 
 //pan range of motion
-#define PAN_LEFT_MAX 170
-#define PAN_CENTER 105
-#define PAN_RIGHT_MAX 40
-
-//tilt range of motion
-#define TILT_UP_MAX 30
-#define TILT_CENTER 120
-#define TILT_DOWN_MAX 150
+//#define PAN_LEFT_MAX 170
+//#define PAN_CENTER 105
+//#define PAN_RIGHT_MAX 40
+//
+////tilt range of motion
+//#define TILT_UP_MAX 30
+//#define TILT_CENTER 120
+//#define TILT_DOWN_MAX 150
 
 //size of input / command sequence
 #define INPUT_SIZE 254
@@ -59,7 +59,7 @@ Servo tilt;
  *                                             GLOBAL VARIABLES                                         *                                                  
  ********************************************************************************************************/
 //if the robot is stopped (0) going forward (1) backward (2) left (3) right (4)
-byte dir = 0;
+int dir = 1;
 
 //holds the input received from serial
 char input[INPUT_SIZE + 1];
@@ -88,6 +88,9 @@ int cmd = 0;
 
 //used for logic control with line following
 int state = 0;
+
+//used to count intersections (nodes) 
+int count = 0;
 
 
 /********************************************************************************************************
@@ -294,7 +297,7 @@ void ExecuteCommand()
             {
                 //Serial.println("fwd");
                 Forward();
-                delay(1000*amounts[i]);                            //FIX THIS DELAY
+               // delay(1000*amounts[i]);                            //FIX THIS DELAY
                // while(timer not reached)
                // {
                //   increment timer
@@ -305,7 +308,7 @@ void ExecuteCommand()
             {
                 //Serial.println("bk");
                 Backward();
-                delay(1000*amounts[i]);                           //FIX THIS DELAY
+               // delay(1000*amounts[i]);                           //FIX THIS DELAY
             }
             else if(commands[i] == 3)
             {
@@ -386,19 +389,29 @@ int CheckDistance()
 }
 
 
+/*                         ASSERT COURSE          
+ *        Ensures the robot follows the line and tracks the number
+ *        of intersections (nodes) crossed.
+ */
 void AssertCourse()
 {
+    //if the robot is on course
     if (state == 1 && readings[0] < 600 && readings[1] > 700 && readings[2] < 800)
     {
         state = 0;
     }
-    else if(state == 0 && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    //if the robot reaches an intersection
+    else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
-        Stop();
-        state = 1;
+        count += 1;
+        if(count == checkPoint)
+        {
+            Stop();
+            state = 1;
+            cmd = 48;
+        }
     }
-    
-                   
+    //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
     {
         if(dir == 1)
@@ -410,18 +423,19 @@ void AssertCourse()
             LeftAdjustBk(30);
         }       
     }
+    //if the left sensor reads the line and the middle and right do not
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
         if(dir == 1)
         {
-            LeftAdjustFwd(50);
+            LeftAdjustFwd(30); 
         }
         if(dir == 2)
         {
             LeftAdjustBk(50);
         }            
     }
-    
+    //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
     {
         if(dir == 1)
@@ -433,11 +447,12 @@ void AssertCourse()
             RightAdjustBk(30);
         }  
     }
+    //if the right sensor reads the line and the middle and left do not
     else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
         if(dir == 1)
         {
-            RightAdjustFwd(50);
+            RightAdjustFwd(30);
         }
         if(dir == 2)
         {
@@ -460,8 +475,8 @@ void setup()
   pinMode(ECHO, INPUT);
 
   //configure servos
-  pan.attach(PAN_SERVO);
-  tilt.attach(TILT_SERVO);
+  //pan.attach(PAN_SERVO);
+  //tilt.attach(TILT_SERVO);
 
   //configure line following sensors
   pinMode(LEFT_IR, INPUT);
@@ -476,8 +491,6 @@ void setup()
   
   //turn motors off and center the ptu
   Stop();
-  pan.write(PAN_CENTER);
-  tilt.write(TILT_CENTER); 
 }
 
 
@@ -485,9 +498,10 @@ void setup()
  *                                                MAIN                                                  *                                                  
  ********************************************************************************************************/
 
-
 void loop() 
 {
+    //dir = 2;
+    //LeftAdjustBk(50);
     test();
     //LeftAdjust(100);
     //RightAdjust(100);
