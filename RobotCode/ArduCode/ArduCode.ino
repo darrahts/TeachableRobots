@@ -165,7 +165,7 @@ void LeftAdjustFwd(int duration)
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, LOW);
-  delay(duration);
+  delayMicroseconds(1000*duration);
 }
 
 void LeftAdjustBk(int duration)
@@ -205,7 +205,7 @@ void RightAdjustFwd(int duration)
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, HIGH);
   digitalWrite(MTR_B_B, LOW);
-  delay(duration);
+  delayMicroseconds(1000*duration);
 }
 
 void RightAdjustBk(int duration)
@@ -223,8 +223,7 @@ void RightAdjustBk(int duration)
  *        Takes a command input in the form:
  *        move1&amount1:move2&amoount2:<etc>:move60&amount60:*
  *        
- *        ex 1&10:2&2:5&0:* would be
- *        forward 10 then left 2 then plot end. 
+ *        ex 1-2_5-0_* would be forward 2 then stop
  *        
  *        1 = forward    \___ amount from 0 to 20 in units
  *        2 = backward   /
@@ -251,12 +250,12 @@ void ParseCommand()
         //Serial.println(input);
         
         // Read each command pair 
-        char* command = strtok(input, ":");
+        char* command = strtok(input, "_");
         
         while (command != 0)
         {
             // Split the command in two values
-            char* separator = strchr(command, '&');
+            char* separator = strchr(command, '-');
             if (separator != 0)
             {
                 // Actually split the string in 2: replace ':' with 0
@@ -274,8 +273,10 @@ void ParseCommand()
                 a++;
             }
             // Find the next command in input string
-            command = strtok(0, ":");
-        }
+            command = strtok(0, "_");
+         }
+         command[c] = 5;
+         amounts[a] = 0;
     }
 }
 
@@ -289,26 +290,28 @@ void ExecuteCommand()
 {
     if(commands[0] > 0)
     {
-        //Serial.println(commands[1]);
-        //Serial.println(amounts[1]);
         for(int i = 0; i < SEQUENCE_LENGTH; i++)
         {
             if(commands[i] == 1)
             {
                 //Serial.println("fwd");
-                Forward();
-               // delay(1000*amounts[i]);                            //FIX THIS DELAY
-               // while(timer not reached)
-               // {
-               //   increment timer
-               //   check distance
-               // }
+                while(count != amounts[i])
+                {
+                    Forward();
+                    ReadLineSensors();
+                    AssertCourse();
+                }
+                count = 0; 
             }
             else if(commands[i] == 2)
             {
                 //Serial.println("bk");
                 Backward();
-               // delay(1000*amounts[i]);                           //FIX THIS DELAY
+                while(count != amounts[i])
+                {
+                    ReadLineSensors();
+                    AssertCourse();
+                }
             }
             else if(commands[i] == 3)
             {
@@ -396,27 +399,32 @@ int CheckDistance()
 void AssertCourse()
 {
     //if the robot is on course
-    if (state == 1 && readings[0] < 600 && readings[1] > 700 && readings[2] < 800)
+    if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
+        Serial.print("-\\");
         state = 0;
     }
     //if the robot reaches an intersection
     else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
         count += 1;
-        if(count == checkPoint)
-        {
-            Stop();
-            state = 1;
-            cmd = 48;
-        }
+        state = 1;
+        Serial.println();
+        Serial.println("here");
+        //if(count == checkPoint)
+        //{
+        //    Stop();
+        //    state = 1;
+        //   cmd = 48;
+        //}
     }
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
     {
+       // Serial.println("Go left!");
         if(dir == 1)
         {
-            LeftAdjustFwd(30);
+            LeftAdjustFwd(15);
         }
         if(dir == 2)
         {
@@ -426,6 +434,7 @@ void AssertCourse()
     //if the left sensor reads the line and the middle and right do not
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
+      //        Serial.println("Go left!");
         if(dir == 1)
         {
             LeftAdjustFwd(30); 
@@ -438,9 +447,10 @@ void AssertCourse()
     //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
     {
+        //      Serial.println("Go right!");
         if(dir == 1)
         {
-            RightAdjustFwd(30);
+            RightAdjustFwd(15);
         }
         if(dir == 2)
         {
@@ -450,6 +460,7 @@ void AssertCourse()
     //if the right sensor reads the line and the middle and left do not
     else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
+         //     Serial.println("Go right!");
         if(dir == 1)
         {
             RightAdjustFwd(30);
@@ -500,30 +511,31 @@ void setup()
 
 void loop() 
 {
+
+
     //dir = 2;
     //LeftAdjustBk(50);
-    test();
+    
+    //ReadLineSensors();
+    //AssertCourse();
+    //test();
+    
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
     //delay(500);
-    //ReadLineSensors();
     //Serial.println(CheckDistance());
     //NewPing sonar(TRIG, ECHO, 100);
     //Serial.println(sonar.ping_cm());
     //delay(250);
-    //ParseCommand();
-    //ExecuteCommand();
+    
+    ParseCommand();
+    ExecuteCommand();
 }
 
 
 void test()
-{
-    ReadLineSensors();
-    AssertCourse();
-
-    
-    
+{    
     if(Serial.available() > 0)
     {
         cmd = int(Serial.read());
