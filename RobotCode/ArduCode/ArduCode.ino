@@ -1,4 +1,6 @@
+
 //#include <Servo.h>
+#include <EEPROM.h>
 /********************************************************************************************************
  *                                             PIN DEFINITIONS                                          *                                                  
  ********************************************************************************************************/
@@ -54,6 +56,8 @@
 #define INPUT_SIZE 254
 #define SEQUENCE_LENGTH 60
 
+//size of EEPROM 1024 for uno, 4096 for mega
+#define EEPROM_SIZE 1023
 
 /********************************************************************************************************
  *                                             GLOBAL VARIABLES                                         *                                                  
@@ -70,9 +74,6 @@ int amounts[SEQUENCE_LENGTH];
 
 //used to loop through motor pins to turn them off
 int motorPins[] = {6,7,8,11,9,10};
-
-//used for control in the main loop instead of delays
-long timer = 0;
 
 //used for sonic range sensor, tof of echo
 long duration;
@@ -91,6 +92,22 @@ int state = 0;
 
 //used to count intersections (nodes) 
 int count = 0;
+
+//used for eeprom addressing
+int memAdr = 0; 
+
+//map of the coordinate space
+byte coordinateSpace[10][10] ={{1,1,1,0,0,0,0,0,0,0},
+                               {0,0,1,0,0,0,0,0,0,0},
+                               {0,0,1,0,0,0,0,0,0,0},
+                               {0,0,1,0,0,0,0,0,0,0},
+                               {0,0,1,1,1,1,0,0,0,0},
+                               {0,0,0,0,0,1,0,0,0,0},
+                               {1,1,0,0,0,1,0,0,0,0},
+                               {0,1,1,1,1,1,0,0,0,0},
+                               {0,0,0,0,0,0,0,0,0,0},
+                               {0,0,0,0,0,0,0,0,0,0}};
+                            
 
 
 /********************************************************************************************************
@@ -241,13 +258,13 @@ void ParseCommand()
         //the number of bytes to size_
         byte size_ = Serial.readBytes(input, INPUT_SIZE);
         
-        //counters for commands and amounts
-        int c = 0;
-        int a = 0; 
-        
         // Add the final 0 to end of the input string
         input[size_] = 0;
         //Serial.println(input);
+
+        //counters for the commands and amounts
+        int c = 0;
+        int a = 0;
         
         // Read each command pair 
         char* command = strtok(input, "_");
@@ -275,9 +292,10 @@ void ParseCommand()
             // Find the next command in input string
             command = strtok(0, "_");
          }
-         command[c] = 5;
+         commands[c] = 5;
          amounts[a] = 0;
     }
+    Serial.println(commands[1]);
 }
 
 /*                         EXECUTE COMMAND          
@@ -295,12 +313,12 @@ void ExecuteCommand()
             if(commands[i] == 1)
             {
                 Serial.println("fwd****************");
-                while(count != amounts[i])
-                {
-                    Forward();
-                    ReadLineSensors();
-                    AssertCourse();
-                }
+              //  while(count != amounts[i])
+               // {
+                   // Forward();
+                   // ReadLineSensors();
+                   // AssertCourse();
+               // }
                 count = 0; 
             }
             else if(commands[i] == 2)
@@ -326,7 +344,7 @@ void ExecuteCommand()
             }
             else if(commands[i] == 5)
             {
-                //Serial.println("stop");
+                Serial.println("stop");
                 Stop();
             }
             else if(commands[i] == 6)
@@ -473,6 +491,8 @@ void AssertCourse()
     }
 }
 
+
+
 /********************************************************************************************************
  *                                               SETUP                                                  *                                                  
  ********************************************************************************************************/
@@ -514,14 +534,13 @@ void setup()
 
 void loop() 
 {
-
-
+    //Serial.println(coordinateSpace[1][2]);
     //dir = 2;
     //LeftAdjustBk(50);
     
-    ReadLineSensors();
-    AssertCourse();
-    test();
+    //ReadLineSensors();
+    //AssertCourse();
+    //test();
     //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     //LeftAdjust(100);
     //RightAdjust(100);
@@ -532,10 +551,45 @@ void loop()
     //Serial.println(sonar.ping_cm());
     //delay(250);
     
-    //ParseCommand();
-    //ExecuteCommand();
+    ParseCommand();
+    ExecuteCommand();
 }
 
+void eepromReadTest()
+{
+    for(int i = 0; i < 100; i++)
+    {
+        if(i%10 == 0)
+        {
+            Serial.println();
+        }
+        Serial.print(EEPROM.read(i));
+        Serial.print(" ");
+    }
+    delay(2000);
+}
+
+void eepromWriteTest()
+{
+  bool finished = false;
+  while(!finished)
+  {
+    for(int i = 0; i < 10; i++)
+    {
+        for(int j = 0; j < 10; j++)
+        {
+            EEPROM.write(memAdr, coordinateSpace[i][j]);
+            memAdr += 1; 
+            //Serial.print(coordinateSpace[i][j]);
+            //Serial.print(" ");
+            //Serial.print(sizeof(coordinateSpace[i][j]));
+        }
+        Serial.println();
+    }
+    delay(2000);
+    finished = true;
+  }
+}
 
 void test()
 {  
