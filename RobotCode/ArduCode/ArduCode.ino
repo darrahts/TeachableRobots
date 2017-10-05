@@ -294,7 +294,7 @@ void ExecuteCommand()
         {
             if(commands[i] == 1)
             {
-                //Serial.println("fwd");
+                Serial.println("fwd****************");
                 while(count != amounts[i])
                 {
                     Forward();
@@ -311,22 +311,29 @@ void ExecuteCommand()
                     Backward();
                     ReadLineSensors();
                     AssertCourse();
+                    test();
                 }
             }
             else if(commands[i] == 3)
             {
-               //Serial.println("left");
+               Serial.println("left****************");
                 Left(int(2.166666 * amounts[i]));
             }
             else if(commands[i] == 4)
             {
-                //Serial.println("right");
+                Serial.println("right****************");
                 Right(int(2.166666 * amounts[i]));
             }
             else if(commands[i] == 5)
             {
                 //Serial.println("stop");
                 Stop();
+            }
+            else if(commands[i] == 6)
+            {
+                Serial.println("entering test mode.");
+                test();
+                Serial.println("exited test mode.");
             }
             else
             {
@@ -401,7 +408,7 @@ void AssertCourse()
     //if the robot is on course
     if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
-        //Serial.print("-\\");
+        Serial.println("-\\");
         state = 0;
     }
     //if the robot reaches an intersection
@@ -409,13 +416,13 @@ void AssertCourse()
     {
         count += 1;
         state = 1;
-        //Serial.println();
+        Serial.println("intersection");
         //Serial.println("here");
     }
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
     {
-       // Serial.println("Go left!");
+        Serial.println("Go left!");
         if(dir == 1)
         {
             LeftAdjustFwd(15);
@@ -428,7 +435,7 @@ void AssertCourse()
     //if the left sensor reads the line and the middle and right do not
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
-      //        Serial.println("Go left!");
+        Serial.println("Go left!");
         if(dir == 1)
         {
             LeftAdjustFwd(30); 
@@ -441,7 +448,7 @@ void AssertCourse()
     //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
     {
-        //      Serial.println("Go right!");
+        Serial.println("Go right!");
         if(dir == 1)
         {
             RightAdjustFwd(15);
@@ -454,7 +461,7 @@ void AssertCourse()
     //if the right sensor reads the line and the middle and left do not
     else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
-         //     Serial.println("Go right!");
+        Serial.println("Go right!");
         if(dir == 1)
         {
             RightAdjustFwd(30);
@@ -512,10 +519,10 @@ void loop()
     //dir = 2;
     //LeftAdjustBk(50);
     
-    //ReadLineSensors();
-    //AssertCourse();
+    ReadLineSensors();
+   // AssertCourse();
     //test();
-    
+    Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
@@ -525,45 +532,52 @@ void loop()
     //Serial.println(sonar.ping_cm());
     //delay(250);
     
-    ParseCommand();
-    ExecuteCommand();
+    //ParseCommand();
+    //xecuteCommand();
 }
 
 
 void test()
-{    
-    if(Serial.available() > 0)
-    {
-        cmd = int(Serial.read());
-        Serial.println(cmd);
-    }
-    if(cmd == 48)
-    {
-        Stop();
-    }
-    else if (cmd == 49)
-    {
-        Forward();
-    }
-    else if (cmd == 50)
-    {
-        Backward();
-    }
-    else if (cmd == 51)
-    {
-        Left(195);
-    }
-    else if (cmd == 52)
-    {
-        Right(195);
-    }
-    else
-    {
-        Stop();
-    }
+{  
+    //while(true)  
+   // {
+        if(Serial.available() > 0)
+        {
+            cmd = int(Serial.read());
+            Serial.println(cmd);
+        }
+        if(cmd == 48)
+        {
+            Stop();
+        }
+        else if (cmd == 49)
+        {
+            Forward();
+        }
+        else if (cmd == 50)
+        {
+            Backward();
+        }
+        else if (cmd == 51)
+        {
+            Left(195);
+        }
+        else if (cmd == 52)
+        {
+            Right(195);
+        }
+        else if(cmd == 53)
+        {
+     //     break;
+        }
+        else
+        {
+            Stop();
+        }
+   // }
 }
 
-
+//1-2_3-90_1-2_5-0_*
 
 
 
