@@ -36,7 +36,7 @@ class GridSpace:
     vs = WebcamVideoStream(0).start()
     frame = vs.read()
     frame = imutils.resize(frame, width=640, height=480) 
-    frameCenter = ((frame.shape[1] // 2) + 25, (frame.shape[0] // 2) + 14)
+    frameCenter = ((frame.shape[1] // 2) + 28, (frame.shape[0] // 2) + 11)
     textArea = np.zeros((frame.shape[0],250,3),dtype=np.uint8)
 
     square = np.ndarray([4,2], dtype=int)
@@ -141,8 +141,10 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (60, 120, 50)
-        self.highColor = (125, 170, 100)
+        #self.lowColor = (60, 120, 50)
+        #self.highColor = (125, 170, 100)
+        self.lowColor = (86, 143, 76)
+        self.highColor = (142, 183, 133)
         self.robot = 0,0,0,0
         self.contour = []
         self.ellipse = ((0,0),(0,0), 0)
@@ -160,13 +162,14 @@ class Robot(GridSpace):
 
     def Run(self):
         c = 0
+        i = 0
         while(True):
             self.frame = self.vs.read()
             self.frame = imutils.resize(self.frame, width=640, height=480)     
            
             f = super().ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
-            if(abs(self.rLoc[0] - self.goal[0]) < .8 and abs(self.rLoc[1] - self.goal[1] < .8)):
+            if(abs(self.rLoc[0] - self.goal[0]) < .5 and abs(self.rLoc[1] - self.goal[1] < .5)):
                 self.goalFound = True
                 c +=1
 
@@ -238,11 +241,11 @@ class Robot(GridSpace):
 
 
     def LocationToCoordinates(self, location):
-        return (int(location[0] *20 + self.frameCenter[0])), (int(-location[1]*20 + self.frameCenter[1]))
+        return (int(location[0] *38 + self.frameCenter[0])), (int(-location[1]*38 + self.frameCenter[1]))
 
 
     def CoordinatesToLocation(self, coordinates):
-        return (coordinates[0] - self.frameCenter[0]) / 20, (self.frameCenter[1] - coordinates[1]) / 20
+        return (coordinates[0] - self.frameCenter[0]) / 38, (self.frameCenter[1] - coordinates[1]) / 38
         
 
 
@@ -272,7 +275,7 @@ if (__name__ == "__main__"):
     #rt.SetGoal((-8,-8))
     #rt.Run()
     r = Robot()
-    r.SetGoal((-8,-8))
+    r.SetGoal((-1,-3))
     r.Run()
 
     
