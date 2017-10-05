@@ -520,9 +520,9 @@ void loop()
     //LeftAdjustBk(50);
     
     ReadLineSensors();
-   // AssertCourse();
-    //test();
-    Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+    AssertCourse();
+    test();
+    //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
@@ -533,7 +533,7 @@ void loop()
     //delay(250);
     
     //ParseCommand();
-    //xecuteCommand();
+    //ExecuteCommand();
 }
 
 
