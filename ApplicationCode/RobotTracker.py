@@ -141,10 +141,12 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
+        self.lowColor = (66, 113, 62)
+        self.highColor = (125, 150, 104)        
         #self.lowColor = (60, 120, 50)
         #self.highColor = (125, 170, 100)
-        self.lowColor = (86, 143, 76)
-        self.highColor = (142, 183, 133)
+        #self.lowColor = (86, 143, 76)
+        #self.highColor = (142, 183, 133)
         self.robot = 0,0,0,0
         self.contour = []
         self.ellipse = ((0,0),(0,0), 0)
