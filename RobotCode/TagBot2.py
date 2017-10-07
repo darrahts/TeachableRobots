@@ -96,40 +96,27 @@ try:
             elif cmd == "s":
                                
             elif cmd == "a":
-                robot.move.dimeLeft(50)
-                continue
-
+                
             elif cmd == "d":
-                robot.move.dimeRight(50)
-                continue
-       
+                
             elif cmd == "z":
-                print("stop")
-                robot.move.stop()
-                direction = 0
-                turning = 0
-                continue
+            
                 
             elif cmd == "u":
-                print("tilt up")
                 tilt("u")
-                continue
+                
             elif cmd == "j":
-                print("tilt down")
                 tilt("d")
+                
             elif cmd == "m":
-                print("tilt center")
                 tilt("c")
 
             elif cmd == "h":
-                print("pan left")
                 pan("l")
                 continue
             elif cmd == "k":
-                print("pan right")
                 pan("r")
             elif cmd == "l":
-                print("pan center")
                 pan("c")
 
             elif cmd == "x":
@@ -145,11 +132,12 @@ try:
                 robot.vision.capture(-1)
                 continue
             elif cmd == "-":
-                path = input("Enter the folder path: ")
-                robot.vision.setPath(path)
-                continue
-            elif cmd == "t":
-                os.system("tightvncserver")
+                path = input("Enter the folder path or c to cancel: ")
+                if(path == "c"):
+                    continue
+                else:
+                    robot.vision.setPath(path)
+                
 
 
 except Exception as e:

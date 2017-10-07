@@ -295,7 +295,7 @@ void ParseCommand()
          commands[c] = 5;
          amounts[a] = 0;
     }
-    Serial.println(commands[1]);
+    //Serial.println(commands[1]);
 }
 
 /*                         EXECUTE COMMAND          
@@ -313,12 +313,12 @@ void ExecuteCommand()
             if(commands[i] == 1)
             {
                 Serial.println("fwd****************");
-              //  while(count != amounts[i])
-               // {
-                   // Forward();
-                   // ReadLineSensors();
-                   // AssertCourse();
-               // }
+                while(count != amounts[i])
+                {
+                    Forward();
+                    ReadLineSensors();
+                    AssertCourse();
+                }
                 count = 0; 
             }
             else if(commands[i] == 2)
@@ -593,8 +593,10 @@ void eepromWriteTest()
 
 void test()
 {  
-    //while(true)  
-   // {
+    while(true)  
+    {
+        ReadLineSensors();
+        AssertCourse();
         if(Serial.available() > 0)
         {
             cmd = int(Serial.read());
@@ -628,7 +630,7 @@ void test()
         {
             Stop();
         }
-   // }
+    }
 }
 
 //1-2_3-90_1-2_5-0_*
