@@ -39,8 +39,8 @@
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-#define OFFSET 25 
-#define SPEED 105
+#define OFFSET 22 
+#define SPEED 110
 
 //pan range of motion
 //#define PAN_LEFT_MAX 170
@@ -439,13 +439,13 @@ int CheckDistance()
 void AssertCourse()
 {
     //if the robot is on course
-    if (/*state == 1 && */readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
+    if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
         Serial.println("-\\");
         state = 0;
     }
     //if the robot reaches an intersection
-    else if(/*state == 0 &&*/ (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
         count += 1;
         state = 1;
@@ -458,7 +458,7 @@ void AssertCourse()
         Serial.println("Go left!");
         if(dir == 1)
         {
-            LeftAdjustFwd(30);
+            LeftAdjustFwd(50);
         }
         if(dir == 2)
         {
@@ -468,10 +468,10 @@ void AssertCourse()
     //if the left sensor reads the line and the middle and right do not (needs larger correction)
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
-        Serial.println("Go left!");
+        Serial.println("Go left2!");
         if(dir == 1)
         {
-            LeftAdjustFwd(50); 
+            LeftAdjustFwd(80); 
         }
         if(dir == 2)
         {
@@ -484,7 +484,7 @@ void AssertCourse()
         Serial.println("Go right!");
         if(dir == 1)
         {
-            RightAdjustFwd(30);
+            RightAdjustFwd(50);
         }
         if(dir == 2)
         {
@@ -494,10 +494,10 @@ void AssertCourse()
     //if the right sensor reads the line and the middle and left do not (needs larger correction)
     else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
-        Serial.println("Go right!");
+        Serial.println("Go right2!");
         if(dir == 1)
         {
-            RightAdjustFwd(50);
+            RightAdjustFwd(80);
         }
         if(dir == 2)
         {
@@ -610,8 +610,8 @@ void test()
 {  
     while(true)  
     {
-        ReadLineSensors();
-        AssertCourse();
+        //ReadLineSensors();
+        //AssertCourse();
         if(Serial.available() > 0)
         {
             cmd = int(Serial.read());
