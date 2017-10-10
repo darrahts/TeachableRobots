@@ -114,11 +114,13 @@ bool currentState[] = {0,0,0,0,0,0,0,0,0,0};
 bool nextState[] = {0,0,0,0,0,0,0,0,0,0};
 
 bool onCourse = false;
+bool tooFarRight = false;
+bool tooFarLeft = false;
 bool atIntersection = false;
 bool passedIntersection = false;
 bool turning = false;
-
 bool finishedTurning = false;
+
 bool leftTriggered = false;
 bool middleTriggered = false;
 bool rightTriggered = false;
@@ -441,20 +443,33 @@ void AssertCourse()
     //if the robot is on course
     if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
-        Serial.println("-\\");
+        onCourse = true;
+        if(atIntersection == true)
+        {
+            atIntersection = false;
+            passedIntersection = true;
+            Serial.println("-\\");
+        }
         state = 0;
     }
     //if the robot reaches an intersection
     else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
-        count += 1;
+        if (count == 0 || passedIntersection == true)
+        {
+            atIntersection = true;
+            passedIntersection = false;
+            count += 1;      
+            Serial.println("intersection");      
+        }
         state = 1;
-        Serial.println("intersection");
         //Serial.println("here");
     }
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
     {
+        tooFarLeft = false;
+        tooFarRight = true;
         Serial.println("Go left!");
         if(dir == 1)
         {
@@ -468,6 +483,8 @@ void AssertCourse()
     //if the left sensor reads the line and the middle and right do not (needs larger correction)
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
+        tooFarLeft = false;
+        tooFarRight = true;
         Serial.println("Go left2!");
         if(dir == 1)
         {
@@ -481,6 +498,8 @@ void AssertCourse()
     //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
     {
+        tooFarRight = false;
+        tooFarLeft = true;
         Serial.println("Go right!");
         if(dir == 1)
         {
@@ -494,6 +513,8 @@ void AssertCourse()
     //if the right sensor reads the line and the middle and left do not (needs larger correction)
     else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
+        tooFarRight = false;
+        tooFarLeft = true;
         Serial.println("Go right2!");
         if(dir == 1)
         {
