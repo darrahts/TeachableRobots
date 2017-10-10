@@ -91,10 +91,10 @@ try:
                 robot.stopRetrieving = True
                 robot.retrieveMessagesThread.join()
                 break
-            elif cmd == "w":
-                                
+            elif cmd == "w": #forward
+                print("moving forward")
             elif cmd == "s":
-                               
+                    
             elif cmd == "a":
                 
             elif cmd == "d":

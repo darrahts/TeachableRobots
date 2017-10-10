@@ -109,6 +109,21 @@ byte coordinateSpace[10][10] ={{1,1,1,0,0,0,0,0,0,0},
                                {0,0,0,0,0,0,0,0,0,0}};
                             
 
+bool previousState[] = {0,0,0,0,0,0,0,0,0,0};
+bool currentState[] = {0,0,0,0,0,0,0,0,0,0};
+bool nextState[] = {0,0,0,0,0,0,0,0,0,0};
+
+bool onCourse = false;
+bool atIntersection = false;
+bool passedIntersection = false;
+bool turning = false;
+
+bool finishedTurning = false;
+bool leftTriggered = false;
+bool middleTriggered = false;
+bool rightTriggered = false;
+
+
 
 /********************************************************************************************************
  *                                               FUNCTIONS                                              *                                                  
@@ -424,13 +439,13 @@ int CheckDistance()
 void AssertCourse()
 {
     //if the robot is on course
-    if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
+    if (/*state == 1 && */readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
         Serial.println("-\\");
         state = 0;
     }
     //if the robot reaches an intersection
-    else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    else if(/*state == 0 &&*/ (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
         count += 1;
         state = 1;
@@ -443,41 +458,28 @@ void AssertCourse()
         Serial.println("Go left!");
         if(dir == 1)
         {
-            LeftAdjustFwd(15);
+            LeftAdjustFwd(30);
         }
         if(dir == 2)
         {
-            LeftAdjustBk(15);
+            LeftAdjustBk(30);
         }       
     }
-    //if the left sensor reads the line and the middle and right do not
+    //if the left sensor reads the line and the middle and right do not (needs larger correction)
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
         Serial.println("Go left!");
         if(dir == 1)
         {
-            LeftAdjustFwd(30); 
+            LeftAdjustFwd(50); 
         }
         if(dir == 2)
         {
-            LeftAdjustBk(30);
+            LeftAdjustBk(50);
         }            
     }
     //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
-    {
-        Serial.println("Go right!");
-        if(dir == 1)
-        {
-            RightAdjustFwd(15);
-        }
-        if(dir == 2)
-        {
-            RightAdjustBk(15);
-        }  
-    }
-    //if the right sensor reads the line and the middle and left do not
-    else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
         Serial.println("Go right!");
         if(dir == 1)
@@ -487,6 +489,19 @@ void AssertCourse()
         if(dir == 2)
         {
             RightAdjustBk(30);
+        }  
+    }
+    //if the right sensor reads the line and the middle and left do not (needs larger correction)
+    else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
+    {
+        Serial.println("Go right!");
+        if(dir == 1)
+        {
+            RightAdjustFwd(50);
+        }
+        if(dir == 2)
+        {
+            RightAdjustBk(50);
         }  
     }
 }
@@ -550,7 +565,7 @@ void loop()
     //NewPing sonar(TRIG, ECHO, 100);
     //Serial.println(sonar.ping_cm());
     //delay(250);
-    
+
     ParseCommand();
     ExecuteCommand();
 }
