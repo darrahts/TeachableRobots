@@ -441,7 +441,7 @@ int CheckDistance()
 void AssertCourse()
 {
     //if the robot is on course
-    if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
+    if (readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
         onCourse = true;
         if(atIntersection == true)
@@ -453,7 +453,7 @@ void AssertCourse()
         state = 0;
     }
     //if the robot reaches an intersection
-    else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    else if( (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
         if (count == 0 || passedIntersection == true)
         {
@@ -669,7 +669,7 @@ void test()
     }
 }
 
-//1-2_3-90_1-2_5-0_*
+//1-3_4-90_1-2_*
 
 
 
