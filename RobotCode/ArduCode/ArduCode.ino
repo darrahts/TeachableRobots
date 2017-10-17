@@ -596,16 +596,16 @@ void setup()
 
 void loop() 
 {
-    CheckVoltage();
+    //CheckVoltage();
     //Serial.println(analogRead(VOLTAGE_SR));
     //Serial.println(coordinateSpace[1][2]);
     //dir = 2;
     //LeftAdjustBk(50);
     
-    //ReadLineSensors();
+    ReadLineSensors();
     //AssertCourse();
     //test();
-    //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+    Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
