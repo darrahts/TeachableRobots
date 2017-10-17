@@ -15,29 +15,20 @@
 #define MTR_B_A 9
 #define MTR_B_B 10
 
-//line sensors
-#define LEFT_IR A4
-#define MIDDLE_IR A3
-#define RIGHT_IR A2
-
-
-#define LEFT_LED 3
-#define MIDDLE_LED 4
-#define RIGHT_LED 5
-
-#define VOLTAGE_SR A1
-
 //sonic range sensor
-//#define TRIG 4
-//#define ECHO 12
+#define TRIG 4
+#define ECHO 12
+
+//line sensors
+#define LEFT_IR A2
+#define RIGHT_IR A3
+#define MIDDLE_IR A4
 
 //pan and tilt servo
 //#define PAN_SERVO A0
 //#define TILT_SERVO A1
 //Servo pan;
 //Servo tilt;
-
-
 
 
 /********************************************************************************************************
@@ -93,9 +84,6 @@ int distance;
 //IR baseline readings. adjust these to your sensors and environment
 int readings[] = {500,400,700};
 
-//battery voltage
-double voltage = 0.0;
-
 //The most recent command executed
 int cmd = 0;
 
@@ -126,13 +114,11 @@ bool currentState[] = {0,0,0,0,0,0,0,0,0,0};
 bool nextState[] = {0,0,0,0,0,0,0,0,0,0};
 
 bool onCourse = false;
-bool tooFarRight = false;
-bool tooFarLeft = false;
 bool atIntersection = false;
 bool passedIntersection = false;
 bool turning = false;
-bool finishedTurning = false;
 
+bool finishedTurning = false;
 bool leftTriggered = false;
 bool middleTriggered = false;
 bool rightTriggered = false;
@@ -398,23 +384,16 @@ void ExecuteCommand()
  */
 void ReadLineSensors()
 {
-    digitalWrite(LEFT_LED, HIGH);
-    digitalWrite(RIGHT_LED, HIGH);
-    digitalWrite(MIDDLE_LED, HIGH);
-    delay(5);
     readings[0] = analogRead(LEFT_IR);
     readings[1] = analogRead(MIDDLE_IR);
     readings[2] = analogRead(RIGHT_IR);
-    digitalWrite(LEFT_LED, LOW);
-    digitalWrite(RIGHT_LED, LOW);
-    digitalWrite(MIDDLE_LED, LOW);
 }
 
 
 /*                         CHECK DISTANCE          
  *        Obstacle detection, uses the robots current dir
  *        to respond with appropriate avoidance movement
- *
+ */
 int CheckDistance()
 {
   digitalWrite(TRIG, LOW);
@@ -451,7 +430,7 @@ int CheckDistance()
   }
   return distance;
 }
-*/
+
 
 /*                         ASSERT COURSE          
  *        Ensures the robot follows the line and tracks the number
@@ -460,35 +439,22 @@ int CheckDistance()
 void AssertCourse()
 {
     //if the robot is on course
-    if (readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
+    if (state == 1 && readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
     {
-        onCourse = true;
-        if(atIntersection == true)
-        {
-            atIntersection = false;
-            passedIntersection = true;
-            Serial.println("-\\");
-        }
+        Serial.println("-\\");
         state = 0;
     }
     //if the robot reaches an intersection
-    else if( (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    else if(state == 0 && (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
     {
-        if (count == 0 || passedIntersection == true)
-        {
-            atIntersection = true;
-            passedIntersection = false;
-            count += 1;      
-            Serial.println("intersection");      
-        }
+        count += 1;
         state = 1;
+        Serial.println("intersection");
         //Serial.println("here");
     }
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
     {
-        tooFarLeft = false;
-        tooFarRight = true;
         Serial.println("Go left!");
         if(dir == 1)
         {
@@ -502,8 +468,6 @@ void AssertCourse()
     //if the left sensor reads the line and the middle and right do not (needs larger correction)
     else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
     {    
-        tooFarLeft = false;
-        tooFarRight = true;
         Serial.println("Go left2!");
         if(dir == 1)
         {
@@ -517,8 +481,6 @@ void AssertCourse()
     //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
     {
-        tooFarRight = false;
-        tooFarLeft = true;
         Serial.println("Go right!");
         if(dir == 1)
         {
@@ -532,8 +494,6 @@ void AssertCourse()
     //if the right sensor reads the line and the middle and left do not (needs larger correction)
     else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
     {
-        tooFarRight = false;
-        tooFarLeft = true;
         Serial.println("Go right2!");
         if(dir == 1)
         {
@@ -570,13 +530,6 @@ void setup()
   pinMode(MIDDLE_IR, INPUT);
   pinMode(RIGHT_IR, INPUT);
 
-  pinMode(LEFT_LED, OUTPUT);
-  pinMode(MIDDLE_LED, OUTPUT);
-  pinMode(RIGHT_LED, OUTPUT);
-
-  //configure voltage sensor reading
-  pinMode(VOLTAGE_SR, INPUT);
-
   //configure motor pins as output
   for(int i = 0; i < 6; i++)
   {
@@ -596,8 +549,6 @@ void setup()
 
 void loop() 
 {
-    CheckVoltage();
-    //Serial.println(analogRead(VOLTAGE_SR));
     //Serial.println(coordinateSpace[1][2]);
     //dir = 2;
     //LeftAdjustBk(50);
@@ -613,18 +564,10 @@ void loop()
     //Serial.println(CheckDistance());
     //NewPing sonar(TRIG, ECHO, 100);
     //Serial.println(sonar.ping_cm());
-    delay(250);
+    //delay(250);
 
-    //ParseCommand();
-    //ExecuteCommand();
-}
-
-
-void CheckVoltage()
-{
-    double v = (analogRead(VOLTAGE_SR) * 5.5) / 1024.0;
-    voltage = v * 12200.0 / 2200.0;
-    Serial.println(voltage);
+    ParseCommand();
+    ExecuteCommand();
 }
 
 void eepromReadTest()
@@ -705,7 +648,7 @@ void test()
     }
 }
 
-//1-3_4-90_1-2_*
+//1-2_3-90_1-2_5-0_*
 
 
 
