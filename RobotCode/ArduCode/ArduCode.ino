@@ -20,11 +20,11 @@
 #define MIDDLE_IR A3
 #define RIGHT_IR A2
 
-
 #define LEFT_LED 3
 #define MIDDLE_LED 4
 #define RIGHT_LED 5
 
+//voltage sensor
 #define VOLTAGE_SR A1
 
 //sonic range sensor
@@ -60,6 +60,10 @@
 //#define TILT_UP_MAX 30
 //#define TILT_CENTER 120
 //#define TILT_DOWN_MAX 150
+
+//line readings > BLACK = black line, < WHITE = white canvas
+#define BLACK 500
+#define WHITE 100
 
 //size of input / command sequence
 #define INPUT_SIZE 254
@@ -460,7 +464,7 @@ int CheckDistance()
 void AssertCourse()
 {
     //if the robot is on course
-    if (readings[0] < 640 && readings[1] > 640 && readings[2] < 820)
+    if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
     {
         onCourse = true;
         if(atIntersection == true)
@@ -472,7 +476,7 @@ void AssertCourse()
         state = 0;
     }
     //if the robot reaches an intersection
-    else if( (dir == 1 || dir == 2) && readings[0] > 700 && readings[1] > 700 && readings[2] > 820)
+    else if( (dir == 1 || dir == 2) && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
     {
         if (count == 0 || passedIntersection == true)
         {
@@ -485,7 +489,7 @@ void AssertCourse()
         //Serial.println("here");
     }
     //if the left and middle sensor read the line and the right sensor does not               
-    else if ( readings[0] > 700 && readings[1] > 700 && readings[2] < 800)
+    else if ( readings[0] > BLACK && readings[1] > BLACK && readings[2] < WHITE)
     {
         tooFarLeft = false;
         tooFarRight = true;
@@ -500,7 +504,7 @@ void AssertCourse()
         }       
     }
     //if the left sensor reads the line and the middle and right do not (needs larger correction)
-    else if(readings[0] > 700 && readings[1] < 600 && readings[2] < 800)
+    else if(readings[0] > BLACK && readings[1] < WHITE && readings[2] < WHITE)
     {    
         tooFarLeft = false;
         tooFarRight = true;
@@ -515,7 +519,7 @@ void AssertCourse()
         }            
     }
     //if the right and middle sensor read the line and the left sensor does not
-    else if ( readings[0] < 600 && readings[1] > 700 && readings[2] > 820)
+    else if ( readings[0] < WHITE && readings[1] > BLACK && readings[2] > BLACK)
     {
         tooFarRight = false;
         tooFarLeft = true;
@@ -530,7 +534,7 @@ void AssertCourse()
         }  
     }
     //if the right sensor reads the line and the middle and left do not (needs larger correction)
-    else if(readings[0] < 600 && readings[1] < 600 && readings[2] > 820)
+    else if(readings[0] < WHITE && readings[1] < WHITE && readings[2] > BLACK)
     {
         tooFarRight = false;
         tooFarLeft = true;
