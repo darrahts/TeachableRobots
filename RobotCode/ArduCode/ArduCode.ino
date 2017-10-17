@@ -414,48 +414,18 @@ void ReadLineSensors()
     digitalWrite(MIDDLE_LED, LOW);
 }
 
-
-/*                         CHECK DISTANCE          
- *        Obstacle detection, uses the robots current dir
- *        to respond with appropriate avoidance movement
- *
-int CheckDistance()
+/*                            CHECK VOLTAGE          
+ *        Reads the VIN voltage (i.e. direct from battery)
+ *        5.5 is an approximation from the voltage divider
+ *        analog read gives 0-1024 so need to divide by 1024
+ *        12200 = r1 + r2 2200 = r2
+ */
+void CheckVoltage()
 {
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(5);
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-  duration = pulseIn(ECHO, HIGH);
-  distance = duration / 29 / 2;
-  if(distance < 20 && distance >10)
-  {
-    if(dir == 1)
-    {
-      Backward();
-      delay(500);
-       Stop();
-    }
-    else if(dir == 3)
-    {
-      Backward();
-      delay(100);
-       Stop();
-      Left(100);
-       Stop();
-    }
-      else if(dir == 4)
-    {
-      Backward();
-      delay(100);
-       Stop();
-      Right(100);
-       Stop();
-    }
-  }
-  return distance;
+    double v = (analogRead(VOLTAGE_SR) * 5.5) / 1024.0;
+    voltage = v * 12200.0 / 2200.0;
+    Serial.println(voltage);
 }
-*/
 
 /*                         ASSERT COURSE          
  *        Ensures the robot follows the line and tracks the number
@@ -624,12 +594,7 @@ void loop()
 }
 
 
-void CheckVoltage()
-{
-    double v = (analogRead(VOLTAGE_SR) * 5.5) / 1024.0;
-    voltage = v * 12200.0 / 2200.0;
-    Serial.println(voltage);
-}
+////////////////////////////////// FUNCTIONS NOT COMMITTED YET //////////////////////////////////
 
 void eepromReadTest()
 {
