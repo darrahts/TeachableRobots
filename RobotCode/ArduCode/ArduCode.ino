@@ -16,19 +16,26 @@
 #define MTR_B_B 10
 
 //sonic range sensor
-#define TRIG 4
-#define ECHO 12
+//#define TRIG 4
+//#define ECHO 12
 
 //line sensors
-#define LEFT_IR A2
-#define RIGHT_IR A3
-#define MIDDLE_IR A4
+#define LEFT_IR A4
+#define MIDDLE_IR A3
+#define RIGHT_IR A2
+
+
+#define LEFT_LED 3
+#define MIDDLE_LED 4
+#define RIGHT_LED 5
 
 //pan and tilt servo
 //#define PAN_SERVO A0
 //#define TILT_SERVO A1
 //Servo pan;
 //Servo tilt;
+
+
 
 
 /********************************************************************************************************
@@ -386,16 +393,23 @@ void ExecuteCommand()
  */
 void ReadLineSensors()
 {
+    digitalWrite(LEFT_LED, HIGH);
+    digitalWrite(RIGHT_LED, HIGH);
+    digitalWrite(MIDDLE_LED, HIGH);
+    delay(5);
     readings[0] = analogRead(LEFT_IR);
     readings[1] = analogRead(MIDDLE_IR);
     readings[2] = analogRead(RIGHT_IR);
+    digitalWrite(LEFT_LED, LOW);
+    digitalWrite(RIGHT_LED, LOW);
+    digitalWrite(MIDDLE_LED, LOW);
 }
 
 
 /*                         CHECK DISTANCE          
  *        Obstacle detection, uses the robots current dir
  *        to respond with appropriate avoidance movement
- */
+ *
 int CheckDistance()
 {
   digitalWrite(TRIG, LOW);
@@ -432,7 +446,7 @@ int CheckDistance()
   }
   return distance;
 }
-
+*/
 
 /*                         ASSERT COURSE          
  *        Ensures the robot follows the line and tracks the number
@@ -551,6 +565,10 @@ void setup()
   pinMode(MIDDLE_IR, INPUT);
   pinMode(RIGHT_IR, INPUT);
 
+  pinMode(LEFT_LED, OUTPUT);
+  pinMode(MIDDLE_LED, OUTPUT);
+  pinMode(RIGHT_LED, OUTPUT);
+
   //configure motor pins as output
   for(int i = 0; i < 6; i++)
   {
@@ -574,10 +592,10 @@ void loop()
     //dir = 2;
     //LeftAdjustBk(50);
     
-    //ReadLineSensors();
+    ReadLineSensors();
     //AssertCourse();
     //test();
-    //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+    Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
@@ -585,10 +603,10 @@ void loop()
     //Serial.println(CheckDistance());
     //NewPing sonar(TRIG, ECHO, 100);
     //Serial.println(sonar.ping_cm());
-    //delay(250);
+    delay(250);
 
-    ParseCommand();
-    ExecuteCommand();
+    //ParseCommand();
+    //ExecuteCommand();
 }
 
 void eepromReadTest()
