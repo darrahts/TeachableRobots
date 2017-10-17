@@ -8,46 +8,30 @@ import tty
 #bus = smbus.SMBus(1)
 #gyroAddress = 0x68
 
-Motor1E = 32
-Motor1A = 38
-Motor1B = 36
-
-Motor2E = 29
-Motor2A = 33
-Motor2B = 31
-
 buzzer = 13
 greenLED = 8
 green1LED = 37
 yellowLED = 40
 redLED = 10
+
 panServo = 11
 tiltServo = 7
 
-ECHO = 23
-TRIG = 22
+ECHO = 18
+TRIG = 12
 
-pir = 35
 
-PhotoPin = 24
-PhotoPin2 = 29
 
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(Motor2E, GPIO.OUT)
-GPIO.setup(Motor2A, GPIO.OUT)
-GPIO.setup(Motor2B, GPIO.OUT)
-GPIO.setup(Motor1E, GPIO.OUT)
-GPIO.setup(Motor1A, GPIO.OUT)
-GPIO.setup(Motor1B, GPIO.OUT)
-pwm1 = GPIO.PWM(Motor1E, 100)
-pwm2 = GPIO.PWM(Motor2E, 100)
+
 
 GPIO.setup(buzzer, GPIO.OUT)
 GPIO.setup(greenLED, GPIO.OUT)
 GPIO.setup(green1LED, GPIO.OUT)
 GPIO.setup(yellowLED, GPIO.OUT)
 GPIO.setup(redLED, GPIO.OUT)
+
 GPIO.setup(panServo, GPIO.OUT)
 GPIO.setup(tiltServo, GPIO.OUT)
 
@@ -55,13 +39,9 @@ GPIO.setup(TRIG,GPIO.OUT)
 GPIO.setup(ECHO,GPIO.IN)
 GPIO.output(TRIG, False)
 
-GPIO.setup(pir, GPIO.IN)
-
-GPIO.setup(PhotoPin, GPIO.OUT)
-GPIO.setup(PhotoPin2, GPIO.OUT)
 
 
-def getKey():
+def GetKey():
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     new = termios.tcgetattr(fd)
@@ -79,20 +59,20 @@ def getKey():
     key = key.replace("'", "")
     return key
 
-def hardwareCleanup():
+def HardwareCleanup():
     GPIO.cleanup()
     return
 
-def tilt(direction):
+def Tilt(direction):
     if direction == "u":
-        os.system("echo 0=+1 > /dev/servoblaster")
-    elif direction == "c":
-        os.system("echo 0=150 > /dev/servoblaster")
-    elif direction == "d":
         os.system("echo 0=-1 > /dev/servoblaster")
+    elif direction == "c":
+        os.system("echo 0=130 > /dev/servoblaster")
+    elif direction == "d":
+        os.system("echo 0=+1 > /dev/servoblaster")
     return
 
-def pan(direction):
+def Pan(direction):
     if direction == "l":
         os.system("echo 1=+1 > /dev/servoblaster")
     elif direction == "c":
@@ -101,15 +81,29 @@ def pan(direction):
         os.system("echo 1=-1 > /dev/servoblaster")
     return
 
-os.system("sudo /home/pi/csrbot/PiBits/ServoBlaster/user/servod")
-#os.system("echo 0=150 > /dev/servoblaster")
+os.system("sudo /home/pi/TeachableRobots/RobotCode/PiBits/ServoBlaster/user/servod")
+os.system("echo 0=130 > /dev/servoblaster")
 os.system("echo 1=150 > /dev/servoblaster")
 
+'''
+try:
+    while(True):
+        direction = GetKey()
+        
+        if direction == "u":
+            os.system("echo 0=-1 > /dev/servoblaster")
+        elif direction == "j":
+            os.system("echo 0=130 > /dev/servoblaster")
+        elif direction == "m":
+            os.system("echo 0=+1 > /dev/servoblaster")
+            
+        if direction == "h":
+            os.system("echo 1=+1 > /dev/servoblaster")
+        elif direction == "k":
+            os.system("echo 1=150 > /dev/servoblaster")
+        elif direction == "l":
+            os.system("echo 1=-1 > /dev/servoblaster")
 
-
-
-    
-
-
-
-
+except KeyboardInterrupt:
+    GPIO.cleanup()
+'''
