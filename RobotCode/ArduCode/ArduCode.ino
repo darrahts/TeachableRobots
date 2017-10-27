@@ -16,8 +16,8 @@
 #define MTR_B_B 10
 
 //line sensors
-#define LEFT_IR A4
-#define MIDDLE_IR A3
+#define LEFT_IR A3
+#define MIDDLE_IR A4
 #define RIGHT_IR A2
 
 #define LEFT_LED 3
@@ -62,7 +62,7 @@
 //#define TILT_DOWN_MAX 150
 
 //line readings > BLACK = black line, < WHITE = white canvas
-#define BLACK 500
+#define BLACK 400
 #define WHITE 100
 
 //size of input / command sequence
@@ -271,7 +271,7 @@ void RightAdjustBk(int duration) //needs fixed
 
 /*                         PARSE COMMAND          
  *        Takes a command input in the form:
- *        move1&amount1:move2&amoount2:<etc>:move60&amount60:*
+ *        move1-amount1_move2-amoount2_<etc>_*
  *        
  *        ex 1-2_5-0_* would be forward 2 then stop
  *        
@@ -422,8 +422,8 @@ void ReadLineSensors()
  */
 void CheckVoltage()
 {
-    double v = (analogRead(VOLTAGE_SR) * 5.5) / 1024.0;
-    voltage = v * 12200.0 / 2200.0;
+    double v = (analogRead(VOLTAGE_SR) * 5.54) / 1024.0;
+    voltage = (v * 12200.0 / 2200.0);
     Serial.println(voltage);
 }
 
@@ -576,10 +576,10 @@ void loop()
     //dir = 2;
     //LeftAdjustBk(50);
     
-    ReadLineSensors();
+    //ReadLineSensors();
     //AssertCourse();
     //test();
-    Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+    //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
@@ -587,10 +587,10 @@ void loop()
     //Serial.println(CheckDistance());
     //NewPing sonar(TRIG, ECHO, 100);
     //Serial.println(sonar.ping_cm());
-    delay(250);
+    //delay(250);
 
-    //ParseCommand();
-    //ExecuteCommand();
+    ParseCommand();
+    ExecuteCommand();
 }
 
 
