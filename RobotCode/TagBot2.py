@@ -52,7 +52,7 @@ class Robot(object, port): #147
             sleep(2)
 
 
-robot = Robot("/dev/ttyACM1")
+robot = Robot("/dev/ttyACM0")
 
 direction = 0
 turning = 0
@@ -92,7 +92,7 @@ try:
                 robot.retrieveMessagesThread.join()
                 break
             elif cmd == "w": #forward
-                print("moving forward")
+                
             elif cmd == "s":
                     
             elif cmd == "a":

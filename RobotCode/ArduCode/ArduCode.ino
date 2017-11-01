@@ -48,8 +48,8 @@
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-#define OFFSET 22 
-#define SPEED 110
+int OFFSET = 26;
+int SPEED = 110;
 
 //pan range of motion
 //#define PAN_LEFT_MAX 170
@@ -133,14 +133,17 @@ bool onCourse = false;
 bool tooFarRight = false;
 bool tooFarLeft = false;
 bool atIntersection = false;
-bool passedIntersection = false;
+bool passedIntersection = true;
 bool turning = false;
 bool finishedTurning = false;
+bool managed = true;
 
 bool leftTriggered = false;
 bool middleTriggered = false;
 bool rightTriggered = false;
 
+int leftCount = 0;
+int rightCount = 0;
 
 
 /********************************************************************************************************
@@ -196,26 +199,46 @@ void Backward()
  */
 void Left(int duration)
 {
-  analogWrite(MTR_A_EN, SPEED + 20);
-  analogWrite(MTR_B_EN, SPEED + 20 - OFFSET);
+  if(managed)
+  {
+    Forward();
+    delay(350);
+  }
+  analogWrite(MTR_A_EN, SPEED);
+  analogWrite(MTR_B_EN, SPEED - OFFSET);
   digitalWrite(MTR_A_A, HIGH);
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, HIGH);
-  delay(duration); 
+  delay(50);
+  ReadLineSensors();
+  while(readings[1] > WHITE)
+  {
+    ReadLineSensors();
+  }
+  delay(10);
+  while(readings[2] > WHITE)
+  {
+    ReadLineSensors();
+  }
+  delay(10);
+  while(readings[0] < BLACK) 
+  {
+    ReadLineSensors();
+  }
    Stop();
   dir = 3;
 }
 
 void LeftAdjustFwd(int duration)
 {
-  analogWrite(MTR_A_EN, SPEED+20);
+  analogWrite(MTR_A_EN, SPEED+25);
   analogWrite(MTR_B_EN, LOW);
   digitalWrite(MTR_A_A, HIGH);
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, LOW);
-  delayMicroseconds(1000*duration);
+  delay(duration / 10);
 }
 
 void LeftAdjustBk(int duration) //needs fixed
@@ -236,13 +259,33 @@ void LeftAdjustBk(int duration) //needs fixed
  */
 void Right(int duration)
 {
+  if(managed)
+  {
+    Forward();
+    delay(350);
+  }
   analogWrite(MTR_A_EN, SPEED + 20);
   analogWrite(MTR_B_EN, SPEED + 20 - OFFSET);
   digitalWrite(MTR_A_A, LOW);
   digitalWrite(MTR_A_B, HIGH);
   digitalWrite(MTR_B_A, HIGH);
   digitalWrite(MTR_B_B, LOW);
-  delay(duration); 
+  delay(50);
+  ReadLineSensors();
+  while(readings[1] > WHITE)
+  {
+    ReadLineSensors();
+  }
+  delay(10);
+  while(readings[0] > WHITE)
+  {
+    ReadLineSensors();
+  }
+  delay(10);
+  while(readings[2] < BLACK) 
+  {
+    ReadLineSensors();
+  }
   Stop();
   dir = 4;
 }
@@ -250,12 +293,12 @@ void Right(int duration)
 void RightAdjustFwd(int duration)
 {
   analogWrite(MTR_A_EN, LOW);
-  analogWrite(MTR_B_EN, SPEED+20);
+  analogWrite(MTR_B_EN, SPEED+25);
   digitalWrite(MTR_A_A, LOW);
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, HIGH);
   digitalWrite(MTR_B_B, LOW);
-  delayMicroseconds(1000*duration);
+  delay(duration / 10);
 }
 
 void RightAdjustBk(int duration) //needs fixed
@@ -362,7 +405,6 @@ void ExecuteCommand()
                     Backward();
                     ReadLineSensors();
                     AssertCourse();
-                    test();
                 }
             }
             else if(commands[i] == 3)
@@ -461,12 +503,19 @@ void AssertCourse()
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > BLACK && readings[1] > BLACK && readings[2] < WHITE)
     {
+      passedIntersection = true;
         tooFarLeft = false;
         tooFarRight = true;
         Serial.println("Go left!");
+        leftCount += 1;
+        if(leftCount == 8)
+        {
+          OFFSET += 1;
+          leftCount = 0;
+        }
         if(dir == 1)
         {
-            LeftAdjustFwd(50);
+            LeftAdjustFwd(200);
         }
         if(dir == 2)
         {
@@ -476,12 +525,19 @@ void AssertCourse()
     //if the left sensor reads the line and the middle and right do not (needs larger correction)
     else if(readings[0] > BLACK && readings[1] < WHITE && readings[2] < WHITE)
     {    
+      passedIntersection = true;
         tooFarLeft = false;
         tooFarRight = true;
         Serial.println("Go left2!");
+        leftCount += 1;
+        if(leftCount == 8)
+        {
+          OFFSET += 1;
+          leftCount = 0;
+        }
         if(dir == 1)
         {
-            LeftAdjustFwd(80); 
+            LeftAdjustFwd(250); 
         }
         if(dir == 2)
         {
@@ -491,12 +547,19 @@ void AssertCourse()
     //if the right and middle sensor read the line and the left sensor does not
     else if ( readings[0] < WHITE && readings[1] > BLACK && readings[2] > BLACK)
     {
+      
         tooFarRight = false;
         tooFarLeft = true;
         Serial.println("Go right!");
+        rightCount += 1;
+        if(rightCount == 8)
+        {
+          OFFSET -= 1;
+          rightCount = 0;
+        }
         if(dir == 1)
         {
-            RightAdjustFwd(50);
+            RightAdjustFwd(200);
         }
         if(dir == 2)
         {
@@ -509,9 +572,15 @@ void AssertCourse()
         tooFarRight = false;
         tooFarLeft = true;
         Serial.println("Go right2!");
+        rightCount += 1;
+        if(rightCount == 8)
+        {
+          OFFSET -= 1;
+          rightCount = 0;
+        }
         if(dir == 1)
         {
-            RightAdjustFwd(80);
+            RightAdjustFwd(250);
         }
         if(dir == 2)
         {
@@ -577,9 +646,8 @@ void loop()
     //LeftAdjustBk(50);
     
     //ReadLineSensors();
-    //AssertCourse();
-    //test();
     //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+    
     //LeftAdjust(100);
     //RightAdjust(100);
     //Stop();
@@ -665,7 +733,7 @@ void test()
         }
         else if(cmd == 53)
         {
-     //     break;
+          break;
         }
         else
         {
@@ -688,4 +756,4 @@ void test()
 
 
 
-
+//1-2_3-90_1-1_3-90_1-2_3-90_1-1_*
