@@ -36,7 +36,7 @@ class GridSpace:
     vs = WebcamVideoStream(0).start()
     frame = vs.read()
     frame = imutils.resize(frame, width=640, height=480) 
-    frameCenter = ((frame.shape[1] // 2) + 28, (frame.shape[0] // 2) + 11)
+    frameCenter = ((frame.shape[1] // 2) + 19, (frame.shape[0] // 2) + 11)
     textArea = np.zeros((frame.shape[0],250,3),dtype=np.uint8)
 
     square = np.ndarray([4,2], dtype=int)
@@ -57,6 +57,26 @@ class GridSpace:
         self.textArea = np.zeros((self.frame.shape[0],250,3),dtype=np.uint8)
         cv2.drawContours(self.frame, [self.square], -1, (0, 255, 0), 2)
         cv2.circle(self.frame, (self.frameCenter[0],self.frameCenter[1]), 15, (0,255,255), 2)
+
+        j = 150
+        for i in range(0, 5):
+            cv2.line(self.frame, (j, 245), (j, 255), (0, 255, 255), 3)
+            j += 37
+
+        k = 377
+        for i in range(0, 5):
+            cv2.line(self.frame, (k, 245), (k, 255), (0, 255, 255), 3)
+            k += 38
+
+        j = 53
+        for i in range(0, 5):
+            cv2.line(self.frame, (334, j), (344, j), (0, 255, 255), 3)
+            j += 39
+
+        k = 290
+        for i in range(0, 5):
+            cv2.line(self.frame, (334, k), (344, k), (0, 255, 255), 3)
+            k += 36
         
 ##        for i in range(0, len(frame[0])):
 ##            for j in range(0, len(frame)):
@@ -141,8 +161,14 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (66, 113, 62)
-        self.highColor = (125, 150, 104)        
+        self.lowColor = (60, 140, 0)
+        self.highColor = (157, 200, 130)        
+        #self.lowColor = (111,150,48)
+        #self.highColor = (145,185,128)        
+        #self.lowColor = (77,162,102)
+        #self.highColor = (139, 204,138)        
+        #self.lowColor = (66, 113, 62)
+        #self.highColor = (125, 150, 104)        
         #self.lowColor = (60, 120, 50)
         #self.highColor = (125, 170, 100)
         #self.lowColor = (86, 143, 76)
@@ -223,9 +249,9 @@ class Robot(GridSpace):
         self.rLoc = self.CoordinatesToLocation(self.robot)
             
         cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
-        cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0],self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,255), 2)
+        cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0],self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
         
-        cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
+        #cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
         cv2.circle(self.textArea, (208,8), 2, (100,200,100), 1)
 
         cv2.putText(self.textArea, "Goal: " + str(self.goal), (10, 50), 3, .7, (100,200,100), 1)
@@ -257,9 +283,9 @@ class Robot(GridSpace):
 
     def DrawGoal(self, goal):
         cv2.circle(self.frame,(goal[0], goal[1]), 2, (220,80,80), 2)
-        cv2.circle(self.frame,(goal[0], goal[1]), 6, (220,80,80), 1)
-        cv2.circle(self.frame,(goal[0], goal[1]), 10, (220,80,80), 1)
-        cv2.putText(self.frame, str(self.goal), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (220, 80, 80), 2)
+        cv2.circle(self.frame,(goal[0], goal[1]), 7, (220,80,80), 2)
+        cv2.circle(self.frame,(goal[0], goal[1]), 12, (220,80,80), 2)
+        cv2.putText(self.frame, str(self.goal), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
         pass
 
 
@@ -277,7 +303,7 @@ if (__name__ == "__main__"):
     #rt.SetGoal((-8,-8))
     #rt.Run()
     r = Robot()
-    r.SetGoal((-1,-3))
+    r.SetGoal((1,-2))
     r.Run()
 
     
