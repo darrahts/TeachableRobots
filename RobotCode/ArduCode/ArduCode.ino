@@ -62,8 +62,8 @@ int SPEED = 110;
 //#define TILT_DOWN_MAX 150
 
 //line readings > BLACK = black line, < WHITE = white canvas
-#define BLACK 400
-#define WHITE 100
+#define BLACK 260
+#define WHITE 245
 
 //size of input / command sequence
 #define INPUT_SIZE 254
@@ -210,21 +210,28 @@ void Left(int duration)
   digitalWrite(MTR_A_B, LOW);
   digitalWrite(MTR_B_A, LOW);
   digitalWrite(MTR_B_B, HIGH);
-  delay(50);
-  ReadLineSensors();
-  while(readings[1] > WHITE)
+  if(managed)
   {
-    ReadLineSensors();
+      delay(50);
+      ReadLineSensors();
+      while(readings[1] > WHITE)
+      {
+        ReadLineSensors();
+      }
+      delay(10);
+      while(readings[2] > WHITE)
+      {
+        ReadLineSensors();
+      }
+      delay(10);
+      while(readings[0] < BLACK) 
+      {
+        ReadLineSensors();
+      }
   }
-  delay(10);
-  while(readings[2] > WHITE)
+  else
   {
-    ReadLineSensors();
-  }
-  delay(10);
-  while(readings[0] < BLACK) 
-  {
-    ReadLineSensors();
+      delay(duration);
   }
    Stop();
   dir = 3;
@@ -270,21 +277,28 @@ void Right(int duration)
   digitalWrite(MTR_A_B, HIGH);
   digitalWrite(MTR_B_A, HIGH);
   digitalWrite(MTR_B_B, LOW);
-  delay(50);
-  ReadLineSensors();
-  while(readings[1] > WHITE)
+  if(managed)
   {
-    ReadLineSensors();
+      delay(50);
+      ReadLineSensors();
+      while(readings[1] > WHITE)
+      {
+        ReadLineSensors();
+      }
+      delay(10);
+      while(readings[0] > WHITE)
+      {
+        ReadLineSensors();
+      }
+      delay(10);
+      while(readings[2] < BLACK) 
+      {
+        ReadLineSensors();
+      }
   }
-  delay(10);
-  while(readings[0] > WHITE)
+  else
   {
-    ReadLineSensors();
-  }
-  delay(10);
-  while(readings[2] < BLACK) 
-  {
-    ReadLineSensors();
+      delay(duration);
   }
   Stop();
   dir = 4;
@@ -424,9 +438,9 @@ void ExecuteCommand()
             }
             else if(commands[i] == 6)
             {
-                Serial.println("entering test mode.");
-                test();
-                Serial.println("exited test mode.");
+                Serial.println("entering ManualControl mode.");
+                ManualControl();
+                Serial.println("exited ManualControl mode.");
             }
             else
             {
@@ -454,6 +468,7 @@ void ReadLineSensors()
     digitalWrite(LEFT_LED, LOW);
     digitalWrite(RIGHT_LED, LOW);
     digitalWrite(MIDDLE_LED, LOW);
+    //Serial.println("read");
 }
 
 /*                            CHECK VOLTAGE          
@@ -642,21 +657,11 @@ void loop()
     //CheckVoltage();
     //Serial.println(analogRead(VOLTAGE_SR));
     //Serial.println(coordinateSpace[1][2]);
-    //dir = 2;
-    //LeftAdjustBk(50);
-    
+  
     //ReadLineSensors();
     //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     
-    //LeftAdjust(100);
-    //RightAdjust(100);
-    //Stop();
-    //delay(500);
-    //Serial.println(CheckDistance());
-    //NewPing sonar(TRIG, ECHO, 100);
-    //Serial.println(sonar.ping_cm());
-    //delay(250);
-
+  
     ParseCommand();
     ExecuteCommand();
 }
@@ -700,8 +705,9 @@ void eepromWriteTest()
   }
 }
 
-void test()
+void ManualControl()
 {  
+    managed = false;
     while(true)  
     {
         //ReadLineSensors();
@@ -711,29 +717,41 @@ void test()
             cmd = int(Serial.read());
             Serial.println(cmd);
         }
-        if(cmd == 48)
+        if(cmd == 120) //x
         {
             Stop();
         }
-        else if (cmd == 49)
+        else if (cmd == 119) //w
         {
             Forward();
         }
-        else if (cmd == 50)
+        else if (cmd == 115) //s
         {
             Backward();
         }
-        else if (cmd == 51)
+        else if (cmd == 97) //a
         {
             Left(195);
         }
-        else if (cmd == 52)
+        else if (cmd == 100) //d
         {
             Right(195);
         }
-        else if(cmd == 53)
+        else if(cmd == 118) //v
         {
-          break;
+            CheckVoltage();
+            cmd = 120;
+        }
+        else if(cmd == 114) //r
+        {
+            ReadLineSensors();
+            Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+            cmd = 120;  
+        }
+        else if(cmd == 113) //q
+        {
+            managed = true;
+            break;
         }
         else
         {
