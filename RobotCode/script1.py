@@ -65,14 +65,21 @@ while(True):
                 else:
                     x = str(val + "_")
                 cmds.append(x)
-                    
+
+            for val in cmds:
+                print(val)
             sequence = "".join(cmds)
-            print("sending: " + sequence)
+            #print("sending: " + sequence)
         arduino.flush()
         arduino.write(bytes(sequence.encode('ascii')))
         time.sleep(1)
         userInput == ""
         cmds.clear()
+        sequence = ""
+        for val in cmds:
+            print(val)
+        print(sequence)
+        print(userInput)
     #if(arduino.inWaiting() > 0):
     #    print("something to read.")
     #    print(arduino.readline())
