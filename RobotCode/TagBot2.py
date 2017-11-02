@@ -52,7 +52,14 @@ class Robot(object, port): #147
             sleep(2)
 
 
-robot = Robot("/dev/ttyACM0")
+try:
+    robot = Robot("/dev/ttyACM0")
+
+except:
+    try:
+        robot = Robot("/dev/ttyACM1")
+    except:
+        print("cant connect to arduino.")
 
 direction = 0
 turning = 0

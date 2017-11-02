@@ -530,7 +530,7 @@ void AssertCourse()
         }
         if(dir == 1)
         {
-            LeftAdjustFwd(200);
+            LeftAdjustFwd(150);
         }
         if(dir == 2)
         {
@@ -552,7 +552,7 @@ void AssertCourse()
         }
         if(dir == 1)
         {
-            LeftAdjustFwd(250); 
+            LeftAdjustFwd(200); 
         }
         if(dir == 2)
         {
@@ -574,7 +574,7 @@ void AssertCourse()
         }
         if(dir == 1)
         {
-            RightAdjustFwd(200);
+            RightAdjustFwd(150);
         }
         if(dir == 2)
         {
@@ -595,7 +595,7 @@ void AssertCourse()
         }
         if(dir == 1)
         {
-            RightAdjustFwd(250);
+            RightAdjustFwd(200);
         }
         if(dir == 2)
         {
@@ -615,14 +615,6 @@ void setup()
   Serial.begin(9600);
   //Serial1.begin(9600);
 
-  //configure sonic range sensor
-  //pinMode(TRIG, OUTPUT);
-  //pinMode(ECHO, INPUT);
-
-  //configure servos
-  //pan.attach(PAN_SERVO);
-  //tilt.attach(TILT_SERVO);
-
   //configure line following sensors
   pinMode(LEFT_IR, INPUT);
   pinMode(MIDDLE_IR, INPUT);
@@ -641,10 +633,8 @@ void setup()
     pinMode(motorPins[i], OUTPUT);
   }
   
-  //turn motors off and center the ptu
+  //turn motors off
   Stop();
-  //pan.write(PAN_CENTER);
-  //tilt.write(TILT_CENTER); 
 }
 
 
@@ -661,9 +651,17 @@ void loop()
     //ReadLineSensors();
     //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
     
-  
+     // byte size_ = Serial.readBytes(input, INPUT_SIZE);
+     // Serial.println(input);
+      
     ParseCommand();
     ExecuteCommand();
+    
+//         if(Serial.available() > 0)
+//        {
+//            cmd = int(Serial.read());
+//            Serial.println(cmd);
+//        }
 }
 
 
@@ -720,33 +718,40 @@ void ManualControl()
         if(cmd == 120) //x
         {
             Stop();
+            Serial.println("x");
         }
         else if (cmd == 119) //w
         {
             Forward();
+            Serial.println("w");
         }
         else if (cmd == 115) //s
         {
             Backward();
+            Serial.println("s");
         }
         else if (cmd == 97) //a
         {
             Left(195);
+            Serial.println("a");
         }
         else if (cmd == 100) //d
         {
             Right(195);
+            Serial.println("d");
         }
         else if(cmd == 118) //v
         {
             CheckVoltage();
             cmd = 120;
+             Serial.println("v");
         }
         else if(cmd == 114) //r
         {
             ReadLineSensors();
             Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
             cmd = 120;  
+            
         }
         else if(cmd == 113) //q
         {
