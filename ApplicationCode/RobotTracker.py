@@ -45,6 +45,11 @@ class GridSpace:
     square[2] = [550, 455]
     square[3] = [550, 40]
 
+    maskk = frame.copy()
+    for i in range(0, len(frame[0])):
+        for j in range(0, len(frame)):
+            if(i < 125 or i > 555 or j < 32 or j > 460):
+                maskk[j][i] = (0,0,0)
 
     def FrameOverlay(self, frame):
         ''' Builds the general output window.
@@ -58,6 +63,9 @@ class GridSpace:
         cv2.drawContours(self.frame, [self.square], -1, (0, 255, 0), 2)
         cv2.circle(self.frame, (self.frameCenter[0],self.frameCenter[1]), 15, (0,255,255), 2)
 
+        #cv2.bitwise_xor(self.maskk, self.frame, self.frame, mask=None)
+        
+        
         j = 150
         for i in range(0, 5):
             cv2.line(self.frame, (j, 245), (j, 255), (0, 255, 255), 3)
@@ -77,13 +85,6 @@ class GridSpace:
         for i in range(0, 5):
             cv2.line(self.frame, (334, k), (344, k), (0, 255, 255), 3)
             k += 36
-        
-##        for i in range(0, len(frame[0])):
-##            for j in range(0, len(frame)):
-##                if(i < 125 or i > 555 or j < 32 or j > 460):
-##                    frame[j][i] = (0,0,0)
-##
-##        print("something")
 
         return
 
@@ -161,8 +162,10 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (60, 140, 0)
-        self.highColor = (157, 200, 130)        
+        self.lowColor = (87, 146, 0)
+        self.highColor = (150, 208, 52)
+        #self.lowColor = (60, 140, 0)
+        #self.highColor = (157, 200, 130)        
         #self.lowColor = (111,150,48)
         #self.highColor = (145,185,128)        
         #self.lowColor = (77,162,102)
@@ -227,7 +230,7 @@ class Robot(GridSpace):
         contours = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         if(len(contours) > 0):
             cont = max(contours, key=cv2.contourArea)
-            if(cv2.contourArea(cont) > 80 and cv2.contourArea(cont) < 160):
+            if(cv2.contourArea(cont) > 80 and cv2.contourArea(cont) < 700):
                 rect = cv2.boundingRect(cont)
                 if(abs(self.robot[0] - rect[0]) < 2 or abs(self.robot[1] - rect[1]) < 2):
                     return 0
@@ -249,7 +252,7 @@ class Robot(GridSpace):
         self.rLoc = self.CoordinatesToLocation(self.robot)
             
         cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
-        cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0],self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
+        cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0]+15,self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
         
         #cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
         cv2.circle(self.textArea, (208,8), 2, (100,200,100), 1)
@@ -260,7 +263,7 @@ class Robot(GridSpace):
             self.ellipse = cv2.fitEllipse(self.contour)
             w = self.ellipse[1][0] * 1.25
             l = self.ellipse[1][1] * 1.25
-            cv2.ellipse(self.frame, (self.ellipse[0],(w,l),self.ellipse[2]), (0,255,0), 1)
+            cv2.ellipse(self.frame, (self.ellipse[0],(w,l),self.ellipse[2]), (0,255,0), 2)
 
         if(self.goalFound):
             cv2.putText(self.textArea, "Goal Found!", (10, 100), 3, .7, (100,200,100), 1)

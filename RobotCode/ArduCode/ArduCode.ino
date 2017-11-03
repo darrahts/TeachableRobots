@@ -758,6 +758,10 @@ void ManualControl()
             managed = true;
             break;
         }
+        else if(cmd == 122) //z
+        {
+            Serial.println("z");
+        }
         else
         {
             Stop();
