@@ -27,43 +27,22 @@
 //voltage sensor
 #define VOLTAGE_SR A1
 
-//sonic range sensor
-//#define TRIG 4
-//#define ECHO 12
-
-//pan and tilt servo
-//#define PAN_SERVO A0
-//#define TILT_SERVO A1
-//Servo pan;
-//Servo tilt;
-
-
 
 
 /********************************************************************************************************
- *                                             CONSTANT DEFINITIONS                                     *                                                  
+ *                                             CONSTANT PARAMETERS                                      *                                                  
  ********************************************************************************************************/
 
 // motor speeds
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-int OFFSET = 26;
-int SPEED = 110;
-
-//pan range of motion
-//#define PAN_LEFT_MAX 170
-//#define PAN_CENTER 105
-//#define PAN_RIGHT_MAX 40
-//
-////tilt range of motion
-//#define TILT_UP_MAX 30
-//#define TILT_CENTER 120
-//#define TILT_DOWN_MAX 150
+int OFFSET = 26;  //memAdr 0
+int SPEED = 110;  //memAdr 2
 
 //line readings > BLACK = black line, < WHITE = white canvas
-#define BLACK 260
-#define WHITE 245
+int BLACK = 260; //memAdr 4
+int WHITE = 245; //memAdr 6
 
 //size of input / command sequence
 #define INPUT_SIZE 254
@@ -88,12 +67,6 @@ int amounts[SEQUENCE_LENGTH];
 //used to loop through motor pins to turn them off
 int motorPins[] = {6,7,8,11,9,10};
 
-//used for sonic range sensor, tof of echo
-long duration;
-
-//used for sonic range sensor, distance to obj in cm
-int distance;
-
 //IR baseline readings. adjust these to your sensors and environment
 int readings[] = {500,400,700};
 
@@ -113,18 +86,22 @@ int count = 0;
 int memAdr = 0; 
 
 //map of the coordinate space
-byte coordinateSpace[10][10] ={{1,1,1,0,0,0,0,0,0,0},
-                               {0,0,1,0,0,0,0,0,0,0},
-                               {0,0,1,0,0,0,0,0,0,0},
-                               {0,0,1,0,0,0,0,0,0,0},
-                               {0,0,1,1,1,1,0,0,0,0},
-                               {0,0,0,0,0,1,0,0,0,0},
-                               {1,1,0,0,0,1,0,0,0,0},
-                               {0,1,1,1,1,1,0,0,0,0},
-                               {0,0,0,0,0,0,0,0,0,0},
-                               {0,0,0,0,0,0,0,0,0,0}};
+byte coordinateSpace[12][12] ={{1,1,1,1,1,1,1,1,1,1,1,1}, //memAdr 100+
+                               {1,0,0,0,0,0,0,0,0,0,0,1},
+                               {1,0,1,0,0,0,1,1,0,0,0,1},
+                               {1,0,1,0,0,0,0,1,0,0,0,1},
+                               {1,0,1,0,1,1,0,1,0,0,0,1},
+                               {1,0,0,0,0,1,0,0,0,0,0,1},
+                               {1,1,0,0,0,0,0,1,0,0,0,1},
+                               {1,1,0,1,1,1,0,0,0,0,0,1},
+                               {1,0,0,0,0,0,0,0,0,0,0,1},
+                               {1,1,0,1,1,1,0,0,0,0,0,1},
+                               {1,0,0,0,0,0,0,0,0,0,0,1},
+                               {1,1,1,1,1,1,1,1,1,1,1,1}};
                             
 
+//TESTING WITH THE BELOW PARAMETERS.
+//NOT ALL ARE USED
 bool previousState[] = {0,0,0,0,0,0,0,0,0,0};
 bool currentState[] = {0,0,0,0,0,0,0,0,0,0};
 bool nextState[] = {0,0,0,0,0,0,0,0,0,0};
@@ -150,8 +127,8 @@ int rightCount = 0;
  *                                               FUNCTIONS                                              *                                                  
  ********************************************************************************************************/
 
-/*                         STOP                
- *        turns off the motors
+/*                                  STOP                
+ *                         turns off the motors
  */
 void Stop()
 {
@@ -162,9 +139,9 @@ void Stop()
     dir = 0;
 }
 
-/*                         FORWARD                
- *        Robot drives forward, accounts for 
- *        motor differences with offset
+/*                                 FORWARD                
+ *                   Robot drives forward, accounts for 
+ *                   motor differences with offset
  */
 void Forward()
 {
@@ -177,9 +154,9 @@ void Forward()
   dir = 1;
 }
 
-/*                         BACKWARD                
- *        Robot drives in reverse, accounts for 
- *        motor differences with offset
+/*                                BACKWARD                
+ *                 Robot drives in reverse, accounts for 
+ *                 motor differences with offset
  */
 void Backward()
 {
@@ -192,13 +169,14 @@ void Backward()
   dir = 2;
 }
 
-/*                         LEFT   / LEFT ADJUST            
- *        uses duration in a delay to adjust the angle
- *        195 is for right angle turns while in motion
- *        adjust is used for line tracking
+/*                               LEFT   / LEFT ADJUST            
+ *                 uses duration in a delay to adjust the angle
+ *                 195 is for right angle turns while in motion
+ *                 adjust is used for line tracking
  */
 void Left(int duration)
 {
+  dir = 3;
   if(managed)
   {
     Forward();
@@ -234,7 +212,6 @@ void Left(int duration)
       delay(duration);
   }
    Stop();
-  dir = 3;
 }
 
 void LeftAdjustFwd(int duration)
@@ -259,13 +236,14 @@ void LeftAdjustBk(int duration) //needs fixed
   delay(duration);
 }
 
-/*                         RIGHT   / RIGHT ADJUST          
- *        uses duration in a delay to adjust the angle
- *        195 is for right angle turns while in motion
- *        adjust is used for line tracking
+/*                             RIGHT   / RIGHT ADJUST          
+ *                uses duration in a delay to adjust the angle
+ *               195 is for right angle turns while in motion
+ *               adjust is used for line tracking
  */
 void Right(int duration)
 {
+  dir = 4;
   if(managed)
   {
     Forward();
@@ -301,7 +279,6 @@ void Right(int duration)
       delay(duration);
   }
   Stop();
-  dir = 4;
 }
 
 void RightAdjustFwd(int duration)
@@ -326,18 +303,18 @@ void RightAdjustBk(int duration) //needs fixed
   delay(duration);
 }
 
-/*                         PARSE COMMAND          
- *        Takes a command input in the form:
- *        move1-amount1_move2-amoount2_<etc>_*
+/*                              PARSE COMMAND          
+ *              Takes a command input in the form:
+ *              move1-amount1_move2-amoount2_<etc>_*
  *        
- *        ex 1-2_5-0_* would be forward 2 then stop
+ *              ex 1-2_5-0_* would be forward 2 then stop
  *        
- *        1 = forward    \___ amount from 0 to 20 in units
- *        2 = backward   /
- *        3 = left       \___ amount from 0 to 180 in degrees
- *        4 = right      /
- *        5 = stop  --------- input should be 6&0 
- *        * = end   --------- end of command sequence
+ *              1 = forward    \___ amount from 0 to 20 in units
+ *              2 = backward   /
+ *              3 = left       \___ amount from 0 to 180 in degrees
+ *              4 = right      /
+ *              5 = stop  --------- input should be 6&0 
+ *              * = end   --------- end of command sequence
  */
 void ParseCommand()
 {
@@ -388,11 +365,11 @@ void ParseCommand()
     //Serial.println(commands[1]);
 }
 
-/*                         EXECUTE COMMAND          
- *        Sequentially executes the commands from the commands
- *        array and amounts array. Does not use delays so line
- *        tracking and obstacle detection can operate at each
- *        iteration.
+/*                              EXECUTE COMMAND          
+ *             Sequentially executes the commands from the commands
+ *             array and amounts array. Does not use delays so line
+ *             tracking and obstacle detection can operate at each
+ *             iteration.
  */
 void ExecuteCommand()
 {
@@ -484,225 +461,143 @@ void CheckVoltage()
     Serial.println(voltage);
 }
 
-/*                         ASSERT COURSE          
- *        Ensures the robot follows the line and tracks the number
- *        of intersections (nodes) crossed.
+
+
+/*                           ASSERT COURSE          
+ *          Ensures the robot follows the line and tracks the number
+ *          of intersections (nodes) crossed.
  */
 void AssertCourse()
 {
-    //if the robot is on course
-    if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
+    if(dir == 1 || dir == 2) //i.e. if the robot isn't turning
     {
-        onCourse = true;
-        if(atIntersection == true)
+      
+        //if the robot is on course
+        if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
         {
-            atIntersection = false;
+            onCourse = true;
+            if(atIntersection == true)
+            {
+                atIntersection = false;
+                passedIntersection = true;
+                Serial.println("-");
+            }
+            state = 0;
+        }
+        //if the robot reaches an intersection
+        else if( onCourse && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
+        {
+            if (count == 0 || passedIntersection == true)
+            {
+                atIntersection = true;
+                passedIntersection = false;
+                count += 1;      
+                Serial.println("+");      
+            }
+            state = 1;
+            //Serial.println("here");
+        }
+        //if the left and middle sensor read the line and the right sensor does not               
+        else if ( readings[0] > BLACK && readings[1] > BLACK && readings[2] < WHITE)
+        {
             passedIntersection = true;
-            Serial.println("-");
+            tooFarLeft = false;
+            tooFarRight = true;
+            Serial.println("<");
+            leftCount += 1;
+            if(leftCount == 8)
+            {
+              OFFSET += 1;
+              leftCount = 0;
+            }
+            if(dir == 1)
+            {
+                LeftAdjustFwd(150);
+            }
+            if(dir == 2)
+            {
+                LeftAdjustBk(30);
+            }       
         }
-        state = 0;
-    }
-    //if the robot reaches an intersection
-    else if( onCourse && (dir == 1 || dir == 2) && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
-    {
-        if (count == 0 || passedIntersection == true)
-        {
-            atIntersection = true;
-            passedIntersection = false;
-            count += 1;      
-            Serial.println("+");      
+        //if the left sensor reads the line and the middle and right do not (needs larger correction)
+        else if(readings[0] > BLACK && readings[1] < WHITE && readings[2] < WHITE)
+        {    
+          passedIntersection = true;
+            tooFarLeft = false;
+            tooFarRight = true;
+            Serial.println("<<");
+            leftCount += 1;
+            if(leftCount == 8)
+            {
+              OFFSET += 1;
+              leftCount = 0;
+            }
+            if(dir == 1)
+            {
+                LeftAdjustFwd(200); 
+            }
+            if(dir == 2)
+            {
+                LeftAdjustBk(50);
+            }            
         }
-        state = 1;
-        //Serial.println("here");
-    }
-    //if the left and middle sensor read the line and the right sensor does not               
-    else if ( readings[0] > BLACK && readings[1] > BLACK && readings[2] < WHITE)
-    {
-        passedIntersection = true;
-        tooFarLeft = false;
-        tooFarRight = true;
-        Serial.println("<");
-        leftCount += 1;
-        if(leftCount == 8)
+        //if the right and middle sensor read the line and the left sensor does not
+        else if ( readings[0] < WHITE && readings[1] > BLACK && readings[2] > BLACK)
         {
-          OFFSET += 1;
-          leftCount = 0;
+          
+            tooFarRight = false;
+            tooFarLeft = true;
+            Serial.println(">");
+            rightCount += 1;
+            if(rightCount == 8)
+            {
+              OFFSET -= 1;
+              rightCount = 0;
+            }
+            if(dir == 1)
+            {
+                RightAdjustFwd(150);
+            }
+            if(dir == 2)
+            {
+                RightAdjustBk(30);
+            }  
         }
-        if(dir == 1)
+        //if the right sensor reads the line and the middle and left do not (needs larger correction)
+        else if(readings[0] < WHITE && readings[1] < WHITE && readings[2] > BLACK)
         {
-            LeftAdjustFwd(150);
+            tooFarRight = false;
+            tooFarLeft = true;
+            Serial.println(">>");
+            rightCount += 1;
+            if(rightCount == 8)
+            {
+              OFFSET -= 1;
+              rightCount = 0;
+            }
+            if(dir == 1)
+            {
+                RightAdjustFwd(200);
+            }
+            if(dir == 2)
+            {
+                RightAdjustBk(50);
+            }  
         }
-        if(dir == 2)
-        {
-            LeftAdjustBk(30);
-        }       
-    }
-    //if the left sensor reads the line and the middle and right do not (needs larger correction)
-    else if(readings[0] > BLACK && readings[1] < WHITE && readings[2] < WHITE)
-    {    
-      passedIntersection = true;
-        tooFarLeft = false;
-        tooFarRight = true;
-        Serial.println("<<");
-        leftCount += 1;
-        if(leftCount == 8)
-        {
-          OFFSET += 1;
-          leftCount = 0;
-        }
-        if(dir == 1)
-        {
-            LeftAdjustFwd(200); 
-        }
-        if(dir == 2)
-        {
-            LeftAdjustBk(50);
-        }            
-    }
-    //if the right and middle sensor read the line and the left sensor does not
-    else if ( readings[0] < WHITE && readings[1] > BLACK && readings[2] > BLACK)
-    {
-      
-        tooFarRight = false;
-        tooFarLeft = true;
-        Serial.println(">");
-        rightCount += 1;
-        if(rightCount == 8)
-        {
-          OFFSET -= 1;
-          rightCount = 0;
-        }
-        if(dir == 1)
-        {
-            RightAdjustFwd(150);
-        }
-        if(dir == 2)
-        {
-            RightAdjustBk(30);
-        }  
-    }
-    //if the right sensor reads the line and the middle and left do not (needs larger correction)
-    else if(readings[0] < WHITE && readings[1] < WHITE && readings[2] > BLACK)
-    {
-        tooFarRight = false;
-        tooFarLeft = true;
-        Serial.println(">>");
-        rightCount += 1;
-        if(rightCount == 8)
-        {
-          OFFSET -= 1;
-          rightCount = 0;
-        }
-        if(dir == 1)
-        {
-            RightAdjustFwd(200);
-        }
-        if(dir == 2)
-        {
-            RightAdjustBk(50);
-        }  
     }
 }
 
-
-
-/********************************************************************************************************
- *                                               SETUP                                                  *                                                  
- ********************************************************************************************************/
-void setup() 
-{
-  //enable the serial port
-  Serial.begin(9600);
-  //Serial1.begin(9600);
-
-  //configure line following sensors
-  pinMode(LEFT_IR, INPUT);
-  pinMode(MIDDLE_IR, INPUT);
-  pinMode(RIGHT_IR, INPUT);
-
-  pinMode(LEFT_LED, OUTPUT);
-  pinMode(MIDDLE_LED, OUTPUT);
-  pinMode(RIGHT_LED, OUTPUT);
-
-  //configure voltage sensor reading
-  pinMode(VOLTAGE_SR, INPUT);
-
-  //configure motor pins as output
-  for(int i = 0; i < 6; i++)
-  {
-    pinMode(motorPins[i], OUTPUT);
-  }
-  
-  //turn motors off
-  Stop();
-}
-
-
-/********************************************************************************************************
- *                                                MAIN                                                  *                                                  
- ********************************************************************************************************/
-
-void loop() 
-{
-    //CheckVoltage();
-    //Serial.println(analogRead(VOLTAGE_SR));
-    //Serial.println(coordinateSpace[1][2]);
-  
-    //ReadLineSensors();
-    //Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
-    
-     // byte size_ = Serial.readBytes(input, INPUT_SIZE);
-     // Serial.println(input);
-      
-    ParseCommand();
-    ExecuteCommand();
-    
-//         if(Serial.available() > 0)
-//        {
-//            cmd = int(Serial.read());
-//            Serial.println(cmd);
-//        }
-}
-
-
-////////////////////////////////// FUNCTIONS NOT COMMITTED YET //////////////////////////////////
-
-void eepromReadTest()
-{
-    for(int i = 0; i < 100; i++)
-    {
-        if(i%10 == 0)
-        {
-            Serial.println();
-        }
-        Serial.print(EEPROM.read(i));
-        Serial.print(" ");
-    }
-    delay(2000);
-}
-
-void eepromWriteTest()
-{
-  bool finished = false;
-  while(!finished)
-  {
-    for(int i = 0; i < 10; i++)
-    {
-        for(int j = 0; j < 10; j++)
-        {
-            EEPROM.write(memAdr, coordinateSpace[i][j]);
-            memAdr += 1; 
-            //Serial.print(coordinateSpace[i][j]);
-            //Serial.print(" ");
-            //Serial.print(sizeof(coordinateSpace[i][j]));
-        }
-        Serial.println();
-    }
-    delay(2000);
-    finished = true;
-  }
-}
-
+/*                            MANUAL CONTROL          
+ *          executes a single command at a time from serial.
+ *          w = forward
+ *          s = backward
+ *          a = left
+ *          d = right
+ *          v = check voltage
+ *          r = read line sensors
+ *          q = exit manual control
+ *          z = dummy 
+ */
 void ManualControl()
 {  
     managed = false;
@@ -768,6 +663,154 @@ void ManualControl()
         }
     }
 }
+
+
+void LoadParameters()
+{
+    for(int i = 0; i <= 6; i+=2)
+    {
+        Serial.println(ReadIntEEPROM(i));
+    }
+    //OFFSET = EEPROM.read(memAdr++);
+    //SPEED = EEPROM.read(memAdr++);
+    //BLACK = EEPROM.read(memAdr++);
+    //WHITE = EEPROM.read(memAdr++);
+    
+}
+
+void SaveParameters()
+{
+    if(OFFSET != ReadIntEEPROM(0))
+    {
+        WriteIntEEPROM(0, OFFSET);
+    }
+    if(SPEED != ReadIntEEPROM(2))
+    {
+        WriteIntEEPROM(2, SPEED);      
+    }
+    if(BLACK != ReadIntEEPROM(4))
+    {
+        WriteIntEEPROM(4, BLACK);  
+    }
+    if(WHITE != ReadIntEEPROM(6))
+    {
+        WriteIntEEPROM(6, WHITE);
+    }
+}
+
+void WriteIntEEPROM(int adr, int val)
+{
+    byte low = ((val >> 0) & 0xFF);
+    byte high = ((val >> 8) & 0xFF);
+    EEPROM.write(adr, low);
+    EEPROM.write(adr+1, high);
+}
+
+unsigned int ReadIntEEPROM(int adr)
+{
+    byte low = EEPROM.read(adr);
+    byte high = EEPROM.read(adr+1);
+    return((low << 0) & 0xFF) + ((high << 8) & 0xFF);
+}
+
+
+/********************************************************************************************************
+ *                                               SETUP                                                  *                                                  
+ ********************************************************************************************************/
+void setup() 
+{
+    SaveParameters();
+    //SaveCoordinateSpace();
+    //LoadParameters();
+    //enable the serial port
+    Serial.begin(9600);
+    //Serial1.begin(9600);
+  
+    //configure line following sensors
+    pinMode(LEFT_IR, INPUT);
+    pinMode(MIDDLE_IR, INPUT);
+    pinMode(RIGHT_IR, INPUT);
+  
+    pinMode(LEFT_LED, OUTPUT);
+    pinMode(MIDDLE_LED, OUTPUT);
+    pinMode(RIGHT_LED, OUTPUT);
+  
+    //configure voltage sensor reading
+    pinMode(VOLTAGE_SR, INPUT);
+  
+    //configure motor pins as output
+    for(int i = 0; i < 6; i++)
+    {
+      pinMode(motorPins[i], OUTPUT);
+    }
+    
+    //turn motors off
+    Stop();
+}
+
+
+/********************************************************************************************************
+ *                                                MAIN                                                  *                                                  
+ ********************************************************************************************************/
+
+void loop() 
+{
+    ParseCommand();
+    ExecuteCommand();
+   //LoadParameters();
+   
+//   for(int i = 0; i < 10; i++)
+//   {
+//        Serial.println(EEPROM.read(i));
+//   }
+//   //Serial.println(ReadIntEEPROM(4));
+//   while(true) {}
+   
+}
+
+
+////////////////////////////////// FUNCTIONS NOT COMMITTED YET //////////////////////////////////
+
+
+
+void ReadCoordinateSpace()
+{
+    for(int i = 100; i < 200; i++)
+    {
+        if(i%10 == 0)
+        {
+            Serial.println();
+        }
+        Serial.print(EEPROM.read(i));
+        Serial.print(" ");
+    }
+    delay(2000);
+}
+
+void SaveCoordinateSpace()
+{
+  memAdr = 100;
+  bool finished = false;
+  while(!finished)
+  {
+    for(int i = 0; i < 10; i++)
+    {
+        for(int j = 0; j < 10; j++)
+        {
+            if(EEPROM.read(memAdr) != coordinateSpace[i+1][j+1])
+            {
+                 EEPROM.write(memAdr, coordinateSpace[i+1][j+1]);
+                 memAdr += 1;
+            }
+
+        }
+        Serial.println();
+    }
+    delay(2000);
+    finished = true;
+  }
+}
+
 
 //1-3_4-90_1-2_*
 
