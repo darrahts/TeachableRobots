@@ -402,7 +402,7 @@ void ExecuteCommand()
         {
             if(commands[i] == 1)
             {
-                Serial.println("fwd****************");
+                //Serial.println("fwd****************");
                 while(count != amounts[i])
                 {
                     Forward();
@@ -423,12 +423,12 @@ void ExecuteCommand()
             }
             else if(commands[i] == 3)
             {
-               Serial.println("left****************");
+               //Serial.println("left****************");
                 Left(int(2.166666 * amounts[i]));
             }
             else if(commands[i] == 4)
             {
-                Serial.println("right****************");
+                //Serial.println("right****************");
                 Right(int(2.166666 * amounts[i]));
             }
             else if(commands[i] == 5)
@@ -498,19 +498,19 @@ void AssertCourse()
         {
             atIntersection = false;
             passedIntersection = true;
-            Serial.println("-\\");
+            Serial.println("-");
         }
         state = 0;
     }
     //if the robot reaches an intersection
-    else if( (dir == 1 || dir == 2) && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
+    else if( onCourse && (dir == 1 || dir == 2) && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
     {
         if (count == 0 || passedIntersection == true)
         {
             atIntersection = true;
             passedIntersection = false;
             count += 1;      
-            Serial.println("intersection");      
+            Serial.println("+");      
         }
         state = 1;
         //Serial.println("here");
@@ -518,10 +518,10 @@ void AssertCourse()
     //if the left and middle sensor read the line and the right sensor does not               
     else if ( readings[0] > BLACK && readings[1] > BLACK && readings[2] < WHITE)
     {
-      passedIntersection = true;
+        passedIntersection = true;
         tooFarLeft = false;
         tooFarRight = true;
-        Serial.println("Go left!");
+        Serial.println("<");
         leftCount += 1;
         if(leftCount == 8)
         {
@@ -543,7 +543,7 @@ void AssertCourse()
       passedIntersection = true;
         tooFarLeft = false;
         tooFarRight = true;
-        Serial.println("Go left2!");
+        Serial.println("<<");
         leftCount += 1;
         if(leftCount == 8)
         {
@@ -565,7 +565,7 @@ void AssertCourse()
       
         tooFarRight = false;
         tooFarLeft = true;
-        Serial.println("Go right!");
+        Serial.println(">");
         rightCount += 1;
         if(rightCount == 8)
         {
@@ -586,7 +586,7 @@ void AssertCourse()
     {
         tooFarRight = false;
         tooFarLeft = true;
-        Serial.println("Go right2!");
+        Serial.println(">>");
         rightCount += 1;
         if(rightCount == 8)
         {
@@ -713,38 +713,38 @@ void ManualControl()
         if(Serial.available() > 0)
         {
             cmd = int(Serial.read());
-            Serial.println(cmd);
+            //Serial.println(cmd);
         }
         if(cmd == 120) //x
         {
             Stop();
-            Serial.println("x");
+            //Serial.println("x");
         }
         else if (cmd == 119) //w
         {
             Forward();
-            Serial.println("w");
+            //Serial.println("w");
         }
         else if (cmd == 115) //s
         {
             Backward();
-            Serial.println("s");
+            //Serial.println("s");
         }
         else if (cmd == 97) //a
         {
             Left(195);
-            Serial.println("a");
+            //Serial.println("a");
         }
         else if (cmd == 100) //d
         {
             Right(195);
-            Serial.println("d");
+            //Serial.println("d");
         }
         else if(cmd == 118) //v
         {
             CheckVoltage();
             cmd = 120;
-             Serial.println("v");
+            //Serial.println("v");
         }
         else if(cmd == 114) //r
         {
