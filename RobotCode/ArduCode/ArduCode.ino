@@ -37,7 +37,7 @@
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-int OFFSET = 26;  //memAdr 0
+int OFFSET = 25;  //memAdr 0
 int SPEED = 110;  //memAdr 2
 
 //line readings > BLACK = black line, < WHITE = white canvas
@@ -85,6 +85,9 @@ int count = 0;
 //used for eeprom addressing
 int memAdr = 0; 
 
+//used in ParseCommand, only execute a sequence of commands
+bool execute = true;
+
 //map of the coordinate space
 byte coordinateSpace[12][12] ={{1,1,1,1,1,1,1,1,1,1,1,1}, //memAdr 100+
                                {1,0,0,0,0,0,0,0,0,0,0,1},
@@ -122,9 +125,12 @@ bool rightTriggered = false;
 int leftCount = 0;
 int rightCount = 0;
 
-
 /********************************************************************************************************
- *                                               FUNCTIONS                                              *                                                  
+ *                                                  FUNCTIONS                                           *
+ ********************************************************************************************************/
+
+
+/*                                                   MOTORS                                       *                                                  
  ********************************************************************************************************/
 
 /*                                  STOP                
@@ -303,27 +309,83 @@ void RightAdjustBk(int duration) //needs fixed
   delay(duration);
 }
 
+/*                                                  COMMAND AND CONTROL                                      *                                                  
+ ********************************************************************************************************/
+
+
 /*                              PARSE COMMAND          
+ *              Reads input from the serial.
+ *              
+ *              For ManualFunctions input should be 2 char long
+ *              first char should be 'm' or 109 or 0x6D (consult ascii chart)
+ *              second char 'm' for ManualControl, 'v' for CheckVoltage,
+ *              'r' for ReadLineSensors, 'l' for LoadParameters,
+ *              's' for SaveParameters
+ *              
  *              Takes a command input in the form:
  *              move1-amount1_move2-amoount2_<etc>_*
  *        
  *              ex 1-2_5-0_* would be forward 2 then stop
  *        
- *              1 = forward    \___ amount from 0 to 20 in units
+ *              1 = forward    \___ amount from 0 to 10 in units
  *              2 = backward   /
  *              3 = left       \___ amount from 0 to 180 in degrees
  *              4 = right      /
- *              5 = stop  --------- input should be 6&0 
+ *              5 = stop  --------- 5-0 == stop
  *              * = end   --------- end of command sequence
  */
 void ParseCommand()
-{
+{    
     //check if theres anything in the stream
     if(Serial.available())
     {
         //read the stream into the input variable and returns
         //the number of bytes to size_
         byte size_ = Serial.readBytes(input, INPUT_SIZE);
+        
+        if(size_ == 2 && input[0] == 0x6D) //m for manual
+        {
+            if(input[1] == 0x6D) //m for ManualMode, same as 109
+            {
+                Serial.write(0x6D);
+                ManualControl();
+                Serial.write(0x6E);
+            }
+            if(input[1] == 0x76) //v for CheckVoltage, same as 118
+            {
+                CheckVoltage();
+                Serial.write(0x76);
+            }
+            if(input[1] == 0x72) //r for ReadLineSensors, same as 114
+            {
+                ReadLineSensors();
+                Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
+            }
+            if(input[1] == 115) //s for SaveParameters, same as 0x73
+            {
+                SaveParameters();
+                Serial.write(0x73);
+            }
+            if(input[1] == 'l') //l for LoadParameters
+            {
+                LoadParameters();
+            }
+            if(input[1] == 'e') //e for enter new parameter value
+            {
+                OFFSET = 20;
+            }
+            if(input[1] == 'p')
+            {
+                Serial.println(OFFSET);
+            }
+            execute = false;
+            input[0] = -1;
+            input[1] = -1;
+        }
+        else
+        {
+            execute = true;
+        }
         
         // Add the final 0 to end of the input string
         input[size_] = 0;
@@ -336,7 +398,7 @@ void ParseCommand()
         // Read each command pair 
         char* command = strtok(input, "_");
         
-        while (command != 0)
+        while (execute && command != 0)
         {
             // Split the input command in two values (command and amount)
             char* separator = strchr(command, '-');
@@ -362,7 +424,6 @@ void ParseCommand()
          commands[c] = 5;
          amounts[a] = 0;
     }
-    //Serial.println(commands[1]);
 }
 
 /*                              EXECUTE COMMAND          
@@ -373,13 +434,12 @@ void ParseCommand()
  */
 void ExecuteCommand()
 {
-    if(commands[0] > 0)
+    if(execute && commands[0] > 0)
     {
         for(int i = 0; i < SEQUENCE_LENGTH; i++)
         {
             if(commands[i] == 1)
             {
-                //Serial.println("fwd****************");
                 while(count != amounts[i])
                 {
                     Forward();
@@ -390,7 +450,6 @@ void ExecuteCommand()
             }
             else if(commands[i] == 2)
             {
-                //Serial.println("bk");
                 while(count != amounts[i])
                 {
                     Backward();
@@ -400,24 +459,15 @@ void ExecuteCommand()
             }
             else if(commands[i] == 3)
             {
-               //Serial.println("left****************");
                 Left(int(2.166666 * amounts[i]));
             }
             else if(commands[i] == 4)
             {
-                //Serial.println("right****************");
                 Right(int(2.166666 * amounts[i]));
             }
             else if(commands[i] == 5)
             {
-                Serial.println("stop");
                 Stop();
-            }
-            else if(commands[i] == 6)
-            {
-                Serial.println("entering ManualControl mode.");
-                ManualControl();
-                Serial.println("exited ManualControl mode.");
             }
             else
             {
@@ -429,39 +479,68 @@ void ExecuteCommand()
     }
 }
 
-/*                            READ LINE SENSORS          
- *        Takes an analog reading of the IR sensors and computes
- *        course correction movements if necessary
+/*                            MANUAL CONTROL          
+ *          executes a single command at a time from serial.
+ *          w = forward
+ *          s = backward
+ *          a = left
+ *          d = right
+ *          q = exit manual control
+ *          z = dummy 
  */
-void ReadLineSensors()
-{
-    digitalWrite(LEFT_LED, HIGH);
-    digitalWrite(RIGHT_LED, HIGH);
-    digitalWrite(MIDDLE_LED, HIGH);
-    delay(5);
-    readings[0] = analogRead(LEFT_IR);
-    readings[1] = analogRead(MIDDLE_IR);
-    readings[2] = analogRead(RIGHT_IR);
-    digitalWrite(LEFT_LED, LOW);
-    digitalWrite(RIGHT_LED, LOW);
-    digitalWrite(MIDDLE_LED, LOW);
-    //Serial.println("read");
+void ManualControl()
+{  
+    managed = false;
+    while(!managed)  
+    {
+        //ReadLineSensors();
+        //AssertCourse();
+        if(Serial.available() > 0)
+        {
+            cmd = int(Serial.read());
+        
+            if(cmd == 120) //x
+            {
+                Stop();
+                //Serial.write('x');
+            }
+            else if (cmd == 119) //w
+            {
+                Forward();
+                //Serial.write('w');
+            }
+            else if (cmd == 115) //s
+            {
+                Backward();
+                //Serial.write('s');
+            }
+            else if (cmd == 97) //a
+            {
+                Left(195);
+                //Serial.write('a');
+            }
+            else if (cmd == 100) //d
+            {
+                Right(195);
+                //Serial.write('d');
+            }
+            else if(cmd == 113) //q
+            {
+                managed = true;
+                //Serial.write('q');
+            }
+            else if(cmd == 122) //z
+            {
+                //Serial.write('z');
+            }
+            else
+            {
+                Stop();
+                //Serial.write('u');
+            }
+        }
+    }
 }
-
-/*                            CHECK VOLTAGE          
- *        Reads the VIN voltage (i.e. direct from battery)
- *        5.5 is an approximation from the voltage divider
- *        analog read gives 0-1024 so need to divide by 1024
- *        12200 = r1 + r2 2200 = r2
- */
-void CheckVoltage()
-{
-    double v = (analogRead(VOLTAGE_SR) * 5.54) / 1024.0;
-    voltage = (v * 12200.0 / 2200.0);
-    Serial.println(voltage);
-}
-
-
 
 /*                           ASSERT COURSE          
  *          Ensures the robot follows the line and tracks the number
@@ -480,7 +559,8 @@ void AssertCourse()
             {
                 atIntersection = false;
                 passedIntersection = true;
-                Serial.println("-");
+                //Serial.println("-");
+                Serial.write('-');
             }
             state = 0;
         }
@@ -492,7 +572,8 @@ void AssertCourse()
                 atIntersection = true;
                 passedIntersection = false;
                 count += 1;      
-                Serial.println("+");      
+                //Serial.println("+");
+                Serial.write('+');    
             }
             state = 1;
             //Serial.println("here");
@@ -503,7 +584,8 @@ void AssertCourse()
             passedIntersection = true;
             tooFarLeft = false;
             tooFarRight = true;
-            Serial.println("<");
+            //Serial.println("<");
+            Serial.write('<');
             leftCount += 1;
             if(leftCount == 8)
             {
@@ -525,7 +607,8 @@ void AssertCourse()
           passedIntersection = true;
             tooFarLeft = false;
             tooFarRight = true;
-            Serial.println("<<");
+            //Serial.println("<<");
+            Serial.write(new byte[2]{'<','<'}, 2);
             leftCount += 1;
             if(leftCount == 8)
             {
@@ -547,7 +630,8 @@ void AssertCourse()
           
             tooFarRight = false;
             tooFarLeft = true;
-            Serial.println(">");
+            //Serial.println(">");
+            Serial.write('>');
             rightCount += 1;
             if(rightCount == 8)
             {
@@ -568,7 +652,8 @@ void AssertCourse()
         {
             tooFarRight = false;
             tooFarLeft = true;
-            Serial.println(">>");
+            //Serial.println(">>");
+            Serial.write(new byte[2]{'>','>'}, 2);
             rightCount += 1;
             if(rightCount == 8)
             {
@@ -587,97 +672,63 @@ void AssertCourse()
     }
 }
 
-/*                            MANUAL CONTROL          
- *          executes a single command at a time from serial.
- *          w = forward
- *          s = backward
- *          a = left
- *          d = right
- *          v = check voltage
- *          r = read line sensors
- *          q = exit manual control
- *          z = dummy 
+/*                                                OTHER FUNCTIONS
+ ************************************************************************************************************/
+
+/*                            READ LINE SENSORS          
+ *        Takes an analog reading of the IR sensors and computes
+ *        course correction movements if necessary
  */
-void ManualControl()
-{  
-    managed = false;
-    while(true)  
-    {
-        //ReadLineSensors();
-        //AssertCourse();
-        if(Serial.available() > 0)
-        {
-            cmd = int(Serial.read());
-            //Serial.println(cmd);
-        }
-        if(cmd == 120) //x
-        {
-            Stop();
-            //Serial.println("x");
-        }
-        else if (cmd == 119) //w
-        {
-            Forward();
-            //Serial.println("w");
-        }
-        else if (cmd == 115) //s
-        {
-            Backward();
-            //Serial.println("s");
-        }
-        else if (cmd == 97) //a
-        {
-            Left(195);
-            //Serial.println("a");
-        }
-        else if (cmd == 100) //d
-        {
-            Right(195);
-            //Serial.println("d");
-        }
-        else if(cmd == 118) //v
-        {
-            CheckVoltage();
-            cmd = 120;
-            //Serial.println("v");
-        }
-        else if(cmd == 114) //r
-        {
-            ReadLineSensors();
-            Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
-            cmd = 120;  
-            
-        }
-        else if(cmd == 113) //q
-        {
-            managed = true;
-            break;
-        }
-        else if(cmd == 122) //z
-        {
-            Serial.println("z");
-        }
-        else
-        {
-            Stop();
-        }
-    }
+void ReadLineSensors()
+{
+    digitalWrite(LEFT_LED, HIGH);
+    digitalWrite(RIGHT_LED, HIGH);
+    digitalWrite(MIDDLE_LED, HIGH);
+    delay(5);
+    readings[0] = analogRead(LEFT_IR);
+    readings[1] = analogRead(MIDDLE_IR);
+    readings[2] = analogRead(RIGHT_IR);
+    digitalWrite(LEFT_LED, LOW);
+    digitalWrite(RIGHT_LED, LOW);
+    digitalWrite(MIDDLE_LED, LOW);
 }
 
+/*                            CHECK VOLTAGE          
+ *        Reads the VIN voltage (i.e. direct from battery)
+ *        5.5 is an approximation from the voltage divider
+ *        analog read gives 0-1024 so need to divide by 1024
+ *        12200 = r1 + r2 2200 = r2
+ */
+void CheckVoltage()
+{
+    double v = (analogRead(VOLTAGE_SR) * 5.54) / 1024.0;
+    voltage = (v * 12200.0 / 2200.0);
+    Serial.println(voltage);
+}
 
+/*                              LOAD PARAMETERS
+ *                loads given parameters from EEPROM
+ */
 void LoadParameters()
 {
-    for(int i = 0; i <= 6; i+=2)
-    {
-        Serial.println(ReadIntEEPROM(i));
-    }
-    //OFFSET = EEPROM.read(memAdr++);
-    //SPEED = EEPROM.read(memAdr++);
-    //BLACK = EEPROM.read(memAdr++);
-    //WHITE = EEPROM.read(memAdr++);
-    
+    memAdr = 0;
+    OFFSET = ReadIntEEPROM(memAdr);
+    Serial.println(OFFSET);
+    memAdr += 2;
+    SPEED = ReadIntEEPROM(memAdr);
+    Serial.println(SPEED);
+    memAdr += 2;
+    BLACK = ReadIntEEPROM(memAdr);
+    Serial.println(BLACK);
+    memAdr += 2;
+    WHITE = ReadIntEEPROM(memAdr);
+    Serial.println(WHITE);
+    memAdr += 2;
 }
 
+/*                              SAVE PARAMETERS
+ *                saves given parameters to EEPROM
+ */
 void SaveParameters()
 {
     if(OFFSET != ReadIntEEPROM(0))
@@ -710,7 +761,7 @@ unsigned int ReadIntEEPROM(int adr)
 {
     byte low = EEPROM.read(adr);
     byte high = EEPROM.read(adr+1);
-    return((low << 0) & 0xFF) + ((high << 8) & 0xFF);
+    return((low << 0) & 0xFF) + ((high << 8) & 0xFF00);
 }
 
 
@@ -719,9 +770,9 @@ unsigned int ReadIntEEPROM(int adr)
  ********************************************************************************************************/
 void setup() 
 {
-    SaveParameters();
-    //SaveCoordinateSpace();
-    //LoadParameters();
+    //load saved parameters from eeprom
+    LoadParameters();
+    
     //enable the serial port
     Serial.begin(9600);
     //Serial1.begin(9600);
@@ -757,15 +808,6 @@ void loop()
 {
     ParseCommand();
     ExecuteCommand();
-   //LoadParameters();
-   
-//   for(int i = 0; i < 10; i++)
-//   {
-//        Serial.println(EEPROM.read(i));
-//   }
-//   //Serial.println(ReadIntEEPROM(4));
-//   while(true) {}
-   
 }
 
 
@@ -789,6 +831,7 @@ void ReadCoordinateSpace()
 
 void SaveCoordinateSpace()
 {
+  int temp = memAdr;
   memAdr = 100;
   bool finished = false;
   while(!finished)
@@ -809,6 +852,7 @@ void SaveCoordinateSpace()
     delay(2000);
     finished = true;
   }
+  memAdr = temp;
 }
 
 
