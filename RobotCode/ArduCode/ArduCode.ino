@@ -356,7 +356,7 @@ void ParseCommand()
                 CheckVoltage();
                 Serial.write(0x76);
             }
-            if(input[1] == 0x72) //r for ReadLineSensors, same as 114
+            if(input[1] == 114) //r for ReadLineSensors, same as 0x72
             {
                 ReadLineSensors();
                 Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
