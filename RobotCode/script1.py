@@ -2,6 +2,7 @@
 import serial
 import time
 import threading
+import sys
 
 def TryParseInt(val):
     try:
@@ -37,19 +38,18 @@ class Controller(object):
                         print(":", end = "")
                     else:
                         print(">", end = "");
+                    sys.stdout.flush()
 
 
     def ManualMode(self):
-        self.mode = 1
         self.sequence = "mm"
         time.sleep(.1)
         self.arduino.write(bytes(self.sequence.encode('ascii')))
-        time.sleep(1.5)
+        #time.sleep(1.5)
         while(True):
             time.sleep(.1)
             self.userInput = input(">")
             time.sleep(.1)
-            print(bytes(self.userInput.encode('ascii')))
             self.arduino.write(bytes(self.userInput.encode('ascii')))
             if(self.userInput == "q"):
                 self.userInput = ""
@@ -59,16 +59,17 @@ class Controller(object):
          while(not self.finished):
             self.userInput = input(":")
             if(self.userInput == "manual"):
+                self.mode = 1
                 self.ManualMode()
+                self.mode = 0
             elif(self.userInput == "Q"):
                 self.finished = True
                 self.responseThread.join()
                 break
             else:
-                self.mode = 0
                 self.GenerateCommandSequence()
                 if(self.validSequence):
-                    print("sent: " + self.sequence)
+                    #print("sent: " + self.sequence)
                     self.arduino.write(bytes(self.sequence.encode('ascii')))
             self.userInput = ""
             self.sequence = ""
