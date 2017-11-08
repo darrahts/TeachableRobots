@@ -78,6 +78,8 @@ try:
     addr = input("enter the address to connect to: ")
     if(addr == "robot1"):
         addr = "192.168.1.40"
+    if(addr = "robot2"):
+        addr = "192.168.1.41"
         print(addr)
     comm.setupLine(addr)
     while(comm.finished == False):

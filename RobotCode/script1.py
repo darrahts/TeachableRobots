@@ -2,6 +2,7 @@
 import serial
 import time
 import threading
+import sys
 
 def TryParseInt(val):
     try:
@@ -15,7 +16,8 @@ class Controller(object):
     def __init__(self, port):
         self.responseThread = threading.Thread(target=self.GetResponse)
         self.arduino = serial.Serial(port, 9600)
-        
+
+        self.mode = 0 #0 for auto, 1 for manual
         self.userInput = ""
         self.tokens = []
         self.cmds = []
@@ -27,18 +29,35 @@ class Controller(object):
         ardIn = ""
         while(not self.finished):
             if(self.arduino.inWaiting() > 0):
+<<<<<<< HEAD
                 ardIn = self.arduino.readline().decode("ascii")
                 ardIn = ardIn.replace("\r\n", "")
                 print("   ^ " + ardIn + " ^")
                 print(":", end = '')
+=======
+                ardIn = self.arduino.read().decode("ascii")
+                ardIn = ardIn.replace("\r", "")
+                ardIn = ardIn.replace("\n", "")
+                if(ardIn != ""):
+                    print("   ^ " + ardIn + " ^")
+                    if(self.mode == 0):
+                        print(":", end = "")
+                    else:
+                        print(">", end = "");
+                    sys.stdout.flush()
+>>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
 
 
     def ManualMode(self):
-        self.sequence = "6-0"
+        self.sequence = "mm"
         time.sleep(.1)
         self.arduino.write(bytes(self.sequence.encode('ascii')))
+<<<<<<< HEAD
         time.sleep(1.5)
         self.userInput = ""
+=======
+        #time.sleep(1.5)
+>>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
         while(True):
             time.sleep(.1)
             self.userInput = input(">")
@@ -48,12 +67,13 @@ class Controller(object):
                 self.userInput = ""
                 break
 
-
-    def SequenceMode(self):
-        while(not self.finished):
+    def Run(self):
+         while(not self.finished):
             self.userInput = input(":")
             if(self.userInput == "manual"):
+                self.mode = 1
                 self.ManualMode()
+                self.mode = 0
             elif(self.userInput == "Q"):
                 self.finished = True
                 self.responseThread.join()
@@ -61,7 +81,7 @@ class Controller(object):
             else:
                 self.GenerateCommandSequence()
                 if(self.validSequence):
-                    print("sent: " + self.sequence)
+                    #print("sent: " + self.sequence)
                     self.arduino.write(bytes(self.sequence.encode('ascii')))
             self.userInput = ""
             self.sequence = ""
@@ -109,11 +129,10 @@ class Controller(object):
 
 if (__name__ == "__main__"):
     try:
-        c = Controller("/dev/ttyACM0")
-    except:
         try:
-            c = Controller("/dev/ttyACM1")
+            c = Controller("/dev/ttyACM0")
         except:
+<<<<<<< HEAD
             print("couldnt open arduino port.")
 
     c.arduino.flush()
@@ -121,6 +140,20 @@ if (__name__ == "__main__"):
     c.SequenceMode()
     c.arduino.close()
     print("finished.")
+=======
+            try:
+                c = Controller("/dev/ttyACM1")
+            except:
+                print("couldnt open arduino port.")
+
+        c.responseThread.start()
+        c.Run()
+        c.arduino.close()
+    except:
+        print("error.")
+    finally:
+        print("finished.")
+>>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
 
 
 

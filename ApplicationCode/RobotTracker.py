@@ -200,7 +200,7 @@ class Robot(GridSpace):
            
             f = super().ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
-            if(abs(self.rLoc[0] - self.goal[0]) < .5 and abs(self.rLoc[1] - self.goal[1] < .5)):
+            if(abs(self.rLoc[0] - self.goal[0]) < .3 and abs(self.rLoc[1] - self.goal[1] < .3)):
                 self.goalFound = True
                 c +=1
 
