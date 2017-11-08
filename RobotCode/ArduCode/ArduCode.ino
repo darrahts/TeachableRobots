@@ -133,7 +133,7 @@ bool onCourse = false;
 bool tooFarRight = false;
 bool tooFarLeft = false;
 bool atIntersection = false;
-bool passedIntersection = true;
+bool passedIntersection = false;
 bool turning = false;
 bool finishedTurning = false;
 bool managed = true;
@@ -494,6 +494,8 @@ void AssertCourse()
     if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
     {
         onCourse = true;
+        passedIntersection = true;
+        
         if(atIntersection == true)
         {
             atIntersection = false;
@@ -503,9 +505,9 @@ void AssertCourse()
         state = 0;
     }
     //if the robot reaches an intersection
-    else if( onCourse && (dir == 1 || dir == 2) && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
+    else if( onCourse && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
     {
-        if (count == 0 || passedIntersection == true)
+        if (passedIntersection == true)
         {
             atIntersection = true;
             passedIntersection = false;

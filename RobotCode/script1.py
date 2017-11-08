@@ -30,6 +30,7 @@ class Controller(object):
                 ardIn = self.arduino.readline().decode("ascii")
                 ardIn = ardIn.replace("\r\n", "")
                 print("   ^ " + ardIn + " ^")
+                print(":", end = '')
 
 
     def ManualMode(self):
@@ -37,13 +38,14 @@ class Controller(object):
         time.sleep(.1)
         self.arduino.write(bytes(self.sequence.encode('ascii')))
         time.sleep(1.5)
+        self.userInput = ""
         while(True):
             time.sleep(.1)
-            userInput = input(">")
+            self.userInput = input(">")
             time.sleep(.1)
             self.arduino.write(bytes(self.userInput.encode('ascii')))
-            if(userInput == "q"):
-                userInput = ""
+            if(self.userInput == "q"):
+                self.userInput = ""
                 break
 
 
@@ -88,7 +90,7 @@ class Controller(object):
             elif(val == "stop"):
                 x = "*"
             elif(TryParseInt(val) != False):
-                x = val
+                x = val + "_"
             else:
                 print("couldn't parse the commands. check your entry.")
                 self.validSequence = False
@@ -114,6 +116,7 @@ if (__name__ == "__main__"):
         except:
             print("couldnt open arduino port.")
 
+    c.arduino.flush()
     c.responseThread.start()
     c.SequenceMode()
     c.arduino.close()
