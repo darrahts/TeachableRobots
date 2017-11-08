@@ -711,34 +711,6 @@ void CheckVoltage()
  */
 void LoadParameters()
 {
-<<<<<<< HEAD
-    //if the robot is on course
-    if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
-    {
-        onCourse = true;
-        passedIntersection = true;
-        
-        if(atIntersection == true)
-        {
-            atIntersection = false;
-            passedIntersection = true;
-            Serial.println("-");
-        }
-        state = 0;
-    }
-    //if the robot reaches an intersection
-    else if( onCourse && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
-    {
-        if (passedIntersection == true)
-        {
-            atIntersection = true;
-            passedIntersection = false;
-            count += 1;      
-            Serial.println("+");      
-        }
-        state = 1;
-        //Serial.println("here");
-=======
     memAdr = 0;
     OFFSET = ReadIntEEPROM(memAdr);
     Serial.println(OFFSET);
@@ -762,7 +734,6 @@ void SaveParameters()
     if(OFFSET != ReadIntEEPROM(0))
     {
         WriteIntEEPROM(0, OFFSET);
->>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
     }
     if(SPEED != ReadIntEEPROM(2))
     {

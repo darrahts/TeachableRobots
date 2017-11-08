@@ -29,12 +29,6 @@ class Controller(object):
         ardIn = ""
         while(not self.finished):
             if(self.arduino.inWaiting() > 0):
-<<<<<<< HEAD
-                ardIn = self.arduino.readline().decode("ascii")
-                ardIn = ardIn.replace("\r\n", "")
-                print("   ^ " + ardIn + " ^")
-                print(":", end = '')
-=======
                 ardIn = self.arduino.read().decode("ascii")
                 ardIn = ardIn.replace("\r", "")
                 ardIn = ardIn.replace("\n", "")
@@ -45,19 +39,12 @@ class Controller(object):
                     else:
                         print(">", end = "");
                     sys.stdout.flush()
->>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
 
 
     def ManualMode(self):
         self.sequence = "mm"
         time.sleep(.1)
         self.arduino.write(bytes(self.sequence.encode('ascii')))
-<<<<<<< HEAD
-        time.sleep(1.5)
-        self.userInput = ""
-=======
-        #time.sleep(1.5)
->>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
         while(True):
             time.sleep(.1)
             self.userInput = input(">")
@@ -132,15 +119,6 @@ if (__name__ == "__main__"):
         try:
             c = Controller("/dev/ttyACM0")
         except:
-<<<<<<< HEAD
-            print("couldnt open arduino port.")
-
-    c.arduino.flush()
-    c.responseThread.start()
-    c.SequenceMode()
-    c.arduino.close()
-    print("finished.")
-=======
             try:
                 c = Controller("/dev/ttyACM1")
             except:
@@ -153,9 +131,6 @@ if (__name__ == "__main__"):
         print("error.")
     finally:
         print("finished.")
->>>>>>> 0336ce209d9f46d44596484ea52c02c14cd42929
-
-
 
 
 
