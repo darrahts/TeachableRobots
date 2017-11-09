@@ -32,6 +32,11 @@ class Controller(object):
                 ardIn = self.arduino.read().decode("ascii")
                 ardIn = ardIn.replace("\r", "")
                 ardIn = ardIn.replace("\n", "")
+                if(ardIn == '~'):
+                    time.sleep(.25)
+                    ardIn = self.arduino.readline().decode("ascii")
+                    ardIn = ardIn.replace("\r", "")
+                    ardIn = ardIn.replace("\n", "")
                 if(ardIn != ""):
                     print("   ^ " + ardIn + " ^")
                     if(self.mode == 0):
@@ -41,10 +46,12 @@ class Controller(object):
                     sys.stdout.flush()
 
 
+    def Write(self, toWrite):
+        self.arduino.write(bytes(toWrite.encode('ascii')))
+        return
+
+
     def ManualMode(self):
-        self.sequence = "mm"
-        time.sleep(.1)
-        self.arduino.write(bytes(self.sequence.encode('ascii')))
         while(True):
             time.sleep(.1)
             self.userInput = input(">")
@@ -55,12 +62,17 @@ class Controller(object):
                 break
 
     def Run(self):
-         while(not self.finished):
+        self.Write("ml") #load parameters before beginning
+        while(not self.finished):
             self.userInput = input(":")
-            if(self.userInput == "manual"):
+            if(self.userInput == "mm"):
                 self.mode = 1
+                self.arduino.write(bytes(self.userInput.encode('ascii')))
+                time.sleep(.5)
                 self.ManualMode()
                 self.mode = 0
+            elif(self.userInput == "mv" or self.userInput == "md" or self.userInput == "mr" or self.userInput == "ml" or self.userInput == "ms"):
+                self.arduino.write(bytes(self.userInput.encode('ascii')))
             elif(self.userInput == "Q"):
                 self.finished = True
                 self.responseThread.join()
@@ -126,10 +138,11 @@ if (__name__ == "__main__"):
 
         c.responseThread.start()
         c.Run()
-        c.arduino.close()
     except:
         print("error.")
     finally:
+        c.Write("ms") #save parameters before finishing
+        c.arduino.close()
         print("finished.")
 
 

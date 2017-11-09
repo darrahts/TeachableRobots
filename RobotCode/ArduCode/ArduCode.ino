@@ -353,12 +353,15 @@ void ParseCommand()
             }
             if(input[1] == 0x76) //v for CheckVoltage, same as 118
             {
+                //Serial.write(0x7E);
                 CheckVoltage();
-                Serial.write(0x76);
+                //Serial.write(0x76);
             }
             if(input[1] == 114) //r for ReadLineSensors, same as 0x72
             {
                 ReadLineSensors();
+                Serial.write(0x7E);
+                delay(50);
                 Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
             }
             if(input[1] == 115) //s for SaveParameters, same as 0x73
@@ -370,9 +373,9 @@ void ParseCommand()
             {
                 LoadParameters();
             }
-            if(input[1] == 'e') //e for enter new parameter value
+            if(input[1] == 'd') //d for display parameters (ShowParameters())
             {
-                OFFSET = 20;
+                ShowParameters();
             }
             if(input[1] == 'p')
             {
@@ -436,6 +439,7 @@ void ExecuteCommand()
 {
     if(execute && commands[0] > 0)
     {
+        onCourse = false;
         for(int i = 0; i < SEQUENCE_LENGTH; i++)
         {
             if(commands[i] == 1)
@@ -554,19 +558,20 @@ void AssertCourse()
         //if the robot is on course
         if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
         {
+            //Serial.println("here");
             onCourse = true;
             if(atIntersection == true)
             {
-                atIntersection = false;
-                passedIntersection = true;
-                //Serial.println("-");
                 Serial.write('-');
             }
+            atIntersection = false;
+            passedIntersection = true;
             state = 0;
         }
         //if the robot reaches an intersection
         else if( onCourse && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
         {
+            //Serial.println("after");
             if (count == 0 || passedIntersection == true)
             {
                 atIntersection = true;
@@ -703,6 +708,8 @@ void CheckVoltage()
 {
     double v = (analogRead(VOLTAGE_SR) * 5.54) / 1024.0;
     voltage = (v * 12200.0 / 2200.0);
+    Serial.write(0x7E);
+    delay(50);
     Serial.println(voltage);
 }
 
@@ -713,17 +720,28 @@ void LoadParameters()
 {
     memAdr = 0;
     OFFSET = ReadIntEEPROM(memAdr);
-    Serial.println(OFFSET);
     memAdr += 2;
     SPEED = ReadIntEEPROM(memAdr);
-    Serial.println(SPEED);
     memAdr += 2;
     BLACK = ReadIntEEPROM(memAdr);
-    Serial.println(BLACK);
     memAdr += 2;
     WHITE = ReadIntEEPROM(memAdr);
-    Serial.println(WHITE);
     memAdr += 2;
+}
+
+/*                              SHOW PARAMETERS
+ *                writes the parameters to serial
+ */
+void ShowParameters()
+{
+    Serial.write(0x7E);
+    Serial.print(OFFSET);
+    Serial.print("\t");
+    Serial.print(SPEED);
+    Serial.print("\t");
+    Serial.print(BLACK);
+    Serial.print("\t");
+    Serial.println(WHITE);
 }
 
 /*                              SAVE PARAMETERS
