@@ -15,7 +15,7 @@ class Communicate(object):
     
     def setupLine(self, addr):
         self.address = addr
-        if self.address is "":
+        if self.address is "": #i.e. server on raspberry pi
             try:
                 self.connection.bind((self.address, self.port))
                 self.connection.listen(1)
@@ -24,7 +24,7 @@ class Communicate(object):
             except socket.error as msg:
                 print(msg)
         else:
-            self.connection.connect((self.address, self.port))
+            self.connection.connect((self.address, self.port)) # i.e. client
         self.getMessagesThread.start()
         return
 
