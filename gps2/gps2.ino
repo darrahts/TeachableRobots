@@ -14,7 +14,6 @@ int match[5] = {71,80,82,77,67};
 //contains one reading 
 String data = "";
 
-
 //largest bounding boxes of known location in format {minLat, maxLat, minLon, maxLon}
 float knownLocations[8][4] = { {3608.86,3608.89,8638.29,8638.32}, //Loc_1
                                {3614.03,3614.09,8670.33,8670.40}, //Loc_2
@@ -25,6 +24,9 @@ float knownLocations[8][4] = { {3608.86,3608.89,8638.29,8638.32}, //Loc_1
                                {3621.58,3621.72,8659.84,8660.00}, //Loc_5
                                {3619.04,3619.10,8662.78,8662.88}  //Loc_6
                                };
+
+//checks if gps is at a new location or known location, used for logic in saving the data
+bool newLocation = true;
 
 //nmea string gives 'A' for valid and 'V' for invalid
 bool valid = false;
@@ -38,6 +40,9 @@ char floatBuffer[64];
 //used for timer functionality with reading frequency
 long t1 = millis();
 long t2 = millis();
+
+//time between polling the gps in ms
+unsigned long delayTime = 300000;
 
 //start of the memory address, memAdr = 0 : value of next memAdr, persistant through power cycles
 //2 = atLoc_1, 4 = atLoc_2, 6 = atLoc_3, 8 = atLoc_4, 10 = atLoc_5, 12 = atLoc_6
@@ -71,8 +76,6 @@ byte atLoc_6 = 0;
 
 
 
-
-
 /************************************************************************************************************/
 //$GPRMC,200215.00,A,3608.71203,N,08647.59642,W,0.362,82.71,131117,,,A*4C
 //       hour     valid     lat          long     speed       date
@@ -95,37 +98,35 @@ byte atLoc_6 = 0;
 /*                                                                    RUN                                   */
 void Run()
 {
+    Serial.println("running.");
     int retryCounter = 0;
-    int delayTime = 60000;
-    t2 = millis();
-    if(t2 - t1 > delayTime)
+    for(int i = 0; i < 3; i++)
     {
-        t1 = t2;
-        for(int i = 0; i < 3; i++)
-        {
-            ReadGPS();
-            if(valid)
-            {
-                lines[i] = {hour, day, lat, lon};
-                delay(1000);    
-            }
-            else 
-            {
-              Serial.println("data not valid.");
-              PrintString(true);
-              //stay in the for loop to keep trying for a valid reading
-              i--;
-              retryCounter++;
-            }
-            if(retryCounter > 10)
-            {
-                break;
-            }
-        }
+        ReadGPS();
+        Serial.println("read gps.");
         if(valid)
         {
-            if(SaveData()) Serial.print("Saved");
+            lines[i] = {hour, day, lat, lon};
+            delay(1000);
+            PrintString(false);
         }
+        else 
+        {
+          Serial.println("data not valid.");
+          PrintString(true);
+          //stay in the for loop to keep trying for a valid reading
+          i--;
+          retryCounter++;
+        }
+        if(retryCounter > 10)
+        {
+            Serial.println("couldn't poll gps.");
+            break;
+        }
+    }
+    if(valid)
+    {
+        if(SaveData()) Serial.println("Saved");
     }
 }
 
@@ -240,14 +241,16 @@ bool ProcessData()
 /*                                                               COUNT LOCATIONS                            */
 void CountKnownLocations(float latAvg, float lonAvg)
 {
- for(int i = 0; i < 8; i++)
+      newLocation = true;
+      for(int i = 0; i < 8; i++)
       {
            if(latAvg > knownLocations[i][0] && latAvg < knownLocations[i][1] && lonAvg > knownLocations[i][2] && lonAvg < knownLocations[i][3])
           {
               if(i == 0) 
               {
                   atLoc_1 += 1;
-                  Serial.println("at loc1");
+                  Serial.print("at loc1   ");
+                  Serial.println(atLoc_1);
               }
                if(i == 1) 
               {
@@ -284,13 +287,14 @@ void CountKnownLocations(float latAvg, float lonAvg)
                   atLoc_6 += 1;
                   Serial.println("at loc6");
               }
+              newLocation = false;
           }
       }
 }
  
 /************************************************************************************************************/
 /*                                                                LOAD DATA                                 */
-void LoadData()
+void LoadData(bool printLogs)
 {
     atLoc_1 = LoadIntEEPROM(2);
     atLoc_2 = LoadIntEEPROM(4);
@@ -298,30 +302,40 @@ void LoadData()
     atLoc_4 = LoadIntEEPROM(8);
     atLoc_5 = LoadIntEEPROM(10);
     atLoc_6 = LoadIntEEPROM(12);
+    
 
-    memAdr = 14;
-    for(int i = 0; i < 4095; i++)
+    if(printLogs)
     {
-          EEPROM.get(memAdr, hour);
-          memAdr += 1;
-          EEPROM.get(memAdr, day);
-          memAdr += 1;
-          EEPROM.get(memAdr, lat);
-          memAdr += 4;
-          EEPROM.get(memAdr, lon);
-          memAdr += 4;
-
-          if(day <= 0)
-          {
-              break;
-          }
-          else
-          {
-              Serial.print(hour); Serial.print(" ");
-              Serial.print(day);  Serial.print(" ");
-              Serial.print(lat);  Serial.print(" ");
-              Serial.print(lon);  Serial.println();             
-          }
+        Serial.println(atLoc_1);
+        Serial.println(atLoc_2);
+        Serial.println(atLoc_3);
+        Serial.println(atLoc_4);
+        Serial.println(atLoc_5);
+        Serial.println(atLoc_6);
+        memAdr = 14;
+        for(int i = 0; i < 4095; i++)
+        {
+              EEPROM.get(memAdr, hour);
+              memAdr += 1;
+              EEPROM.get(memAdr, day);
+              memAdr += 1;
+              EEPROM.get(memAdr, lat);
+              memAdr += 4;
+              EEPROM.get(memAdr, lon);
+              memAdr += 4;
+    
+              if(day <= 0)
+              {
+                  break;
+              }
+              else
+              {
+                  Serial.print(hour); Serial.print(" ");
+                  Serial.print(day);  Serial.print(" ");
+                  Serial.print(lat);  Serial.print(" ");
+                  Serial.print(lon);  Serial.println();             
+              }
+        }
     }
 }
 
@@ -360,32 +374,27 @@ bool SaveData()
           
           CountKnownLocations(latAvg, lonAvg);
 
-          //increase counter for known locations
-          if(atLoc_1 != LoadIntEEPROM(2)) SaveIntEEPROM(2, atLoc_1);
-          if(atLoc_2 != LoadIntEEPROM(4)) SaveIntEEPROM(4, atLoc_2);
-          if(atLoc_3 != LoadIntEEPROM(6)) SaveIntEEPROM(6, atLoc_3);
-          if(atLoc_4 != LoadIntEEPROM(8)) SaveIntEEPROM(8, atLoc_4);
-          if(atLoc_5 != LoadIntEEPROM(10)) SaveIntEEPROM(10, atLoc_5);
-          if(atLoc_6 != LoadIntEEPROM(12)) SaveIntEEPROM(12, atLoc_6);
-          
-          
-          EEPROM.put(memAdr, lines[0]._hour);
-          memAdr += 1;
-          EEPROM.put(memAdr, lines[0]._day);
-          memAdr += 1;
-          EEPROM.put(memAdr, latAvg);
-          memAdr += 4;
-          EEPROM.put(memAdr, lonAvg);
-          memAdr += 4;
-          Serial.print(lines[0]._hour); 
-          Serial.print(" ");
-          Serial.print(lines[0]._day); 
-          Serial.print(" ");
-          Serial.print(latAvg); 
-          Serial.print(" ");
-          Serial.print(lonAvg); 
-          Serial.println();
-
+          if(newLocation)
+          {
+              EEPROM.put(memAdr, lines[0]._hour);
+              memAdr += 1;
+              EEPROM.put(memAdr, lines[0]._day);
+              memAdr += 1;
+              EEPROM.put(memAdr, latAvg);
+              memAdr += 4;
+              EEPROM.put(memAdr, lonAvg);
+              memAdr += 4;         
+          }
+          else
+          {
+              //increase counter for known locations
+              if(atLoc_1 != LoadIntEEPROM(2)) SaveIntEEPROM(2, atLoc_1);
+              else if(atLoc_2 != LoadIntEEPROM(4)) SaveIntEEPROM(4, atLoc_2);
+              else if(atLoc_3 != LoadIntEEPROM(6)) SaveIntEEPROM(6, atLoc_3);
+              else if(atLoc_4 != LoadIntEEPROM(8)) SaveIntEEPROM(8, atLoc_4);
+              else if(atLoc_5 != LoadIntEEPROM(10)) SaveIntEEPROM(10, atLoc_5);
+              else if(atLoc_6 != LoadIntEEPROM(12)) SaveIntEEPROM(12, atLoc_6);
+          }
           SaveIntEEPROM(0, memAdr);
       }
       return true;
@@ -397,7 +406,10 @@ void ClearEEPROM(int startAdr, int endAdr)
 {
     for(int i = startAdr; i <= endAdr; i++)
     {
-        EEPROM.write(i, '\0');
+        if(EEPROM.read(i) != '\0')
+        {
+            EEPROM.write(i, '\0');
+        }
     }
 }
 
@@ -434,13 +446,14 @@ void setup()
 {
     //these two lines reset the logs and counter
     //DO NOT UNCOMMENT THEM UNLESS YOU ARE DELETING THE LOGS!!!
-    //ClearEEPROM(14, 4095);
-    //SaveIntEEPROM(0, 14);
+    ClearEEPROM(0,4095);
+    SaveIntEEPROM(0, 14);
     
     Serial.begin(9600);
     Serial1.begin(9600);
     memAdr = LoadIntEEPROM(0);
-    Serial.println();
+    LoadData(true); //loads previous known location information
+    Serial.print("memAdr: ");
     Serial.println(memAdr);
     Serial.println();
 }
@@ -453,9 +466,14 @@ void setup()
 
 void loop() 
 {   
-    //LoadData();
-    //while(true) {}
-    Run();
+    t2 = millis();
+    if((t2 - t1) > delayTime)
+    {
+        t1 = t2;
+        Serial.println("5 minutes.");
+        Run();
+    }
+    
 }
 
 
