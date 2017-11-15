@@ -48,3 +48,32 @@ class Communicate(object):
         self.getMessagesThread.join()
         self.connection.close()
         return
+
+
+
+if(__name__ == "__main__"):
+    try:
+        robotServer = Communicate()
+        print("waiting for client to connect...")
+        robotServer.setupLine("")
+        print("connected!")
+        while(True):
+            if(len(robotServer.inbox) > 0):
+                print(robotServer.inbox.pop())
+    except:
+        pass
+    finally:
+        robotServer.closeConnection()
+
+
+
+
+
+
+
+
+
+
+
+
+    
