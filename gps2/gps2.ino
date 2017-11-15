@@ -26,8 +26,7 @@ float knownLocations[8][4] = { {3608.86,3608.89,8638.29,8638.32}, //Loc_1
                                {3619.04,3619.10,8662.78,8662.88}  //Loc_6
                                };
 
-//if the nmea string contains A (instead of V)
-bool valid = false;
+
 
 //number of parsed data points in the string, may vary depending on nmea sentence type
 String dataPoints[12];
