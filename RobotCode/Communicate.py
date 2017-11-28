@@ -39,31 +39,35 @@ class Communicate(object):
             if len(decoded) > 0:
                 if decoded == "connection closed.":
                     print("connection closed.")
+                if decoded == "client disconnected.":
+                    self.finished = True
                 else:
                     self.inbox.appendleft(decoded)
         return
 
     def closeConnection(self):
-        self.finished = True
         self.getMessagesThread.join()
         self.connection.close()
         return
 
 
 
-if(__name__ == "__main__"):
-    try:
-        robotServer = Communicate()
-        print("waiting for client to connect...")
-        robotServer.setupLine("")
-        print("connected!")
-        while(True):
-            if(len(robotServer.inbox) > 0):
-                print(robotServer.inbox.pop())
-    except:
-        pass
-    finally:
-        robotServer.closeConnection()
+##if(__name__ == "__main__"):
+##    try:
+##        robotServer = Communicate()
+##        print("waiting for client to connect...")
+##        robotServer.setupLine("")
+##        print("connected!")
+##        while(True):
+##            if(len(robotServer.inbox) > 0):
+##                print(robotServer.inbox.pop())
+##            if(robotServer.finished):
+##                break
+##                #robotServer.closeConnection()
+##    except:
+##        pass
+##    finally:
+##        robotServer.closeConnection()
 
 
 
