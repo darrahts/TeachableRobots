@@ -1,6 +1,6 @@
 ﻿import socket
 from collections import deque
-from threading import Thread
+from threading import Thread, Event
 
 class Communicate(object):
     def __init__(self):
@@ -10,6 +10,8 @@ class Communicate(object):
         self.inbox = deque()
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.getMessagesThread = Thread(target=self.getMessages)
+        self.getMessagesThread.daemon = True
+        self.e = Event()
         print(self.address)
         return
     
@@ -46,10 +48,20 @@ class Communicate(object):
         return
 
     def closeConnection(self):
+        self.finished = True
+        self.e.set()
         self.getMessagesThread.join()
         self.connection.close()
         return
 
+
+
+##if(__name__ == "__main__"):
+##    robotClient = Communicate()
+##    robotClient.setupLine("127.0.0.1")
+##    while(True):
+##        val = input("enter something: ")
+##        robotClient.sendMessage(val)
 
 
 ##if(__name__ == "__main__"):

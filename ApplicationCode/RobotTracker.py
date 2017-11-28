@@ -36,7 +36,7 @@ class GridSpace:
     vs = WebcamVideoStream(0).start()
     frame = vs.read()
     frame = imutils.resize(frame, width=640, height=480) 
-    frameCenter = ((frame.shape[1] // 2) + 19, (frame.shape[0] // 2) + 11)
+    frameCenter = ((frame.shape[1] // 2) + 21, (frame.shape[0] // 2) + 11)
     textArea = np.zeros((frame.shape[0],250,3),dtype=np.uint8)
 
     square = np.ndarray([4,2], dtype=int)
@@ -44,12 +44,6 @@ class GridSpace:
     square[1] = [130, 455]
     square[2] = [550, 455]
     square[3] = [550, 40]
-
-    maskk = frame.copy()
-    for i in range(0, len(frame[0])):
-        for j in range(0, len(frame)):
-            if(i < 125 or i > 555 or j < 32 or j > 460):
-                maskk[j][i] = (0,0,0)
 
     def FrameOverlay(self, frame):
         ''' Builds the general output window.
@@ -62,16 +56,14 @@ class GridSpace:
         self.textArea = np.zeros((self.frame.shape[0],250,3),dtype=np.uint8)
         cv2.drawContours(self.frame, [self.square], -1, (0, 255, 0), 2)
         cv2.circle(self.frame, (self.frameCenter[0],self.frameCenter[1]), 15, (0,255,255), 2)
-
-        #cv2.bitwise_xor(self.maskk, self.frame, self.frame, mask=None)
         
-        
-        j = 150
+        #   draw the axis tick marks
+        j = 152
         for i in range(0, 5):
             cv2.line(self.frame, (j, 245), (j, 255), (0, 255, 255), 3)
             j += 37
 
-        k = 377
+        k = 379
         for i in range(0, 5):
             cv2.line(self.frame, (k, 245), (k, 255), (0, 255, 255), 3)
             k += 38
@@ -85,6 +77,14 @@ class GridSpace:
         for i in range(0, 5):
             cv2.line(self.frame, (334, k), (344, k), (0, 255, 255), 3)
             k += 36
+
+##        maskk = frame.copy()
+##        for i in range(0, len(frame[0])):
+##            for j in range(0, len(frame)):
+##                if(i < 125 or i > 555 or j < 32 or j > 460):
+##                    maskk[j][i] = (0,0,0)
+##
+##        cv2.bitwise_and(self.maskk, self.frame, self.frame, mask=None)
 
         return
 
@@ -277,12 +277,7 @@ class Robot(GridSpace):
 
     def CoordinatesToLocation(self, coordinates):
         return (coordinates[0] - self.frameCenter[0]) / 38, (self.frameCenter[1] - coordinates[1]) / 38
-        
-
-
-    def GetHeading(self, frame):
-        pass
-
+    
 
     def DrawGoal(self, goal):
         cv2.circle(self.frame,(goal[0], goal[1]), 2, (220,80,80), 2)
@@ -300,11 +295,14 @@ class Robot(GridSpace):
     def DrawPolygon(self, startPoint, sideLength, numberOfSides):
         pass
 
+
+    def GetHeading(self, frame):
+        pass
+
+
+
 if (__name__ == "__main__"):
-    #rt = RobotTracker()
-    #print(rt.lowGreen)
-    #rt.SetGoal((-8,-8))
-    #rt.Run()
+
     r = Robot()
     r.SetGoal((1,-2))
     r.Run()

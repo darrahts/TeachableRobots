@@ -3,6 +3,8 @@ import serial
 import time
 import threading
 import sys
+import traceback
+from Communicate import *
 
 def TryParseInt(val):
     try:
@@ -14,9 +16,9 @@ def TryParseInt(val):
 
 class Controller(object):
     def __init__(self, port):
+        self.tcpWatcher = threading.Thread(target=self.GetCommandSequence)
         self.responseThread = threading.Thread(target=self.GetResponse)
         self.arduino = serial.Serial(port, 9600)
-
         self.mode = 0 #0 for auto, 1 for manual
         self.userInput = ""
         self.tokens = []
@@ -24,6 +26,16 @@ class Controller(object):
         self.sequence = ""
         self.finished = False
         self.validSequence = False
+        self.tcpServer = Communicate()
+        
+
+    def GetCommandSequence(self):
+        while(not self.finished):
+            if(len(self.tcpServer.inbox) > 0):
+                print(self.tcpServer.inbox.pop())
+            if(self.tcpServer.finished):
+                break
+        return
 
     def GetResponse(self):
         ardIn = ""
@@ -32,6 +44,11 @@ class Controller(object):
                 ardIn = self.arduino.read().decode("ascii")
                 ardIn = ardIn.replace("\r", "")
                 ardIn = ardIn.replace("\n", "")
+                if(ardIn == '~'):
+                    time.sleep(.25)
+                    ardIn = self.arduino.readline().decode("ascii")
+                    ardIn = ardIn.replace("\r", "")
+                    ardIn = ardIn.replace("\n", "")
                 if(ardIn != ""):
                     print("   ^ " + ardIn + " ^")
                     if(self.mode == 0):
@@ -39,13 +56,15 @@ class Controller(object):
                     else:
                         print(">", end = "");
                     sys.stdout.flush()
+        return
+
+
+    def Write(self, toWrite):
+        self.arduino.write(bytes(toWrite.encode('ascii')))
+        return
 
 
     def ManualMode(self):
-        self.sequence = "mm"
-        time.sleep(.1)
-        self.arduino.write(bytes(self.sequence.encode('ascii')))
-        #time.sleep(1.5)
         while(True):
             time.sleep(.1)
             self.userInput = input(">")
@@ -54,17 +73,27 @@ class Controller(object):
             if(self.userInput == "q"):
                 self.userInput = ""
                 break
+            
 
     def Run(self):
-         while(not self.finished):
+        self.tcpServer.setupLine("")
+        self.responseThread.start()
+        self.tcpWatcher.start()
+        self.Write("ml") #load parameters before beginning
+        while(not self.finished):
             self.userInput = input(":")
-            if(self.userInput == "manual"):
+            if(self.userInput == "mm"):
                 self.mode = 1
+                self.arduino.write(bytes(self.userInput.encode('ascii')))
+                time.sleep(.5)
                 self.ManualMode()
                 self.mode = 0
+            elif(self.userInput == "mv" or self.userInput == "md" or self.userInput == "mr" or self.userInput == "ml" or self.userInput == "ms"):
+                self.arduino.write(bytes(self.userInput.encode('ascii')))
             elif(self.userInput == "Q"):
                 self.finished = True
                 self.responseThread.join()
+                self.tcpServer.closeConnection()
                 break
             else:
                 self.GenerateCommandSequence()
@@ -76,7 +105,6 @@ class Controller(object):
             self.tokens = []
             self.cmds = []
                     
-
 
     def GenerateCommandSequence(self):
         userIn = self.userInput.split(',')
@@ -98,7 +126,7 @@ class Controller(object):
             elif(val == "stop"):
                 x = "*"
             elif(TryParseInt(val) != False):
-                x = val
+                x = val + "_"
             else:
                 print("couldn't parse the commands. check your entry.")
                 self.validSequence = False
@@ -107,10 +135,6 @@ class Controller(object):
         self.sequence = "".join(self.cmds)
         self.validSequence = True
         return
-
-
-
-
 
 
 
@@ -125,15 +149,20 @@ if (__name__ == "__main__"):
             except:
                 print("couldnt open arduino port.")
 
-        c.responseThread.start()
         c.Run()
-        c.arduino.close()
-    except:
+    except Exception as e:
         print("error.")
+        print(str(e))
+        traceback.print_exc()
     finally:
+        c.finished = True
+        if(c.tcpWatcher.isAlive()):
+            c.tcpWatcher.join()
+        if(c.responseThread.isAlive()):
+            c.responseThread.join()
+        c.Write("ms") #save parameters before finishing
+        c.arduino.close()
         print("finished.")
-
-
 
 
 

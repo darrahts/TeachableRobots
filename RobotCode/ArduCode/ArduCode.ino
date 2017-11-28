@@ -821,11 +821,26 @@ void setup()
 /********************************************************************************************************
  *                                                MAIN                                                  *                                                  
  ********************************************************************************************************/
-
+String x = "";
 void loop() 
 {
-    ParseCommand();
-    ExecuteCommand();
+    if(Serial.available() > 0)
+    {
+        x = Serial.readString();
+    }
+    if(x != "")
+    {
+        delay(5);
+        Serial.flush();
+        delay(5);
+        Serial.println(x);  
+        delay(5);
+        Serial.flush();
+    }
+    
+    x = "";
+    //ParseCommand();
+    //ExecuteCommand();
 }
 
 
