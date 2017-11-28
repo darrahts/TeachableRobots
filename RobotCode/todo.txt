@@ -1,3 +1,3 @@
 1. Interrupt pin from pi to arduino
-2. configuration routine to set constants
+2. configuration routine to set constants DONE
 3. 
