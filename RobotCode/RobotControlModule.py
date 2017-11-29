@@ -28,15 +28,36 @@ class Controller(object):
         self.validSequence = False
         self.tcpServer = Communicate()
         
-
+    #   from gme or other 3rd party application using tcpWatcher thread
     def GetCommandSequence(self):
         while(not self.finished):
             if(len(self.tcpServer.inbox) > 0):
-                print(self.tcpServer.inbox.pop())
+                self.sequence = self.tcpServer.inbox.pop()
+                if(self.sequence == "0"):
+                    self.finished = True
+                    self.validSequence = False
+                    print("finished!")
+                else:
+                    self.validSequence = True
+                    print(self.sequence)
             if(self.tcpServer.finished):
                 break
         return
 
+
+    #   run with gme or other 3rd party application
+    def GMEdemo(self):  
+        self.tcpServer.setupLine("")
+        self.responseThread.start()
+        self.tcpWatcher.start()
+        while(not self.finished):
+            if(self.sequence != "" and self.validSequence):
+                self.arduino.write(bytes(self.sequence.encode('ascii')))
+                self.sequence = ""
+        return
+    
+
+    #   from arduino
     def GetResponse(self):
         ardIn = ""
         while(not self.finished):
@@ -73,8 +94,8 @@ class Controller(object):
             if(self.userInput == "q"):
                 self.userInput = ""
                 break
-            
 
+        
     def Run(self):
         self.tcpServer.setupLine("")
         self.responseThread.start()
@@ -149,19 +170,23 @@ if (__name__ == "__main__"):
             except:
                 print("couldnt open arduino port.")
 
-        c.Run()
+        #c.Run()
+        c.GMEdemo()
     except Exception as e:
         print("error.")
         print(str(e))
         traceback.print_exc()
     finally:
-        c.finished = True
-        if(c.tcpWatcher.isAlive()):
-            c.tcpWatcher.join()
-        if(c.responseThread.isAlive()):
-            c.responseThread.join()
-        c.Write("ms") #save parameters before finishing
-        c.arduino.close()
+        try:
+            c.finished = True
+            if(c.tcpWatcher.isAlive()):
+                c.tcpWatcher.join()
+            if(c.responseThread.isAlive()):
+                c.responseThread.join()
+            c.Write("ms") #save parameters before finishing
+            c.arduino.close()
+        except:
+            pass
         print("finished.")
 
 
