@@ -824,23 +824,23 @@ void setup()
 String x = "";
 void loop() 
 {
-    if(Serial.available() > 0)
-    {
-        x = Serial.readString();
-    }
-    if(x != "")
-    {
-        delay(5);
-        Serial.flush();
-        delay(5);
-        Serial.println(x);  
-        delay(5);
-        Serial.flush();
-    }
-    
-    x = "";
-    //ParseCommand();
-    //ExecuteCommand();
+//    if(Serial.available() > 0)
+//    {
+//        x = Serial.readString();
+//    }
+//    if(x != "")
+//    {
+//        delay(5);
+//        Serial.flush();
+//        delay(5);
+//        Serial.println(x);  
+//        delay(5);
+//        Serial.flush();
+//    }
+//    
+//    x = "";
+    ParseCommand();
+    ExecuteCommand();
 }
 
 
