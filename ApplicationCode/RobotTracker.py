@@ -200,22 +200,23 @@ class Robot(GridSpace):
            
             f = super().ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
-            if(abs(self.rLoc[0] - self.goal[0]) < .3 and abs(self.rLoc[1] - self.goal[1] < .3)):
+            if(abs(self.rLoc[0] - self.goal[0]) < .5 and abs(self.rLoc[1] - self.goal[1] < .5)):
                 self.goalFound = True
                 c +=1
 
             self.FrameOverlay(self.frame)
-            window = np.hstack([self.frame,self.textArea])
+            #window = np.hstack([self.frame,self.textArea])
+            window = self.frame
             cv2.imshow(self.title, window)
 
-            if(self.goalFound and c == 6):
-                x = input("pick a new goal in the form x,y or q to quit: ")
-                if(x == "q"):
-                    break
-                y = x.split(",")
-                self.goal = (int(y[0]), int(y[1]))
-                self.goalFound = False
-                c = 0
+##            if(self.goalFound and c == 10):
+##                x = input("pick a new goal in the form x,y or q to quit: ")
+##                if(x == "q"):
+##                    break
+##                y = x.split(",")
+##                self.goal = (int(y[0]), int(y[1]))
+##                self.goalFound = False
+##                c = 0
 
 
             key = cv2.waitKey(1) & 0xFF
@@ -249,6 +250,9 @@ class Robot(GridSpace):
         super().FrameOverlay(self.frame)
         goal = self.LocationToCoordinates(self.goal)
         self.DrawGoal(goal)
+        self.DrawGoal(self.LocationToCoordinates((3,2)))
+        self.DrawGoal(self.LocationToCoordinates((-3, 1)))
+        self.DrawGoal(self.LocationToCoordinates((1, 4)))
         self.rLoc = self.CoordinatesToLocation(self.robot)
             
         cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
@@ -283,7 +287,7 @@ class Robot(GridSpace):
         cv2.circle(self.frame,(goal[0], goal[1]), 2, (220,80,80), 2)
         cv2.circle(self.frame,(goal[0], goal[1]), 7, (220,80,80), 2)
         cv2.circle(self.frame,(goal[0], goal[1]), 12, (220,80,80), 2)
-        cv2.putText(self.frame, str(self.goal), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
+        cv2.putText(self.frame, str(self.CoordinatesToLocation(goal)), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
         pass
 
 
@@ -304,7 +308,7 @@ class Robot(GridSpace):
 if (__name__ == "__main__"):
 
     r = Robot()
-    r.SetGoal((1,-2))
+    r.SetGoal((2,-2))
     r.Run()
 
     
