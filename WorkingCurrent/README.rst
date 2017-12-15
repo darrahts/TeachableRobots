@@ -4,3 +4,5 @@ In the RobotCode folder is a script called Run.sh, execute this script and the r
 
 CoordinatePlaneCode contains the code (RobotTracker.py) that is used if a
 separate overhead webcam is available on the host pc.
+
+More details on the WebGME side can be found at https://github.com/hamidzr/robot-control 
