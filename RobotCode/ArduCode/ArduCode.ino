@@ -255,8 +255,8 @@ void Right(int duration)
     Forward();
     delay(350);
   }
-  analogWrite(MTR_A_EN, SPEED + 20);
-  analogWrite(MTR_B_EN, SPEED + 20 - OFFSET);
+  analogWrite(MTR_A_EN, SPEED);
+  analogWrite(MTR_B_EN, SPEED - OFFSET);
   digitalWrite(MTR_A_A, LOW);
   digitalWrite(MTR_A_B, HIGH);
   digitalWrite(MTR_B_A, HIGH);
