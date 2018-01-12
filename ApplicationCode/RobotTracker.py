@@ -203,15 +203,16 @@ class Robot(GridSpace):
         i = 0
         while(True):
             self.frame = self.vs.read()
-            self.frame = imutils.resize(self.frame, width=640, height=480)     
+            self.frame = imutils.resize(self.frame, width=640, height=480)
+            self.frameCopy = self.frame.copy()
            
             f = super().ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
-            if(abs(self.rLoc[0] - self.goal[0]) < .5 and abs(self.rLoc[1] - self.goal[1] < .5)):
-                self.goalFound = True
-                c +=1
+            #if(abs(self.rLoc[0] - self.goal[0]) < .5 and abs(self.rLoc[1] - self.goal[1] < .5)):
+            #    self.goalFound = True
+            #    c +=1
 
-            self.FrameOverlay(self.frame)
+            self.FrameOverlay(self.frame, "", "")
             window = np.hstack([self.frame,self.textArea])
             #window = self.frame
             cv2.imshow(self.title, window)
@@ -253,7 +254,7 @@ class Robot(GridSpace):
             return -1
 
 
-    def FrameOverlay(self, frame):
+    def FrameOverlay(self, frame, msg, loc):
         super().FrameOverlay(self.frame)
         goal = self.LocationToCoordinates(self.goal)
         if(self.displayGoals):
@@ -261,7 +262,7 @@ class Robot(GridSpace):
         #self.DrawGoal(self.LocationToCoordinates((3,2)))
         #self.DrawGoal(self.LocationToCoordinates((-3, 1)))
         #self.DrawGoal(self.LocationToCoordinates((1, 4)))
-        #self.rLoc = self.CoordinatesToLocation(self.robot)
+        #exitself.rLoc = self.CoordinatesToLocation(self.robot)
             
         cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
         #cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0]+15,self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
