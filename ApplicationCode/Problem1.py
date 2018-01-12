@@ -38,8 +38,12 @@ if (__name__ == "__main__"):
     repeatCounter = 0
     time.sleep(3)
     r.textArea = np.zeros((r.frame.shape[0],550,3),dtype=np.uint8)
-    e.set()
-    runThread.join()
+
+
+
+
+    #e.set()
+    #runThread.join()
     
 
     
