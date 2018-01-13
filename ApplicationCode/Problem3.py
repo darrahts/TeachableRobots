@@ -32,16 +32,16 @@ if (__name__ == "__main__"):
                 cv2.putText(r.textArea, "points are given in (x,y) format", (0, 160), 2, .5, (100,200,100), 1)
                 t1 = t2
                 repeatCounter += 1
-            elif(repeatCounter == 1):
+            if(repeatCounter == 1):
                 cv2.putText(r.textArea, "The point is 3 units to the left of the origin and 1 unit up", (0, 160), 2, .5, (100,200,100), 1)
                 t1 = t2
                 repeatCounter += 1
-            elif(repeatCounter == 2):
+            if(repeatCounter == 2):
                 cv2.putText(r.textArea, "Drive to the point shown", (0, 160), 2, .5, (100,200,100), 1)
-                r.displayGoals = True
+                #TODO draw point on frame
                 t1 = t2
                 repeatCounter += 1
-            elif(repeatCounter == 3):
+            if(repeatCounter == 1):
                 cv2.putText(r.textArea, "maybe you need some extra assistance", (0, 160), 2, .5, (100,200,100), 1)
                 x = input()
                 if(x == "continue"):
@@ -50,11 +50,10 @@ if (__name__ == "__main__"):
     cv2.putText(r.textArea, "Nice Work!", (0, 300), 4, 1.2, (100,200,100), 1)
     repeatCounter = 0
     time.sleep(3)
-    r.displayGoals = False
     r.textArea = np.zeros((r.frame.shape[0],550,3),dtype=np.uint8)
 
     ############################################################################################
-    #   drive to point
+    #   origin
 
     r.setGoal((2,-4))
     cv2.putText(r.textArea, "drive the robot to the point shown", (0, 40), 2, .5, (100,200,100), 1)
@@ -66,15 +65,16 @@ if (__name__ == "__main__"):
                 cv2.putText(r.textArea, "'x' should be positive, 'y' should be negative", (0, 160), 2, .5, (100,200,100), 1)
                 t1 = t2
                 repeatCounter += 1
-            elif(repeatCounter == 1):
+            if(repeatCounter == 1):
                 cv2.putText(r.textArea, "'y' = -4", (0, 160), 2, .5, (100,200,100), 1)
                 t1 = t2
                 repeatCounter += 1
-            elif(repeatCounter == 2):
+            if(repeatCounter == 2):
                 cv2.putText(r.textArea, "Drive to (2,-4)", (0, 160), 2, .5, (100,200,100), 1)
+                #TODO draw point on frame
                 t1 = t2
                 repeatCounter += 1
-            elif(repeatCounter == 3):
+            if(repeatCounter == 1):
                 cv2.putText(r.textArea, "maybe you need some extra assistance", (0, 160), 2, .5, (100,200,100), 1)
                 x = input()
                 if(x == "continue"):
