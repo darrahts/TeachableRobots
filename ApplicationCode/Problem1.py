@@ -49,7 +49,7 @@ if (__name__ == "__main__"):
     r.setGoal((0,0))
     cv2.putText(r.textArea, "drive the robot into the first quadrant.", (0, 40), 2, .5, (100,200,100), 1)
     t1 = time.time()
-    while(abs(r.rLoc[0] - r.goal[0]) < .6 and abs(r.rLoc[1] - r.goal[1] < .6)):
+    while(r.rLoc[0] < .5 and r.rLoc[1] < .5)):
         t2 = time.time()
         if(t2 - t1 > 60):
             if(repeatCounter == 0):
@@ -130,9 +130,9 @@ if (__name__ == "__main__"):
 
     expression = ""
     if(negY):
-        expression = "r.rLoc[1] > 0"
+        expression = "r.rLoc[1] > -.5"
     else:
-        expression = "r.rLoc[1] < 0"
+        expression = "r.rLoc[1] < .5"
         
     while(eval(expression)):
         t2 = time.time()
@@ -165,20 +165,20 @@ if (__name__ == "__main__"):
         if(r.rLoc[0] > 0):
             cv2.putText(r.textArea, "drive the robot to an area with negative 'y' and 'x' values", (0, 40), 2, .5, (100,200,100), 1)
             quadrant = 3
-            expression = "r.rLoc[0] > 0 and r.rLoc[1] > 0"
+            expression = "r.rLoc[0] > -.5 and r.rLoc[1] > -.5"
         if(r.rLoc[0] < 0):
             cv2.putText(r.textArea, "drive the robot to an area with negative 'y' and positive 'x' values", (0, 40), 2, .5, (100,200,100), 1)
             quadrant = 4
-            expression = "r.rLoc[0] < 0 and r.rLoc[1] > 0"
+            expression = "r.rLoc[0] < .5 and r.rLoc[1] > -.5"
     else:
         if(r.rLoc[0] > 0):
             cv2.putText(r.textArea, "drive the robot to an area with positive 'y' and negative 'x' values", (0, 40), 2, .5, (100,200,100), 1)
             quadrant = 2
-            expression = "r.rLoc[0] > 0 and r.rLoc[1] < 0"
+            expression = "r.rLoc[0] > -.5 and r.rLoc[1] < .5"
         if(r.rLoc[0] < 0):
             cv2.putText(r.textArea, "drive the robot to an area with positive 'y' and 'x' values", (0, 40), 2, .5, (100,200,100), 1)
             quadrant = 1
-            expression = "r.rLoc[0] < 0 and r.rLoc[1] < 0"
+            expression = "r.rLoc[0] < .5 and r.rLoc[1] < .5"
 
     t1 = time.time()
 
