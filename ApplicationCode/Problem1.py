@@ -158,7 +158,6 @@ if (__name__ == "__main__"):
     ############################################################################################
     #   pos x and pos/neg y
     
-#TODO finish this for random quadrant
     quadrant = 1
     expression = ""
     r.setGoal((0,0))
