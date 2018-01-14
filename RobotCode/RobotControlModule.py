@@ -16,7 +16,6 @@ def TryParseInt(val):
 
 class Controller(object):
     def __init__(self, port):
-        self.appComm = threading.Thread(target=self.GetObjective)
         self.tcpWatcher = threading.Thread(target=self.GetCommandSequence)
         self.responseThread = threading.Thread(target=self.GetResponse)
         self.arduino = serial.Serial(port, 9600)
@@ -28,8 +27,13 @@ class Controller(object):
         self.finished = False
         self.validSequence = False
         self.tcpServer = Communicate()
-        self.appClient = Communicate()
 
+        self.appComm = threading.Thread(target=self.GetObjective)
+        self.appClient = Communicate()
+        self.appClient.port = 5680
+        self.appClient.setupLine("192.168.1.91")
+        print("connected!")
+        
         #   updated from arduino
         self.numSpacesMoved = 0
 
@@ -69,7 +73,12 @@ class Controller(object):
     #   from application
     def GetObjective(self):
         #TODO for receiving objective from application
-        pass
+        while(not self.finished):
+            if(len(self.appClient.inbox) > 0):
+                self.objective = self.appClient.inbox.pop()
+                print(self.objective)
+        self.appClient.finished = True
+        return
     
 
     #   from arduino
@@ -181,6 +190,7 @@ class Controller(object):
         
     def Run(self):
         self.responseThread.start()
+        self.appComm.start()
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")
@@ -241,6 +251,8 @@ if (__name__ == "__main__"):
             c.arduino.close()
             c.tcpServer.closeConnection()
             print("tcp server closed.")
+            c.appCom.finished = True
+            c.appComm.closeConnection()
         except:
             pass
         print("finished.")
