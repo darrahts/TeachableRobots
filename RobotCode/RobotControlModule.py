@@ -31,8 +31,14 @@ class Controller(object):
         self.appComm = threading.Thread(target=self.GetObjective)
         self.appClient = Communicate()
         self.appClient.port = 5680
-        self.appClient.setupLine("192.168.1.91")
-        print("connected!")
+        self.appOnline = True
+        try:
+            self.appClient.setupLine("192.168.1.91")
+            print("connected!")
+        except:
+            print("app offline.")
+            self.appOnline = False
+
         
         #   updated from arduino
         self.numSpacesMoved = 0
@@ -190,7 +196,8 @@ class Controller(object):
         
     def Run(self):
         self.responseThread.start()
-        self.appComm.start()
+        if(self.appOnline):
+            self.appComm.start()
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")
@@ -227,7 +234,9 @@ if (__name__ == "__main__"):
     try:
         try:
             c = Controller("/dev/ttyACM0")
-        except:
+        except Exception as e:
+            print(str(e))
+            traceback.print_exc()
             try:
                 c = Controller("/dev/ttyACM1")
             except:
