@@ -34,13 +34,13 @@ class Controller(object):
         self.numSpacesMoved = 0
 
         #   updated from sequence
-        self.direction = 0 
+        self.direction = "right" #   "left", "up", "down" are other valid options
 
         #   updates from application in the form of a mathematical expression
         self.objective = ""
 
         #   updates form UpdateLocation function
-        self.location = (0,0)
+        self.location = (-5. -3)
 
         #   (will succeed, number of spaces moved, ending location, distance from goal)
         self.evaluation = (True, 4, (0,0), (0,0))
@@ -80,14 +80,16 @@ class Controller(object):
                 ardIn = self.arduino.read().decode("ascii")
                 ardIn = ardIn.replace("\r", "")
                 ardIn = ardIn.replace("\n", "")
+                print(ardIn)
                 if(ardIn == '~'):
                     time.sleep(.25)
                     ardIn = self.arduino.readline().decode("ascii")
                     ardIn = ardIn.replace("\r", "")
                     ardIn = ardIn.replace("\n", "")
-                elif(ardIn == '$'):
+                elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
+                    print(numSpacesMoved)
                     
                 elif(ardIn != ""):
                     print("   ^ " + ardIn + " ^")

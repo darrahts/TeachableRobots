@@ -45,6 +45,12 @@ class GridSpace:
     square[2] = [550, 455]
     square[3] = [550, 40]
 
+    amazon = cv2.imread("amazon.png")
+    office = cv2.imread("office.png")
+    office2 = cv2.imread("office2.png")
+    office3 = cv2.imread("office3.png")
+
+    
 
     def FrameOverlay(self, frame):
         ''' Builds the general output window.
@@ -53,7 +59,6 @@ class GridSpace:
 
             frame: the frame to modify
     '''
-
         cv2.drawContours(self.frame, [self.square], -1, (0, 255, 0), 2)
         cv2.circle(self.frame, (self.frameCenter[0],self.frameCenter[1]), 15, (0,255,255), 2)
         
@@ -191,6 +196,7 @@ class Robot(GridSpace):
         self.goal = (0,0)
         self.goalFound = False
         self.displayGoals = False
+        self.displayGoalLoc = False
 
         
     def SetGoal(self, goal):
@@ -257,7 +263,8 @@ class Robot(GridSpace):
         super().FrameOverlay(self.frame)
         goal = self.LocationToCoordinates(self.goal)
         if(self.displayGoals):
-            self.DrawGoal(goal)
+            self.DrawGoal(goal, self.displayGoalLoc)
+            #print(self.displayGoalLoc)
         #self.DrawGoal(self.LocationToCoordinates((3,2)))
         #self.DrawGoal(self.LocationToCoordinates((-3, 1)))
         #self.DrawGoal(self.LocationToCoordinates((1, 4)))
@@ -291,12 +298,12 @@ class Robot(GridSpace):
         return (coordinates[0] - self.frameCenter[0]) / 38, (self.frameCenter[1] - coordinates[1]) / 38
     
 
-    def DrawGoal(self, goal):
+    def DrawGoal(self, goal, showXY):
         cv2.circle(self.frame,(goal[0], goal[1]), 2, (220,80,80), 2)
         cv2.circle(self.frame,(goal[0], goal[1]), 7, (220,80,80), 2)
         cv2.circle(self.frame,(goal[0], goal[1]), 12, (220,80,80), 2)
-        cv2.putText(self.frame, str(self.CoordinatesToLocation(goal)), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
-        pass
+        if(showXY):
+            cv2.putText(self.frame, str(self.CoordinatesToLocation(goal)), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
 
 
     def DrawLine(self, point1, point2):
@@ -314,7 +321,8 @@ class Robot(GridSpace):
 
 
 
-
+r = Robot()
+r.Run()
 
 
 

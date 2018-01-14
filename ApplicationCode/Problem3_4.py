@@ -21,15 +21,9 @@ if (__name__ == "__main__"):
 
     ############################################################################################
     #   drive to point
-
-    r.DrawGoal(self.LocationToCoordinates((3,2)))
-    r.DrawGoal(self.LocationToCoordinates((-3, 1)))
-    r.DrawGoal(self.LocationToCoordinates((1, 4)))
-    r.DrawGoal(r.LocationToCoordinates((
-
-    cv2.putText(r.textArea, "drive the robot to (-3,1)", (0, 40), 2, .5, (100,200,100), 1)
+    
     t1 = time.time()
-    while(abs(r.rLoc[0] - r.goal[0]) > .6 and abs(r.rLoc[1] - r.goal[1] > .6)):
+    while(abs(r.rLoc[0] - r.goal[0]) > .6 and abs(r.rLoc[1] - r.goal[1]) > .6):
         t2 = time.time()
         if(t2 - t1 > 60):
             if(repeatCounter == 0):
