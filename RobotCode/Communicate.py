@@ -48,9 +48,12 @@ class Communicate(object):
         return
 
     def closeConnection(self):
+        print("here")
         self.finished = True
         self.e.set()
+        print("here2")
         self.getMessagesThread.join()
+        print("here3")
         self.connection.close()
         return
 

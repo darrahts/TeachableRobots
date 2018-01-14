@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from VideoStream import *
+from Communicate import *
 import cv2
 import imutils
 import numpy as np
@@ -198,6 +199,16 @@ class Robot(GridSpace):
         self.displayGoals = False
         self.displayGoalLoc = False
 
+        self.robotServer = Communicate()
+        self.robotServer.port = 5680
+        print("waiting to connect to robot...")
+        self.robotServer.setupLine("")
+        print("connected!")
+
+
+    def SendObjective(self, objective):
+        self.robotServer.sendMessage(objective) # i.e. objective is to drive to first quadrant
+        return
         
     def SetGoal(self, goal):
         self.goal = goal
@@ -206,6 +217,7 @@ class Robot(GridSpace):
     def Run(self):
         c = 0
         i = 0
+        self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
         while(True):
             self.frame = self.vs.read()
             self.frame = imutils.resize(self.frame, width=640, height=480)
@@ -234,6 +246,8 @@ class Robot(GridSpace):
 
             key = cv2.waitKey(1) & 0xFF
             if(key == ord("q")):
+                self.robotServer.finished = True
+                self.robotServer.closeConnection()
                 break
             elif(key == ord("c")):
                 cv2.imwrite("picture%i.jpg" %i, window)
@@ -317,7 +331,6 @@ class Robot(GridSpace):
 
     def GetHeading(self, frame):
         pass
-
 
 
 
