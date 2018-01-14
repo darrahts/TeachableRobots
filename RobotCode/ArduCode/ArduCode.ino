@@ -471,10 +471,14 @@ void ExecuteCommand()
             }
             else if(commands[i] == 5)
             {
+                Forward();
+                delay(250);
                 Stop();
             }
             else
             {
+                Forward();
+                delay(250);
                 Stop();
             }
             commands[i] = -1;
