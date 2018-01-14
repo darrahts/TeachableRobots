@@ -167,8 +167,8 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (87, 146, 0)
-        self.highColor = (150, 208, 52)
+        self.lowColor = (65, 115, 0)
+        self.highColor = (150, 200, 60)
         #self.lowColor = (60, 140, 0)
         #self.highColor = (157, 200, 130)        
         #self.lowColor = (111,150,48)
@@ -261,7 +261,7 @@ class Robot(GridSpace):
         #self.DrawGoal(self.LocationToCoordinates((3,2)))
         #self.DrawGoal(self.LocationToCoordinates((-3, 1)))
         #self.DrawGoal(self.LocationToCoordinates((1, 4)))
-        #self.rLoc = self.CoordinatesToLocation(self.robot)
+        self.rLoc = self.CoordinatesToLocation(self.robot)
             
         cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
         #cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0]+15,self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
