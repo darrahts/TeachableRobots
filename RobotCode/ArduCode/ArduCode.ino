@@ -471,26 +471,10 @@ void ExecuteCommand()
             }
             else if(commands[i] == 5)
             {
-<<<<<<< HEAD
-                //Forward();
-                //ReadLineSensors();
-                //AssertCourse(); 
-=======
-                Forward();
-                delay(250);
->>>>>>> 62d10bf1ed2afcb53d5358b77fe737261968b329
                 Stop();
             }
             else
             {
-<<<<<<< HEAD
-                //Forward();
-                //ReadLineSensors();
-                //AssertCourse(); 
-=======
-                Forward();
-                delay(250);
->>>>>>> 62d10bf1ed2afcb53d5358b77fe737261968b329
                 Stop();
             }
             commands[i] = -1;
@@ -570,7 +554,6 @@ void AssertCourse()
 {
     if(dir == 1 || dir == 2) //i.e. if the robot isn't turning
     {
-      
         //if the robot is on course
         if (readings[0] < WHITE && readings[1] > BLACK && readings[2] < WHITE)
         {
@@ -606,11 +589,11 @@ void AssertCourse()
             tooFarLeft = false;
             tooFarRight = true;
             //Serial.println("<");
-            //Serial.write('<');
+           // Serial.write('<');
             leftCount += 1;
             if(leftCount == 8)
             {
-              OFFSET += 1;
+              //OFFSET += 1;
               leftCount = 0;
             }
             if(dir == 1)
@@ -629,11 +612,11 @@ void AssertCourse()
             tooFarLeft = false;
             tooFarRight = true;
             //Serial.println("<<");
-            //Serial.write(new byte[2]{'<','<'}, 2);
+           // Serial.write(new byte[2]{'<','<'}, 2);
             leftCount += 1;
             if(leftCount == 8)
             {
-              OFFSET += 1;
+              //OFFSET += 1;
               leftCount = 0;
             }
             if(dir == 1)
@@ -656,7 +639,7 @@ void AssertCourse()
             rightCount += 1;
             if(rightCount == 8)
             {
-              OFFSET -= 1;
+              //OFFSET -= 1;
               rightCount = 0;
             }
             if(dir == 1)
@@ -674,11 +657,11 @@ void AssertCourse()
             tooFarRight = false;
             tooFarLeft = true;
             //Serial.println(">>");
-            //Serial.write(new byte[2]{'>','>'}, 2);
+           // Serial.write(new byte[2]{'>','>'}, 2);
             rightCount += 1;
             if(rightCount == 8)
             {
-              OFFSET -= 1;
+              //OFFSET -= 1;
               rightCount = 0;
             }
             if(dir == 1)
@@ -805,6 +788,8 @@ unsigned int ReadIntEEPROM(int adr)
 void setup() 
 {
     //load saved parameters from eeprom
+    //OFFSET = 26;
+    //SaveParameters();
     LoadParameters();
     
     //enable the serial port

@@ -86,10 +86,11 @@ class Controller(object):
                     ardIn = self.arduino.readline().decode("ascii")
                     ardIn = ardIn.replace("\r", "")
                     ardIn = ardIn.replace("\n", "")
+                    print(ardIn)
                 elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
-                    print(numSpacesMoved)
+                    print(self.numSpacesMoved)
                     
                 elif(ardIn != ""):
                     print("   ^ " + ardIn + " ^")
