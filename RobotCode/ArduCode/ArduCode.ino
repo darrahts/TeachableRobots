@@ -471,14 +471,26 @@ void ExecuteCommand()
             }
             else if(commands[i] == 5)
             {
+<<<<<<< HEAD
+                //Forward();
+                //ReadLineSensors();
+                //AssertCourse(); 
+=======
                 Forward();
                 delay(250);
+>>>>>>> 62d10bf1ed2afcb53d5358b77fe737261968b329
                 Stop();
             }
             else
             {
+<<<<<<< HEAD
+                //Forward();
+                //ReadLineSensors();
+                //AssertCourse(); 
+=======
                 Forward();
                 delay(250);
+>>>>>>> 62d10bf1ed2afcb53d5358b77fe737261968b329
                 Stop();
             }
             commands[i] = -1;
@@ -566,7 +578,7 @@ void AssertCourse()
             onCourse = true;
             if(atIntersection == true)
             {
-                Serial.write('-');
+                //Serial.write('-');
             }
             atIntersection = false;
             passedIntersection = true;
@@ -594,7 +606,7 @@ void AssertCourse()
             tooFarLeft = false;
             tooFarRight = true;
             //Serial.println("<");
-            Serial.write('<');
+            //Serial.write('<');
             leftCount += 1;
             if(leftCount == 8)
             {
@@ -617,7 +629,7 @@ void AssertCourse()
             tooFarLeft = false;
             tooFarRight = true;
             //Serial.println("<<");
-            Serial.write(new byte[2]{'<','<'}, 2);
+            //Serial.write(new byte[2]{'<','<'}, 2);
             leftCount += 1;
             if(leftCount == 8)
             {
@@ -640,7 +652,7 @@ void AssertCourse()
             tooFarRight = false;
             tooFarLeft = true;
             //Serial.println(">");
-            Serial.write('>');
+            //Serial.write('>');
             rightCount += 1;
             if(rightCount == 8)
             {
@@ -662,7 +674,7 @@ void AssertCourse()
             tooFarRight = false;
             tooFarLeft = true;
             //Serial.println(">>");
-            Serial.write(new byte[2]{'>','>'}, 2);
+            //Serial.write(new byte[2]{'>','>'}, 2);
             rightCount += 1;
             if(rightCount == 8)
             {
