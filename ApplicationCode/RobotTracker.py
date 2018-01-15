@@ -200,6 +200,7 @@ class Robot(GridSpace):
         self.location = ""
         self.direction = ""
         self.message = ""
+        self.distanceTravelled = 0
 
         self.points = [(2,-2), (2,1), (-2,1), (1,4)]
         
@@ -211,8 +212,12 @@ class Robot(GridSpace):
                 temp = ast.literal_eval(self.robotServer.inbox.pop())
                 if("location" in temp):
                     print("location: " + temp["location"])
+                    self.location = temp["location"]
+                    self.distanceTravelled += 1
+                    print("distance travelled: " + str(self.distanceTravelled))
                 if("direction" in temp):
                     print("direction: " + temp["direction"])
+                    self.direction = temp["direction"]
                 if("message" in temp):
                     print("message: " + temp["message"])
                     self.message = temp["message"]
@@ -305,9 +310,10 @@ class Robot(GridSpace):
         #cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
         #cv2.circle(self.textArea, (208,8), 2, (100,200,100), 1)
 
-        cv2.putText(self.textArea, "Direction: " + self.direction, (200, 20), 3, .5, (100,200,100), 1)
-        cv2.putText(self.textArea, "Location: " + self.location, (400, 20), 3, .5, (100,200,100), 1)
-
+        cv2.putText(self.textArea, "Direction: " + self.direction, (0, 20), 3, .5, (100,200,100), 1)
+        cv2.putText(self.textArea, "Location: " + self.location, (200, 20), 3, .5, (100,200,100), 1)
+        cv2.putText(self.textArea, "Move Count: " + str(self.distanceTravelled), (400, 20), 3, .5, (100,200,100), 1)
+        
         
         if(len(self.contour) > 0):
             self.ellipse = cv2.fitEllipse(self.contour)
@@ -351,8 +357,8 @@ class Robot(GridSpace):
 
 
 
-#r = Robot()
-#r.Run()
+r = Robot()
+r.Run()
 
 
 
