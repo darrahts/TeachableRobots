@@ -88,6 +88,9 @@ int memAdr = 0;
 //used in ParseCommand, only execute a sequence of commands
 bool execute = true;
 
+//used to track direction the robot is facing. 0-right,1-up,2-left,3down
+int dirT = 0;
+
 //map of the coordinate space
 byte coordinateSpace[12][12] ={{1,1,1,1,1,1,1,1,1,1,1,1}, //memAdr 100+
                                {1,0,0,0,0,0,0,0,0,0,0,1},
@@ -464,10 +467,55 @@ void ExecuteCommand()
             else if(commands[i] == 3)
             {
                 Left(int(2.166666 * amounts[i]));
+                
+                Serial.write('$');
+                if(dirT == 0)
+                {
+                    dirT = 1;
+                    Serial.write('1');
+                }
+                else if(dirT == 1)
+                {
+                    dirT == 2;
+                    Serial.write('2');
+                }
+                else if(dirT == 2)
+                {
+                    dirT == 3;
+                    Serial.write('3');
+                }
+                else if(dirT == 3)
+                {
+                    dirT == 0;
+                    Serial.write('0');
+                }
             }
             else if(commands[i] == 4)
             {
                 Right(int(2.166666 * amounts[i]));
+      
+                Serial.write('$');
+                if(dirT == 0)
+                {
+                    dirT = 3;
+                    Serial.write('3');
+                }
+                else if(dirT == 3)
+                {
+                    dirT == 2;
+                    Serial.write('2');
+                }
+                else if(dirT == 2)
+                {
+                    dirT == 1;
+                    Serial.write('1');
+                }
+                else if(dirT == 1)
+                {
+                    dirT == 0;
+                    Serial.write('0');
+                }
+                
             }
             else if(commands[i] == 5)
             {
