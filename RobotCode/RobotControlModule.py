@@ -59,6 +59,7 @@ class Controller(object):
 
 
     def UpdateDirection(self, val):
+        print(val)
         if(val == '0'):
             self.direction = "right"
         elif(val == '1'):
@@ -72,13 +73,13 @@ class Controller(object):
 
     def UpdateLocation(self):
         if(self.direction == "right"):
-            self.location[0] = self.location[0] + 1
+            self.location = (self.location[0]+1, self.location[1])
         elif(self.direction == "left"):
-            self.location[0] = self.location[0] - 1
+            self.location = (self.location[0]-1, self.location[1])
         elif(self.direction == "up"):
-            self.location[1] = self.location[1] + 1
+            self.location = (self.location[0], self.location[1]+1)
         else:
-            self.location[1] = self.location[1] - 1
+            self.location = (self.location[0], self.location[1]-1)
         self.SendLocation()
         return
 
@@ -149,6 +150,7 @@ class Controller(object):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
                     self.UpdateLocation()
+                    print("+")
                     print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)
@@ -242,7 +244,7 @@ class Controller(object):
         if(line):
             temp = self.arduino.readline().decode("ascii")
         else:
-            temp = self.arduino.readline().decode("ascii")
+            temp = self.arduino.read().decode("ascii")
         temp = temp.replace("\r", "")
         temp = temp.replace("\n", "")
         return temp
@@ -274,6 +276,7 @@ class Controller(object):
                 self.finished = False
             elif(self.userInput == "Q"):
                 self.finished = True
+                self.responseThread.finished = True
                 self.responseThread.join()
                 break
             elif(self.userInput == "L"):

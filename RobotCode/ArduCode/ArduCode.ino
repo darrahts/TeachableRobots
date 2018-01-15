@@ -266,18 +266,18 @@ void Right(int duration)
   digitalWrite(MTR_B_B, LOW);
   if(managed)
   {
-      delay(50);
+      delay(60);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(10);
+      delay(15);
       while(readings[0] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(10);
+      delay(15);
       while(readings[2] < BLACK) 
       {
         ReadLineSensors();
@@ -476,17 +476,17 @@ void ExecuteCommand()
                 }
                 else if(dirT == 1)
                 {
-                    dirT == 2;
+                    dirT = 2;
                     Serial.write('2');
                 }
                 else if(dirT == 2)
                 {
-                    dirT == 3;
+                    dirT = 3;
                     Serial.write('3');
                 }
-                else if(dirT == 3)
+                else
                 {
-                    dirT == 0;
+                    dirT = 0;
                     Serial.write('0');
                 }
             }
@@ -502,17 +502,17 @@ void ExecuteCommand()
                 }
                 else if(dirT == 3)
                 {
-                    dirT == 2;
+                    dirT = 2;
                     Serial.write('2');
                 }
                 else if(dirT == 2)
                 {
-                    dirT == 1;
+                    dirT = 1;
                     Serial.write('1');
                 }
-                else if(dirT == 1)
+                else
                 {
-                    dirT == 0;
+                    dirT = 0;
                     Serial.write('0');
                 }
                 
