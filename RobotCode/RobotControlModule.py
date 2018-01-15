@@ -56,57 +56,87 @@ class Controller(object):
         self.evaluation = (True, 4, (0,0), (0,0))
 
 
-    def UpdateDirection(self):
-        #TODO update from sequence
-        pass
+    def UpdateDirection(self, val):
+        if(val == '0'):
+            self.direction = "right"
+        elif(val == '1'):
+            self.direction = "up"
+        elif(val == '2'):
+            self.direction = "left"
+        elif(val == '3'):
+            self.direction = "down"
+        return
 
     def UpdateLocation(self):
-        #TODO update location from current location plus number of spaces in what direction
-        pass
+        if(self.direction == "right"):
+            self.location[0] = self.location[0] + 1
+        elif(self.direction == "left"):
+            self.location[0] = self.location[0] - 1
+        elif(self.direction == "up"):
+            self.location[1] = self.location[1] + 1
+        else:
+            self.location[1] = self.location[1] - 1
+        return
 
     def EvaluateSequence(self):
         #TODO Evaluates sequence
         pass
 
     def SendEvaluation(self):
-        #TODO send eval to application
-        pass
+        if(appOnline):
+            self.appClient.sendMessage({"evaluation" : self.evaluation})
+        else:
+            print("app offline")
+        return
+
+    def SendDirection(self):
+        if(appOnline):
+            self.appClient.sendMessage({"direction" : self.direction })
+        else:
+            print("app offline")
+        return
+        
 
     def SendLocation(self):
-        #TODO send location to application
-        pass
+        if(appOnline):
+            self.appClient.sendMessage({"location" : self.location })
+        else:
+            print("app offline")
+        return
 
     #   from application
-    def GetObjective(self):
+    def GetResponse(self):
         #TODO for receiving objective from application
         while(not self.finished):
             if(len(self.appClient.inbox) > 0):
-                self.objective = self.appClient.inbox.pop()
+                temp = self.appClient.inbox.pop()
+                if("objective" in temp):
+                    self.objective = temp["objective"]
                 print(self.objective)
         self.appClient.finished = True
         return
-    
 
+        
     #   from arduino
     def GetResponse(self):
         ardIn = ""
         while(not self.finished):
             if(self.arduino.inWaiting() > 0):
-                ardIn = self.arduino.read().decode("ascii")
-                ardIn = ardIn.replace("\r", "")
-                ardIn = ardIn.replace("\n", "")
+                ardIn = self.Read(False)
                 print(ardIn)
                 if(ardIn == '~'):
                     time.sleep(.25)
-                    ardIn = self.arduino.readline().decode("ascii")
-                    ardIn = ardIn.replace("\r", "")
-                    ardIn = ardIn.replace("\n", "")
+                    ardIn = self.Read(True)
                     print(ardIn)
                 elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
+                    self.UpdateLocation()
                     print(self.numSpacesMoved)
-                    
+                elif(ardIn == '$'):
+                    time.sleep(.25)
+                    ardIn = self.Read(False)
+                    self.UpdateDirection(ardIn)
                 elif(ardIn != ""):
                     print("   ^ " + ardIn + " ^")
                     if(self.mode == 0):
@@ -186,6 +216,19 @@ class Controller(object):
             if(self.userInput == "q"):
                 self.userInput = ""
                 break
+        return
+
+
+    #   from arduino
+    def Read(self, line):
+        temp = ""
+        if(line):
+            temp = self.arduino.readline().decode("ascii")
+        else:
+            temp = self.arduino.readline().decode("ascii")
+        temp = temp.replace("\r", "")
+        temp = temp.replace("\n", "")
+        return temp
 
 
     #   to arduino
@@ -225,6 +268,7 @@ class Controller(object):
             self.sequence = ""
             self.tokens = []
             self.cmds = []
+        return
                     
 
 

@@ -7,6 +7,7 @@ import imutils
 import numpy as np
 import math
 from time import sleep
+import threading
 
 
 class GridSpace:
@@ -198,26 +199,34 @@ class Robot(GridSpace):
         self.goalFound = False
         self.displayGoals = False
         self.displayGoalLoc = False
+        self.robotOnline = False
 
+        self.robotCommThread = threading.Thread(target=self.GetMessage)
         self.robotServer = Communicate()
         self.robotServer.port = 5680
         print("waiting to connect to robot...")
         self.robotServer.setupLine("")
         print("connected!")
+        self.robotOnline = True
+
+        
 
 
     def SendObjective(self, objective):
-        self.robotServer.sendMessage(objective) # i.e. objective is to drive to first quadrant
+        self.robotServer.sendMessage({"objective": objective}) # i.e. objective is to drive to first quadrant
         return
         
     def SetGoal(self, goal):
         self.goal = goal
+        return
 
 
     def Run(self):
         c = 0
         i = 0
-        self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
+        if(self.robotOnline):
+            self.robotCommThread.start()
+            self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
         while(True):
             self.frame = self.vs.read()
             self.frame = imutils.resize(self.frame, width=640, height=480)
