@@ -5,6 +5,8 @@ import threading
 import sys
 import traceback
 from Communicate import *
+import json
+import ast
 
 def TryParseInt(val):
     try:
@@ -28,7 +30,7 @@ class Controller(object):
         self.validSequence = False
         self.tcpServer = Communicate()
 
-        self.appComm = threading.Thread(target=self.GetObjective)
+        self.appComm = threading.Thread(target=self.GetAppResponse)
         self.appClient = Communicate()
         self.appClient.port = 5680
         self.appOnline = True
@@ -50,7 +52,7 @@ class Controller(object):
         self.objective = ""
 
         #   updates form UpdateLocation function
-        self.location = (-5. -3)
+        self.location = (-5, -3)
 
         #   (will succeed, number of spaces moved, ending location, distance from goal)
         self.evaluation = (True, 4, (0,0), (0,0))
@@ -65,6 +67,7 @@ class Controller(object):
             self.direction = "left"
         elif(val == '3'):
             self.direction = "down"
+        self.SendDirection()
         return
 
     def UpdateLocation(self):
@@ -76,6 +79,7 @@ class Controller(object):
             self.location[1] = self.location[1] + 1
         else:
             self.location[1] = self.location[1] - 1
+        self.SendLocation()
         return
 
     def EvaluateSequence(self):
@@ -83,33 +87,46 @@ class Controller(object):
         pass
 
     def SendEvaluation(self):
-        if(appOnline):
+        if(self.appOnline):
             self.appClient.sendMessage({"evaluation" : self.evaluation})
         else:
             print("app offline")
         return
 
     def SendDirection(self):
-        if(appOnline):
-            self.appClient.sendMessage({"direction" : self.direction })
+        if(self.appOnline):
+            d = dict()
+            d["direction"] = self.direction
+            self.appClient.sendMessage(str(d))
         else:
             print("app offline")
         return
         
 
     def SendLocation(self):
-        if(appOnline):
-            self.appClient.sendMessage({"location" : self.location })
+        if(self.appOnline):
+            d = dict()
+            d["location"] = str(self.location)
+            self.appClient.sendMessage(str(d))
+        else:
+            print("app offline")
+        return
+
+    def SendMessage(self, message):
+        if(self.appOnline):
+            d = dict()
+            d["message"] = message
+            self.appClient.sendMessage(str(d))
         else:
             print("app offline")
         return
 
     #   from application
-    def GetResponse(self):
-        #TODO for receiving objective from application
+    def GetAppResponse(self):
+        time.sleep(1)
         while(not self.finished):
             if(len(self.appClient.inbox) > 0):
-                temp = self.appClient.inbox.pop()
+                temp = ast.literal_eval(self.appClient.inbox.pop())
                 if("objective" in temp):
                     self.objective = temp["objective"]
                 print(self.objective)
@@ -259,6 +276,13 @@ class Controller(object):
                 self.finished = True
                 self.responseThread.join()
                 break
+            elif(self.userInput == "L"):
+                self.SendLocation()
+            elif(self.userInput == "D"):
+                self.SendDirection()
+            elif(self.userInput == "M"):
+                m = input()
+                self.SendMessage(m)
             else:
                 self.GenerateCommandSequence()
                 if(self.validSequence):
