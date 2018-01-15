@@ -11,6 +11,11 @@ def Problem3():
     repeatCounter = 0
     time.sleep(1)
     counter = 0
+
+    oneFound = False
+    twoFound = False
+    threeFound = False
+    fourFound = False
     ############################################################################################
     #   drive to point
 
@@ -22,10 +27,9 @@ def Problem3():
     cv2.putText(r.textArea, "driving the robot to each new location in one sequence.", (0, 70), 2, .5, (100,200,100), 1)
 
     print("first, enter the coordinates for the Amazon Warehouse, location 1")
-    print("ex, if the coordinates are (5,5), enter (5,5)")
-    userIn = ""
-    while(userIn is not "(2,-2)"):
-        userIn = input("> ")
+    print("ex, if the coordinates are (5,5), enter 5,5 without parentheses")
+    userIn = input("> ")
+    while(userIn != "2,-2"):
         if(repeatCounter == 0):
             print("double check your entry...")
             repeatCounter += 1
@@ -34,12 +38,64 @@ def Problem3():
             repeatCounter += 1
         elif(repeatCounter == 2):
             print("maybe you need some extra assistance...")
+        userIn = input("> ")
+    print("Great!")
 
+    print("enter the coordinates for the office1, location 2")
+    userIn = input("> ")
+    while(userIn != "2,1"):
+        if(repeatCounter == 0):
+            print("double check your entry...")
+            repeatCounter += 1
+        elif(repeatCounter == 1):
+            print("x is positive and y is positive...")
+            repeatCounter += 1
+        elif(repeatCounter == 2):
+            print("maybe you need some extra assistance...")
+        userIn = input("> ")
 
+    print("enter the coordinates for the office2, location 3")
+    userIn = input("> ")
+    while(userIn != "-2,1"):
+        if(repeatCounter == 0):
+            print("double check your entry...")
+            repeatCounter += 1
+        elif(repeatCounter == 1):
+            print("x is negative and y is positive...")
+            repeatCounter += 1
+        elif(repeatCounter == 2):
+            print("maybe you need some extra assistance...")
+        userIn = input("> ")
+
+    print("enter the coordinates for the office3, location 4")
+    userIn = input("> ")
+    while(userIn != "1,4"):
+        if(repeatCounter == 0):
+            print("double check your entry...")
+            repeatCounter += 1
+        elif(repeatCounter == 1):
+            print("x is positive and y is positive...")
+            repeatCounter += 1
+        elif(repeatCounter == 2):
+            print("maybe you need some extra assistance...")
+        userIn = input("> ")
+
+    r.displayGoalLoc = True
     while(counter != 4):
         time.sleep(2)
-        counter += 1
-        r.displayGoalLoc = True
+        if(r.location == str(r.points[0]) and oneFound == False):
+            counter += 1
+            oneFound = True
+        if(r.location == str(r.points[1]) and twoFound == False):
+            counter += 1
+            twoFound = True
+        if(r.location == str(r.points[2]) and threeFound == False):
+            counter += 1
+            threeFound = True
+        if(r.location == str(r.points[3]) and fourFound == False):
+            counter += 1
+            fourFound = True
+        
 
     cv2.putText(r.textArea, "Nice Work!", (0, 300), 4, 1.2, (100,200,100), 1)
     repeatCounter = 0

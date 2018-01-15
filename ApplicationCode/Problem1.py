@@ -227,7 +227,7 @@ if (__name__ == "__main__"):
     r.Run()    
 
     e.set()
-    runThread.join()
+    problemThread.join()
     
 
     

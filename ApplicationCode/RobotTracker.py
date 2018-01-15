@@ -193,6 +193,7 @@ class Robot(GridSpace):
         self.robotCommThread.e = threading.Event()
         self.robotServer = Communicate()
         self.robotServer.port = 5680
+
         print("waiting to connect to robot...")
         self.robotServer.setupLine("")
         print("connected!")
@@ -357,8 +358,8 @@ class Robot(GridSpace):
 
 
 
-r = Robot()
-r.Run()
+#r = Robot()
+#r.Run()
 
 
 
