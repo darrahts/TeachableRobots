@@ -8,6 +8,7 @@ import numpy as np
 import math
 from time import sleep
 import threading
+import ast
 
 
 class GridSpace:
@@ -63,6 +64,7 @@ class GridSpace:
     '''
         cv2.drawContours(self.frame, [self.square], -1, (0, 255, 0), 2)
         cv2.circle(self.frame, (self.frameCenter[0],self.frameCenter[1]), 15, (0,255,255), 2)
+        #self.textArea = np.zeros((frame.shape[0],550,3),dtype=np.uint8)
         
         #   draw the axis tick marks
         j = 152
@@ -112,11 +114,6 @@ class GridSpace:
 
                 The processed frame
     '''
-        #lower = np.array([100,100,100])
-        #upper = np.array([255,255,255])
-        #mask = cv2.inRange(frame, lower, upper)
-        #res = cv2.bitwise_and(frame, frame, mask=mask)
-        #cv2.imshow("result", res)
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         color = cv2.inRange(frame, low, high)
@@ -176,18 +173,6 @@ class Robot(GridSpace):
     def __init__(self):
         self.lowColor = (65, 115, 0)
         self.highColor = (150, 200, 60)
-        #self.lowColor = (60, 140, 0)
-        #self.highColor = (157, 200, 130)        
-        #self.lowColor = (111,150,48)
-        #self.highColor = (145,185,128)        
-        #self.lowColor = (77,162,102)
-        #self.highColor = (139, 204,138)        
-        #self.lowColor = (66, 113, 62)
-        #self.highColor = (125, 150, 104)        
-        #self.lowColor = (60, 120, 50)
-        #self.highColor = (125, 170, 100)
-        #self.lowColor = (86, 143, 76)
-        #self.highColor = (142, 183, 133)
         self.robot = 0,0,0,0
         self.contour = []
         self.ellipse = ((0,0),(0,0), 0)
@@ -196,24 +181,49 @@ class Robot(GridSpace):
         
         self.rLoc = (0,0)
         self.goal = (0,0)
+        
         self.goalFound = False
         self.displayGoals = False
         self.displayGoalLoc = False
         self.robotOnline = False
+        self.finished = False
 
-        self.robotCommThread = threading.Thread(target=self.GetMessage)
+        
+        self.robotCommThread = threading.Thread(target=self.GetResponse)
+        self.robotCommThread.e = threading.Event()
         self.robotServer = Communicate()
         self.robotServer.port = 5680
         print("waiting to connect to robot...")
         self.robotServer.setupLine("")
         print("connected!")
         self.robotOnline = True
+        self.location = ""
+        self.direction = ""
+        self.message = ""
 
+        self.points = [(2,-2), (2,1), (-2,1), (1,4)]
         
 
 
+    def GetResponse(self):
+        while(not self.robotServer.finished):
+            if(len(self.robotServer.inbox) > 0):
+                temp = ast.literal_eval(self.robotServer.inbox.pop())
+                if("location" in temp):
+                    print("location: " + temp["location"])
+                if("direction" in temp):
+                    print("direction: " + temp["direction"])
+                if("message" in temp):
+                    print("message: " + temp["message"])
+                    self.message = temp["message"]
+        return
+
+
     def SendObjective(self, objective):
-        self.robotServer.sendMessage({"objective": objective}) # i.e. objective is to drive to first quadrant
+        d = dict()
+        d["objective"] = objective
+        self.robotServer.sendMessage(str(d)) # i.e. objective is to drive to first quadrant
+        print("sent: " + objective)
         return
         
     def SetGoal(self, goal):
@@ -226,8 +236,9 @@ class Robot(GridSpace):
         i = 0
         if(self.robotOnline):
             self.robotCommThread.start()
-            self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
-        while(True):
+            #self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
+        print("starting...")
+        while(not self.finished):
             self.frame = self.vs.read()
             self.frame = imutils.resize(self.frame, width=640, height=480)
             self.frameCopy = self.frame.copy()
@@ -238,29 +249,21 @@ class Robot(GridSpace):
             #    self.goalFound = True
             #    c +=1
 
-            self.FrameOverlay(self.frame, "", "")
+            self.FrameOverlay(self.frame)
             window = np.hstack([self.frame,self.textArea])
             #window = self.frame
             cv2.imshow(self.title, window)
 
-##            if(self.goalFound and c == 10):
-##                x = input("pick a new goal in the form x,y or q to quit: ")
-##                if(x == "q"):
-##                    break
-##                y = x.split(",")
-##                self.goal = (int(y[0]), int(y[1]))
-##                self.goalFound = False
-##                c = 0
-
 
             key = cv2.waitKey(1) & 0xFF
             if(key == ord("q")):
-                self.robotServer.finished = True
-                self.robotServer.closeConnection()
-                break
+                self.finished = True
             elif(key == ord("c")):
                 cv2.imwrite("picture%i.jpg" %i, window)
                 i += 1
+        self.robotServer.e.set()
+        self.robotServer.finished = True
+        self.robotServer.closeConnection()
             
 
     def FindRobot(self, frame):
@@ -282,15 +285,18 @@ class Robot(GridSpace):
             return -1
 
 
-    def FrameOverlay(self, frame, msg, loc): #TODO draw point, student name in text area
+    def FrameOverlay(self, frame): #TODO draw point, student name in text area
         super().FrameOverlay(self.frame)
-        goal = self.LocationToCoordinates(self.goal)
+        amazon = self.LocationToCoordinates(self.points[0])
+        office1 = self.LocationToCoordinates(self.points[1])
+        office2 = self.LocationToCoordinates(self.points[2])
+        office3 = self.LocationToCoordinates(self.points[3])
         if(self.displayGoals):
-            self.DrawGoal(goal, self.displayGoalLoc)
-            #print(self.displayGoalLoc)
-        #self.DrawGoal(self.LocationToCoordinates((3,2)))
-        #self.DrawGoal(self.LocationToCoordinates((-3, 1)))
-        #self.DrawGoal(self.LocationToCoordinates((1, 4)))
+            self.DrawGoal(amazon, self.displayGoalLoc)
+            self.DrawGoal(office1, self.displayGoalLoc)
+            self.DrawGoal(office2, self.displayGoalLoc)
+            self.DrawGoal(office3, self.displayGoalLoc)
+
         self.rLoc = self.CoordinatesToLocation(self.robot)
             
         cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
@@ -299,8 +305,10 @@ class Robot(GridSpace):
         #cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
         #cv2.circle(self.textArea, (208,8), 2, (100,200,100), 1)
 
-        #cv2.putText(self.textArea, "Goal: " + str(self.goal), (10, 50), 3, .7, (100,200,100), 1)
+        cv2.putText(self.textArea, "Direction: " + self.direction, (200, 20), 3, .5, (100,200,100), 1)
+        cv2.putText(self.textArea, "Location: " + self.location, (400, 20), 3, .5, (100,200,100), 1)
 
+        
         if(len(self.contour) > 0):
             self.ellipse = cv2.fitEllipse(self.contour)
             w = self.ellipse[1][0] * 1.25
@@ -343,8 +351,8 @@ class Robot(GridSpace):
 
 
 
-r = Robot()
-r.Run()
+#r = Robot()
+#r.Run()
 
 
 

@@ -5,20 +5,11 @@ import time
 from threading import Thread, Event
 
 
-if (__name__ == "__main__"):
-    
-    r = Robot()
-    #r.SetGoal((2,2))
-    r.displayGoals = False
 
+
+def Problem2():
     repeatCounter = 0
-
-    runThread = Thread(target=r.Run)
-    e = Event()
-    runThread.start()
-    
-    #r.Run()
-
+    time.sleep(1)    
     ############################################################################################
     #   drive to point
 
@@ -89,8 +80,24 @@ if (__name__ == "__main__"):
     time.sleep(3)
     r.textArea = np.zeros((r.frame.shape[0],550,3),dtype=np.uint8)
     r.displayGoals = False
-    #e.set()
-    #runThread.join()
+    r.finished = True
+
+
+if (__name__ == "__main__"):
+    
+    r = Robot()
+    r.displayGoals = False
+
+    problemThread = Thread(target=Problem2)
+    problemThread.isDaemon = True
+    e = Event()
+    problemThread.start()
+
+    r.Run()    
+
+    e.set()
+    problemThread.join()    
+
     
 
     
