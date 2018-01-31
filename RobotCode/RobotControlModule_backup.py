@@ -6,7 +6,6 @@ import sys
 import traceback
 from teachablerobots.src.Communicate import *
 import ast
-import weakref
 
 def TryParseInt(val):
     try:
@@ -15,67 +14,13 @@ def TryParseInt(val):
         return False
 
 
-class AppComm(object):
-    def __init__(self, parent, ipAdr, port):
-        self.appCommThread = threading.Thread(target=self.GetAppResponse)
-        self.appClient = Communicate()
-        self.appClient.port = port
-        self.appOnline = True
-        self.robot = weakref.ref(parent)
-        
-        try:
-            self.appClient.setupLine(ipAdr)
-            print("connected!")
-        except:
-            print("app offline.")
-            self.appOnline = False
-
-    def SendEvaluation(self):
-        if(self.appOnline):
-            self.appClient.sendMessage({"evaluation" : self.evaluation})
-        return
-
-    def SendDirection(self):
-        if(self.appOnline):
-            d = dict()
-            d["direction"] = self.direction
-            self.appClient.sendMessage(str(d))
-        return
-        
-
-    def SendLocation(self):
-        if(self.appOnline):
-            d = dict()
-            d["location"] = str(self.location)
-            self.appClient.sendMessage(str(d))
-        return
-
-    def SendMessage(self, message):
-        if(self.appOnline):
-            d = dict()
-            d["message"] = message
-            self.appClient.sendMessage(str(d))
-        return
-
-    #   from application
-    def GetAppResponse(self):
-        time.sleep(1)
-        while(not self.robot().finished):
-            if(len(self.appClient.inbox) > 0):
-                temp = ast.literal_eval(self.appClient.inbox.pop())
-                if("objective" in temp):
-                    self.robot().objective = temp["objective"]
-                print(self.objective)
-        self.appClient.finished = True
-        return
-
 
 class Controller(object):
     def __init__(self, port):
         self.tcpWatcher = threading.Thread(target=self.GetCommandSequence)
         self.responseThread = threading.Thread(target=self.GetResponse)
         self.arduino = serial.Serial(port, 9600)
-        self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
+        self.mode = 0 #0 for auto, 1 for manual
         self.userInput = ""
         self.tokens = []
         self.cmds = []
@@ -83,8 +28,17 @@ class Controller(object):
         self.finished = False
         self.validSequence = False
         self.tcpServer = Communicate()
-        
-        self.appComm = AppComm(self, "192.168.1.91", 5680)
+
+        self.appComm = threading.Thread(target=self.GetAppResponse)
+        self.appClient = Communicate()
+        self.appClient.port = 5680
+        self.appOnline = True
+        try:
+            self.appClient.setupLine("192.168.1.91")
+            print("connected!")
+        except:
+            print("app offline.")
+            self.appOnline = False
 
         
         #   updated from arduino
@@ -132,7 +86,52 @@ class Controller(object):
         #TODO Evaluates sequence
         pass
 
-    
+    def SendEvaluation(self):
+        if(self.appOnline):
+            self.appClient.sendMessage({"evaluation" : self.evaluation})
+        else:
+            print("app offline")
+        return
+
+    def SendDirection(self):
+        if(self.appOnline):
+            d = dict()
+            d["direction"] = self.direction
+            self.appClient.sendMessage(str(d))
+        else:
+            print("app offline")
+        return
+        
+
+    def SendLocation(self):
+        if(self.appOnline):
+            d = dict()
+            d["location"] = str(self.location)
+            self.appClient.sendMessage(str(d))
+        else:
+            print("app offline")
+        return
+
+    def SendMessage(self, message):
+        if(self.appOnline):
+            d = dict()
+            d["message"] = message
+            self.appClient.sendMessage(str(d))
+        else:
+            print("app offline")
+        return
+
+    #   from application
+    def GetAppResponse(self):
+        time.sleep(1)
+        while(not self.finished):
+            if(len(self.appClient.inbox) > 0):
+                temp = ast.literal_eval(self.appClient.inbox.pop())
+                if("objective" in temp):
+                    self.objective = temp["objective"]
+                print(self.objective)
+        self.appClient.finished = True
+        return
 
         
     #   from arduino
@@ -259,7 +258,7 @@ class Controller(object):
     def Run(self):
         self.responseThread.start()
         if(self.appOnline):
-            self.appCommThread.start()
+            self.appComm.start()
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")
@@ -297,4 +296,46 @@ class Controller(object):
             self.cmds = []
         return
                     
+
+
     
+
+if (__name__ == "__main__"):
+    try:
+        try:
+            c = Controller("/dev/ttyACM0")
+        except Exception as e:
+            print(str(e))
+            traceback.print_exc()
+            try:
+                c = Controller("/dev/ttyACM1")
+            except:
+                print("couldnt open arduino port.")
+
+        c.Run()
+        #c.GMEdemo()
+    except Exception as e:
+        print("error.")
+        print(str(e))
+        traceback.print_exc()
+    finally:
+        try:
+            if(c.tcpWatcher.isAlive()):
+                c.tcpWatcher.join()
+            print("tcp watcher thread joined.")
+            if(c.responseThread.isAlive()):
+                c.responseThread.join()
+            print("response thread joined.")
+            c.Write("ms") #save parameters before finishing
+            c.arduino.close()
+            c.tcpServer.closeConnection()
+            print("tcp server closed.")
+            c.appCom.finished = True
+            c.appComm.closeConnection()
+        except:
+            pass
+        print("finished.")
+
+
+
+
