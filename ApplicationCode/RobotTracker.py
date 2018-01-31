@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from teachablerobots.src.Communicate import *
+from teachablerobots.src.Communicate import SocketComm
 from teachablerobots.src.GridSpace import *
 import math
 from time import sleep
@@ -78,7 +78,7 @@ class Robot(GridSpace):
         
         self.robotCommThread = threading.Thread(target=self.GetResponse)
         self.robotCommThread.e = threading.Event()
-        self.robotServer = Communicate()
+        self.robotServer = SocketComm()
         self.robotServer.port = 5680
 
         print("waiting to connect to robot...")

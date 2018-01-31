@@ -3,7 +3,7 @@
 import os
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, emit
-from teachablerobots.src.Communicate import *
+from teachablerobots.src.Communicate import SocketComm
 import logging
 
 app = Flask(__name__)
@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secret')
 socketio = SocketIO(app)
 
-tcpClient = Communicate()
+tcpClient = SocketComm()
     
 
 def ParseCmdString(cmdList):

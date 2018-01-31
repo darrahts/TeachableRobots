@@ -4,9 +4,9 @@ import time
 import threading
 import sys
 import traceback
-from teachablerobots.src.Communicate import *
+from teachablerobots.src.Communicate import SocketComm, AppComm
 import ast
-import weakref
+
 
 def TryParseInt(val):
     try:
@@ -15,59 +15,6 @@ def TryParseInt(val):
         return False
 
 
-class AppComm(object):
-    def __init__(self, parent, ipAdr, port):
-        self.appCommThread = threading.Thread(target=self.GetAppResponse)
-        self.appClient = Communicate()
-        self.appClient.port = port
-        self.appOnline = True
-        self.robot = weakref.ref(parent)
-        
-        try:
-            self.appClient.setupLine(ipAdr)
-            print("connected!")
-        except:
-            print("app offline.")
-            self.appOnline = False
-
-    def SendEvaluation(self):
-        if(self.appOnline):
-            self.appClient.sendMessage({"evaluation" : self.evaluation})
-        return
-
-    def SendDirection(self):
-        if(self.appOnline):
-            d = dict()
-            d["direction"] = self.direction
-            self.appClient.sendMessage(str(d))
-        return
-        
-
-    def SendLocation(self):
-        if(self.appOnline):
-            d = dict()
-            d["location"] = str(self.location)
-            self.appClient.sendMessage(str(d))
-        return
-
-    def SendMessage(self, message):
-        if(self.appOnline):
-            d = dict()
-            d["message"] = message
-            self.appClient.sendMessage(str(d))
-        return
-
-    #   from application
-    def GetAppResponse(self):
-        time.sleep(1)
-        while(not self.robot().finished):
-            if(len(self.appClient.inbox) > 0):
-                temp = ast.literal_eval(self.appClient.inbox.pop())
-                if("objective" in temp):
-                    self.robot().objective = temp["objective"]
-                print(self.objective)
-        self.appClient.finished = True
-        return
 
 
 class Controller(object):
@@ -82,7 +29,7 @@ class Controller(object):
         self.sequence = ""
         self.finished = False
         self.validSequence = False
-        self.tcpServer = Communicate()
+        self.tcpServer = SocketComm()
         
         self.appComm = AppComm(self, "192.168.1.91", 5680)
 
@@ -259,7 +206,7 @@ class Controller(object):
     def Run(self):
         self.responseThread.start()
         if(self.appComm.appOnline):
-            self.appCommThread.start()
+            self.appComm.appCommThread.start()
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")

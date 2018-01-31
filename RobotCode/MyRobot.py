@@ -35,8 +35,8 @@ if (__name__ == "__main__"):
             c.arduino.close()
             c.tcpServer.closeConnection()
             print("tcp server closed.")
-            c.appCom.finished = True
-            c.appComm.closeConnection()
+            c.appComm.finished = True
+            c.appComm.appClient.closeConnection()
         except Exception as e:
             print("An exception during program exit occured.")
             print(str(e))
