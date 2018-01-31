@@ -86,10 +86,7 @@ if __name__ == '__main__':
                 ans = input("robot not online. try again (y/n)?")
                 if(ans == "n"):
                     break
-            
     socketio.run(app, host="0.0.0.0")
-
-
 
 
 
