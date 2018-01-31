@@ -3,7 +3,7 @@
 import os
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, emit
-from Communicate import *
+from teachablerobots.src.Communicate import *
 import logging
 
 app = Flask(__name__)

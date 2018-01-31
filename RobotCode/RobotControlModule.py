@@ -4,8 +4,7 @@ import time
 import threading
 import sys
 import traceback
-from Communicate import *
-import json
+from teachablerobots.src.Communicate import *
 import ast
 
 def TryParseInt(val):

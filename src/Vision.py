@@ -1,6 +1,6 @@
 from threading import Thread
-#from picamera.array import PiRGBArray
-#from picamera import PiCamera
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import cv2
 #import time
 import datetime
@@ -55,78 +55,7 @@ class WebcamVideoStream:
         return self.frame
 
     def stop(self):
-        self.stopped = True
-
-
-class Demo:
-    def __init__(self, src, numFrames, display):
-        self.numFrames = numFrames
-        self.display = display
-        self.src = src
-
-    def StartRegular(self):
-        print("[INFO] sampling frames from webcam...")
-        stream = cv2.VideoCapture(self.src)
-        fps = FPS().start()
-
-        # loop over some frames
-        while fps._numFrames < self.numFrames:
-            # grab the frame from the stream and resize it to have a maximum
-            # width of 400 pixels
-            (grabbed, frame) = stream.read()
-            #frame = imutils.resize(frame, width=480)
- 
-            # check to see if the frame should be displayed to our screen
-            if self.display == True:
-                cv2.imshow("Frame", frame)
-                key = (cv2.waitKey(1) & 0xFF)
-
-            # update the FPS counter
-            fps.update()
- 
-        # stop the timer and display FPS information
-        fps.stop()
-        print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-        print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
- 
-        # do a bit of cleanup
-        stream.release()
-        cv2.destroyAllWindows()
-
-    def StartThreaded(self):
-        # created a *threaded* video stream, allow the camera sensor to warmup,
-        # and start the FPS counter
-        print("[INFO] sampling THREADED frames from webcam...")
-        vs = WebcamVideoStream(self.src).start()
-        fps = FPS().start()
-        cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('image', 640, 480)
- 
-        # loop over some frames...this time using the threaded stream
-        while fps._numFrames < self.numFrames:
-            # grab the frame from the threaded video stream and resize it
-            # to have a maximum width of 400 pixels
-            frame = vs.read()
-            #frame = imutils.resize(frame, width=480)
-            #frame = cv2.resize(frame, (640,480))
- 
-            # check to see if the frame should be displayed to our screen
-            if self.display == True:
-                cv2.imshow('image', frame)
-                key = cv2.waitKey(1) & 0xFF
-
-            # update the FPS counter
-            fps.update()
- 
-        # stop the timer and display FPS information
-        fps.stop()
-        print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-        print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
- 
-        # do a bit of cleanup
-        cv2.destroyAllWindows()
-        vs.stop()
-
+        self.stopped = true
 
 class PiVideoStream:
     def __init__(self, resolution=(320, 240), framerate=32):
@@ -165,7 +94,7 @@ class PiVideoStream:
 
 
 class VideoStream:
-    def __init__(self, src, usePiCamera, resolution=(320, 240), framerate=32):
+    def __init__(self, src=0, usePiCamera=True, resolution=(320, 240), framerate=32):
         if usePiCamera:
             self.stream = PiVideoStream(resolution=resolution, framerate=framerate)
         else:
@@ -194,7 +123,16 @@ class TempImage:
 		os.remove(self.path)
 
 
+class FaceDetector:
+	def __init__(self, faceCascadePath):
+		self.faceCascade = cv2.CascadeClassifier(faceCascadePath)
+	
+	def detect(self, image, scaleFactor =1.1, minNeighbors=5, minSize=(30,30)):
+		rects = self.faceCascade.detectMultiScale(image, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize, flags=cv2.CASCADE_SCALE_IMAGE)
+		return rects
 
+	def test(self):
+		print("yes")
 
 
 

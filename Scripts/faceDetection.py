@@ -1,12 +1,8 @@
-#from __future__ import print_function
-import sys
 
-sys.path.insert(0, "/home/pi/csrbot/robot-api")
 
-from Vision import FaceDetector
+from teachablerobots.src.Vision import FaceDetector, VideoStream
 from multiprocessing.pool import ThreadPool
 #from multiprocessing import Queue
-from VideoStream import VideoStream
 import imutils
 import numpy as np
 import argparse

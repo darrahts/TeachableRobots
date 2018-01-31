@@ -2,7 +2,7 @@
 import RPi.GPIO as GPIO
 import time
 import datetime
-from EmailHandler import *
+from EmailHandler import EmailSender
 import picamera
 
 #######   VARIABLES  ######
@@ -19,6 +19,7 @@ GPIO.setup(buzzer, GPIO.OUT)
 GPIO.setup(led, GPIO.OUT) #our LED is an output
 GPIO.output(led, GPIO.LOW) #make sure its off to start
 
+mailMan = EmailSender("ecirlt2017@gmail.com")
 
 #######  FUNCTIONS #######    
 
@@ -67,7 +68,9 @@ def detectIntruders():
         if(GPIO.input(13) == GPIO.HIGH):
             print("intruder detected.")
             evidence = capture()
-            sendEmail(evidence, msg)
+            mailMan.AttachImage(evidence)
+            mailMan.SetMessageData(destEmail="tim.darrah1@gmail.com", "subject here", "body here")
+            mailMan.SendEmail(evidence, msg)
             GPIO.output(led, GPIO.HIGH)
             alert(1000)
             time.sleep(5)
