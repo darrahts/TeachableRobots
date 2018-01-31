@@ -13,23 +13,34 @@ class Communicate(object):
         self.getMessagesThread._stop_event = Event()
         self.getMessagesThread.daemon = True
         self.e = Event()
+        self.connected = False
         print(self.address)
         return
     
     def setupLine(self, addr):
         self.address = addr
+        self.connection.settimeout(3)
         if self.address is "": #i.e. server on raspberry pi
             try:
                 self.connection.bind((self.address, self.port))
                 self.connection.listen(1)
                 self.connection, otherAddress = self.connection.accept()
                 print("connected to: " + otherAddress[0])
-            except socket.error as msg:
-                print(msg)
+            except socket.error as e:
+                self.connected = False
+                self.finished = True
+                return False
         else:
-            self.connection.connect((self.address, self.port)) # i.e. client
+            try:
+                self.connection.connect((self.address, self.port)) # i.e. client
+            except socket.error as e:
+                self.connected = False
+                self.finished = True
+                return False
+                
         self.getMessagesThread.start()
-        return
+        self.connected = True
+        return True
 
     def sendMessage(self, msg):
         try:
@@ -57,7 +68,10 @@ class Communicate(object):
         self.finished = True
         self.e.set()
         self.getMessagesThread._stop_event.set()
-        self.getMessagesThread.join()
+        try:
+            self.getMessagesThread.join()
+        except:
+            pass
         self.connection.close()
         return
 

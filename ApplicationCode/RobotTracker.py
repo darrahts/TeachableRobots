@@ -181,7 +181,6 @@ class Robot(GridSpace):
         self.goalFound = False
         self.displayGoals = False
         self.displayGoalLoc = False
-        self.robotOnline = False
         self.finished = False
 
         
@@ -191,9 +190,9 @@ class Robot(GridSpace):
         self.robotServer.port = 5680
 
         print("waiting to connect to robot...")
-        self.robotServer.setupLine("")
-        print("connected!")
-        self.robotOnline = True
+        if(self.robotServer.setupLine("") == True):
+            print("connecteddd!")
+        
         self.location = "(-5,-3)"
         self.direction = "Right"
         self.message = ""
@@ -241,7 +240,7 @@ class Robot(GridSpace):
     def Run(self):
         c = 0
         i = 0
-        if(self.robotOnline):
+        if(self.robotServer.connected):
             self.robotCommThread.start()
             #self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
         print("starting...")
@@ -270,7 +269,9 @@ class Robot(GridSpace):
                 i += 1
         self.robotServer.e.set()
         self.robotServer.finished = True
+        print("closing connection")
         self.robotServer.closeConnection()
+        print("here")
             
 
     def FindRobot(self, frame):
@@ -358,7 +359,6 @@ class Robot(GridSpace):
     def GetHeading(self, frame):
         pass
 
-print(sys.path)
 
 r = Robot()
 r.Run()
