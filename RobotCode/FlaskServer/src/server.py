@@ -80,7 +80,7 @@ if __name__ == '__main__':
     while(True):
         try:
             print("setting up connection...")
-            tcpClient.setupLine("127.0.0.1")
+            print(tcpClient.setupLine("127.0.0.1"))
             if(tcpClient.connected):
                 break
         except Exception as e:

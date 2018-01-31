@@ -19,7 +19,7 @@ class Communicate(object):
     
     def setupLine(self, addr):
         self.address = addr
-        self.connection.settimeout(3)
+        self.connection.settimeout(10)
         if self.address is "": #i.e. server on raspberry pi
             try:
                 self.connection.bind((self.address, self.port))
