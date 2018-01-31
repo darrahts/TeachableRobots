@@ -79,7 +79,9 @@ def test_message(message):
 if __name__ == '__main__':
     while(True):
         try:
+            print("setting up connection...")
             tcpClient.setupLine("127.0.0.1")
+            print("here")
             break
         except Exception as e:
             print(str(e))
