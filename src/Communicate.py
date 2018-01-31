@@ -37,7 +37,7 @@ class AppComm(object):
     def SendLocation(self):
         if(self.appOnline):
             d = dict()
-            d["location"] = str(self.robot()location)
+            d["location"] = str(self.robot().location)
             self.appClient.sendMessage(str(d))
         return
 
