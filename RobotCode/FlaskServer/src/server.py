@@ -77,16 +77,19 @@ def test_message(message):
 
 
 if __name__ == '__main__':
-    while(True):
-        try:
-            print("setting up connection...")
+    try:
+        print("setting up connection...")
+        while(True):
             if(tcpClient.setupLine("127.0.0.1")):
                 break
             else:
                 ans = input("robot not online. try again (y/n)?")
                 if(ans == "n"):
                     break
-    socketio.run(app, host="0.0.0.0")
+        if(tcpClient.connected):
+            socketio.run(app, host="0.0.0.0")
+    except Exception as e:
+        print(str(e))
 
 
 
