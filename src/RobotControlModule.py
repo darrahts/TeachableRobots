@@ -258,7 +258,7 @@ class Controller(object):
         
     def Run(self):
         self.responseThread.start()
-        if(self.AppComm.appOnline):
+        if(self.appComm.appOnline):
             self.appCommThread.start()
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
