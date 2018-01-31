@@ -23,13 +23,13 @@ class AppComm(object):
 
     def SendEvaluation(self):
         if(self.appOnline):
-            self.appClient.sendMessage({"evaluation" : self.evaluation})
+            self.appClient.sendMessage({"evaluation" : self.robot().evaluation})
         return
 
     def SendDirection(self):
         if(self.appOnline):
             d = dict()
-            d["direction"] = self.direction
+            d["direction"] = self.robot().direction
             self.appClient.sendMessage(str(d))
         return
         
@@ -37,7 +37,7 @@ class AppComm(object):
     def SendLocation(self):
         if(self.appOnline):
             d = dict()
-            d["location"] = str(self.location)
+            d["location"] = str(self.robot()location)
             self.appClient.sendMessage(str(d))
         return
 
