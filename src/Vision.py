@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Event
 import cv2
 #import time
 import datetime
@@ -35,25 +35,29 @@ class WebcamVideoStream:
         self.stream = cv2.VideoCapture(src)
         (self.grabbed, self.frame) = self.stream.read()
         self.stopped = False
+        self.t = Thread(target=self.update, args=())
+        self.t._stop_event = Event()
 
     def start(self):
-        t = Thread(target=self.update, args=())
-        t.daemon = True
-        t.start()
+        self.t.daemon = True
+        self.t.start()
         return self
 
     def update(self):
         while(True):
             if(self.stopped):
-                return
+                break
             else:
                 (self.grabbed, self.frame) = self.stream.read()
+        return
 
     def read(self):
         return self.frame
 
     def stop(self):
         self.stopped = true
+        self.t._stop_event.set()
+        self.t.join(3)
 
 class PiVideoStream:
     def __init__(self, resolution=(320, 240), framerate=32):
