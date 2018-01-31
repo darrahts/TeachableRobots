@@ -57,6 +57,7 @@ class Communicate(object):
                 if len(decoded) > 0:
                     if decoded == "end":
                         self.finished = True
+                        self.sendMessage("done")
                     else:
                         self.inbox.appendleft(decoded)
             except:
@@ -68,8 +69,10 @@ class Communicate(object):
         self.finished = True
         self.e.set()
         self.getMessagesThread._stop_event.set()
+        self.sendMessage("end")
         try:
             self.getMessagesThread.join()
+            print("thread joined")
         except:
             pass
         self.connection.close()
