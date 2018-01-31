@@ -60,7 +60,7 @@ class Controller(object):
             self.direction = "left"
         elif(val == '3'):
             self.direction = "down"
-        self.SendDirection()
+        self.appComm.SendDirection()
         return
 
     def UpdateLocation(self):
@@ -72,7 +72,7 @@ class Controller(object):
             self.location = (self.location[0], self.location[1]+1)
         else:
             self.location = (self.location[0], self.location[1]-1)
-        self.SendLocation()
+        self.appComm.SendLocation()
         return
 
     def EvaluateSequence(self):
@@ -227,12 +227,12 @@ class Controller(object):
                 self.responseThread.join()
                 break
             elif(self.userInput == "L"):
-                self.SendLocation()
+                self.appComm.SendLocation()
             elif(self.userInput == "D"):
-                self.SendDirection()
+                self.appComm.SendDirection()
             elif(self.userInput == "M"):
                 m = input()
-                self.SendMessage(m)
+                self.appComm.SendMessage(m)
             else:
                 self.GenerateCommandSequence()
                 if(self.validSequence):
