@@ -840,8 +840,8 @@ unsigned int ReadIntEEPROM(int adr)
 void setup() 
 {
     //load saved parameters from eeprom
-    OFFSET = 22;
-    SaveParameters();
+    //OFFSET = 22;
+    //SaveParameters();
     LoadParameters();
     
     //enable the serial port
