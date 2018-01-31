@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from VideoStream import *
+from teachablerobots.src.Vision import *
 import cv2
 import imutils
 import numpy as np

@@ -1,6 +1,4 @@
 from threading import Thread
-from picamera.array import PiRGBArray
-from picamera import PiCamera
 import cv2
 #import time
 import datetime
@@ -59,6 +57,8 @@ class WebcamVideoStream:
 
 class PiVideoStream:
     def __init__(self, resolution=(320, 240), framerate=32):
+        from picamera.array import PiRGBArray
+        from picamera import PiCamera
         self.camera = PiCamera()
         self.camera.resolution = resolution
         self.camera.framerate = framerate
