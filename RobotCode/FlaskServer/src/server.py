@@ -80,14 +80,12 @@ if __name__ == '__main__':
     while(True):
         try:
             print("setting up connection...")
-            print(tcpClient.setupLine("127.0.0.1"))
-            if(tcpClient.connected):
+            if(tcpClient.setupLine("127.0.0.1")):
                 break
-        except Exception as e:
-            print(str(e))
-            ans = input("robot not online. try again (y/n)?")
-            if(ans == "n"):
-                break
+            else:
+                ans = input("robot not online. try again (y/n)?")
+                if(ans == "n"):
+                    break
             
     socketio.run(app, host="0.0.0.0")
 
