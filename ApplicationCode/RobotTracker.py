@@ -271,7 +271,7 @@ class Robot(GridSpace):
         self.robotServer.finished = True
         print("closing connection")
         self.robotServer.closeConnection()
-        print("here")
+
             
 
     def FindRobot(self, frame):

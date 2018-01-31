@@ -50,6 +50,7 @@ class Communicate(object):
         return
 
     def getMessages(self):
+        self.connection.settimeout(1)
         while not self.finished:
             try:
                 received = self.connection.recv(1024)
@@ -57,11 +58,13 @@ class Communicate(object):
                 if len(decoded) > 0:
                     if decoded == "end":
                         self.finished = True
-                        self.sendMessage("done")
                     else:
                         self.inbox.appendleft(decoded)
-            except:
-                print("endpoint not connected.")
+            except socket.error as e:
+                if(type(e).__name__ == "timeout"):
+                    pass
+                else:
+                    print("endpoint not connected.")
                 self.finished = True
         return
 
@@ -72,7 +75,6 @@ class Communicate(object):
         self.sendMessage("end")
         try:
             self.getMessagesThread.join()
-            print("thread joined")
         except:
             pass
         self.connection.close()
