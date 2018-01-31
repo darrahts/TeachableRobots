@@ -55,7 +55,7 @@ int WHITE = 245; //memAdr 6
  *                                             GLOBAL VARIABLES                                         *                                                  
  ********************************************************************************************************/
 //if the robot is stopped (0) going forward (1) backward (2) left (3) right (4)
-int dir = 1;
+int dir = 0;
 
 //holds the input received from serial
 char input[INPUT_SIZE + 1];
@@ -108,9 +108,8 @@ byte coordinateSpace[12][12] ={{1,1,1,1,1,1,1,1,1,1,1,1}, //memAdr 100+
 
 //TESTING WITH THE BELOW PARAMETERS.
 //NOT ALL ARE USED
-bool previousState[] = {0,0,0,0,0,0,0,0,0,0};
-bool currentState[] = {0,0,0,0,0,0,0,0,0,0};
-bool nextState[] = {0,0,0,0,0,0,0,0,0,0};
+byte previousState = -1;
+
 
 bool onCourse = false;
 bool tooFarRight = false;
@@ -199,7 +198,7 @@ void Left(int duration)
   digitalWrite(MTR_B_B, HIGH);
   if(managed)
   {
-      delay(50);
+      delay(80);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
@@ -266,18 +265,18 @@ void Right(int duration)
   digitalWrite(MTR_B_B, LOW);
   if(managed)
   {
-      delay(60);
+      delay(80);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(15);
+      delay(10);
       while(readings[0] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(15);
+      delay(10);
       while(readings[2] < BLACK) 
       {
         ReadLineSensors();
@@ -447,6 +446,8 @@ void ExecuteCommand()
         {
             if(commands[i] == 1)
             {
+                previousState = state;
+                state = 1;
                 while(count != amounts[i])
                 {
                     Forward();
@@ -457,6 +458,8 @@ void ExecuteCommand()
             }
             else if(commands[i] == 2)
             {
+                previousState = state;
+                state = 2;
                 while(count != amounts[i])
                 {
                     Backward();
@@ -466,8 +469,9 @@ void ExecuteCommand()
             }
             else if(commands[i] == 3)
             {
+                previousState = state;
+                state = 3;
                 Left(int(2.166666 * amounts[i]));
-                
                 Serial.write('$');
                 if(dirT == 0)
                 {
@@ -492,8 +496,9 @@ void ExecuteCommand()
             }
             else if(commands[i] == 4)
             {
+                previousState = state;
+                state = 4;
                 Right(int(2.166666 * amounts[i]));
-      
                 Serial.write('$');
                 if(dirT == 0)
                 {
@@ -535,6 +540,7 @@ void ExecuteCommand()
  *          executes a single command at a time from serial.
  *          w = forward
  *          s = backward
+ *          x = stop
  *          a = left
  *          d = right
  *          q = exit manual control
@@ -613,7 +619,6 @@ void AssertCourse()
             }
             atIntersection = false;
             passedIntersection = true;
-            state = 0;
         }
         //if the robot reaches an intersection
         else if( onCourse && readings[0] > BLACK && readings[1] > BLACK && readings[2] > BLACK)
@@ -627,7 +632,6 @@ void AssertCourse()
                 //Serial.println("+");
                 Serial.write('+');    
             }
-            state = 1;
             //Serial.println("here");
         }
         //if the left and middle sensor read the line and the right sensor does not               
@@ -639,9 +643,9 @@ void AssertCourse()
             //Serial.println("<");
            // Serial.write('<');
             leftCount += 1;
-            if(leftCount == 8)
+            if(leftCount == 8 && state == 1 && previousState != 4)
             {
-              //OFFSET += 1;
+              OFFSET += 1;
               leftCount = 0;
             }
             if(dir == 1)
@@ -662,9 +666,9 @@ void AssertCourse()
             //Serial.println("<<");
            // Serial.write(new byte[2]{'<','<'}, 2);
             leftCount += 1;
-            if(leftCount == 8)
+            if(leftCount == 8 && state == 1 && previousState != 4)
             {
-              //OFFSET += 1;
+              OFFSET += 1;
               leftCount = 0;
             }
             if(dir == 1)
@@ -685,9 +689,9 @@ void AssertCourse()
             //Serial.println(">");
             //Serial.write('>');
             rightCount += 1;
-            if(rightCount == 8)
+            if(rightCount == 8 && state == 1 && previousState != 3)
             {
-              //OFFSET -= 1;
+              OFFSET -= 1;
               rightCount = 0;
             }
             if(dir == 1)
@@ -707,9 +711,9 @@ void AssertCourse()
             //Serial.println(">>");
            // Serial.write(new byte[2]{'>','>'}, 2);
             rightCount += 1;
-            if(rightCount == 8)
+            if(rightCount == 8 && state == 1 && previousState != 3)
             {
-              //OFFSET -= 1;
+              OFFSET -= 1;
               rightCount = 0;
             }
             if(dir == 1)
@@ -836,8 +840,8 @@ unsigned int ReadIntEEPROM(int adr)
 void setup() 
 {
     //load saved parameters from eeprom
-    //OFFSET = 26;
-    //SaveParameters();
+    OFFSET = 22;
+    SaveParameters();
     LoadParameters();
     
     //enable the serial port
