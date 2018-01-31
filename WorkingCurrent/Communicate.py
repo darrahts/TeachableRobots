@@ -32,7 +32,10 @@ class Communicate(object):
         return
 
     def sendMessage(self, msg):
-        self.connection.send(str.encode(msg))
+        try:
+            self.connection.send(str.encode(msg))
+        except:
+            print("endpoint not connected.")
         return
 
     def getMessages(self):
@@ -41,9 +44,7 @@ class Communicate(object):
                 received = self.connection.recv(1024)
                 decoded = received.decode('utf-8')
                 if len(decoded) > 0:
-                    if decoded == "connection closed.":
-                        print("connection closed.")
-                    if decoded == "client disconnected.":
+                    if decoded == "end":
                         self.finished = True
                     else:
                         self.inbox.appendleft(decoded)

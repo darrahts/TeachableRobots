@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import sys
+from teachablerobots.RobotCode.Communicate import *
 from VideoStream import *
-from Communicate import *
+#from Communicate import *
 import cv2
 import imutils
 import numpy as np
@@ -48,12 +50,6 @@ class GridSpace:
     square[2] = [550, 455]
     square[3] = [550, 40]
 
-    amazon = cv2.imread("amazon.png")
-    office = cv2.imread("office.png")
-    office2 = cv2.imread("office2.png")
-    office3 = cv2.imread("office3.png")
-
-    
 
     def FrameOverlay(self, frame):
         ''' Builds the general output window.
@@ -87,13 +83,13 @@ class GridSpace:
             cv2.line(self.frame, (334, k), (344, k), (0, 255, 255), 3)
             k += 36
 
-        maskk = frame.copy()
-        for i in range(0, len(frame[0])):
-            for j in range(0, len(frame)):
-                if(i < 125 or i > 555 or j < 32 or j > 460):
-                    maskk[j][i] = (0,0,0)
+##        maskk = frame.copy()
+##        for i in range(0, len(frame[0])):
+##            for j in range(0, len(frame)):
+##                if(i < 125 or i > 555 or j < 32 or j > 460):
+##                    maskk[j][i] = (0,0,0)
 
-        cv2.bitwise_and(maskk, self.frame, self.frame, mask=None)
+##        cv2.bitwise_and(maskk, self.frame, self.frame, mask=None)
 
         return 
 
@@ -171,7 +167,7 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (65, 115, 0)
+        self.lowColor = (40, 90, 0)
         self.highColor = (150, 200, 60)
         self.robot = 0,0,0,0
         self.contour = []
@@ -198,13 +194,18 @@ class Robot(GridSpace):
         self.robotServer.setupLine("")
         print("connected!")
         self.robotOnline = True
-        self.location = ""
-        self.direction = ""
+        self.location = "(-5,-3)"
+        self.direction = "Right"
         self.message = ""
-        self.distanceTravelled = 0
+        self.distanceTravelled = 20
 
         self.points = [(2,-2), (2,1), (-2,1), (1,4)]
         
+
+        amazon = cv2.imread("icons/amazon.png")
+        office = cv2.imread("icons/office.png")
+        office2 = cv2.imread("icons/office2.png")
+        office3 = cv2.imread("icons/office3.png")
 
 
     def GetResponse(self):
@@ -293,15 +294,16 @@ class Robot(GridSpace):
 
     def FrameOverlay(self, frame): #TODO draw point, student name in text area
         super().FrameOverlay(self.frame)
-        amazon = self.LocationToCoordinates(self.points[0])
-        office1 = self.LocationToCoordinates(self.points[1])
-        office2 = self.LocationToCoordinates(self.points[2])
-        office3 = self.LocationToCoordinates(self.points[3])
+        #amazon = self.LocationToCoordinates(self.points[0])
+        #office1 = self.LocationToCoordinates(self.points[1])
+        #office2 = self.LocationToCoordinates(self.points[2])
+        #office3 = self.LocationToCoordinates(self.points[3])
         if(self.displayGoals):
-            self.DrawGoal(amazon, self.displayGoalLoc)
-            self.DrawGoal(office1, self.displayGoalLoc)
-            self.DrawGoal(office2, self.displayGoalLoc)
-            self.DrawGoal(office3, self.displayGoalLoc)
+            self.DrawGoal(self.LocationToCoordinates(self.goal), self.displayGoalLoc)
+            #self.DrawGoal(amazon, self.displayGoalLoc)
+            #self.DrawGoal(office1, self.displayGoalLoc)
+            #self.DrawGoal(office2, self.displayGoalLoc)
+            #self.DrawGoal(office3, self.displayGoalLoc)
 
         self.rLoc = self.CoordinatesToLocation(self.robot)
             
@@ -356,10 +358,10 @@ class Robot(GridSpace):
     def GetHeading(self, frame):
         pass
 
+print(sys.path)
 
-
-#r = Robot()
-#r.Run()
+r = Robot()
+r.Run()
 
 
 

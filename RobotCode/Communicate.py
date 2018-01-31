@@ -10,6 +10,7 @@ class Communicate(object):
         self.inbox = deque()
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.getMessagesThread = Thread(target=self.getMessages)
+        self.getMessagesThread._stop_event = Event()
         self.getMessagesThread.daemon = True
         self.e = Event()
         print(self.address)
@@ -31,25 +32,31 @@ class Communicate(object):
         return
 
     def sendMessage(self, msg):
-        self.connection.send(str.encode(msg))
+        try:
+            self.connection.send(str.encode(msg))
+        except:
+            print("endpoint not connected.")
         return
 
     def getMessages(self):
         while not self.finished:
-            received = self.connection.recv(1024)
-            decoded = received.decode('utf-8')
-            if len(decoded) > 0:
-                if decoded == "connection closed.":
-                    print("connection closed.")
-                if decoded == "client disconnected.":
-                    self.finished = True
-                else:
-                    self.inbox.appendleft(decoded)
+            try:
+                received = self.connection.recv(1024)
+                decoded = received.decode('utf-8')
+                if len(decoded) > 0:
+                    if decoded == "end":
+                        self.finished = True
+                    else:
+                        self.inbox.appendleft(decoded)
+            except:
+                print("endpoint not connected.")
+                self.finished = True
         return
 
     def closeConnection(self):
         self.finished = True
         self.e.set()
+        self.getMessagesThread._stop_event.set()
         self.getMessagesThread.join()
         self.connection.close()
         return

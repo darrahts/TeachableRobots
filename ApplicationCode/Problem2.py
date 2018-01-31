@@ -70,7 +70,8 @@ def Problem2():
 ##                t1 = t2
 ##                repeatCounter += 1
 ##            elif(repeatCounter == 3):
-                cv2.putText(r.textArea, "maybe you need some extra assistance", (0, 205), 2, .5, (100,200,100), 1)
+                cv2.putText(r.textArea, "The locations of the points are now shown", (0, 205), 2, .5, (100,200,100), 1)
+                r.displayGoalLoc = True
                 x = input()
                 if(x == "continue"):
                     break
@@ -81,7 +82,8 @@ def Problem2():
     r.textArea = np.zeros((r.frame.shape[0],550,3),dtype=np.uint8)
     r.displayGoals = False
     r.finished = True
-
+    e.set()
+    problemThread.join()
 
 if (__name__ == "__main__"):
     
@@ -95,8 +97,8 @@ if (__name__ == "__main__"):
 
     r.Run()    
 
-    e.set()
-    problemThread.join()    
+
+    
 
     
 
