@@ -104,10 +104,12 @@ class SocketComm(object):
         return True
 
     def sendMessage(self, msg):
-        try:
-            self.connection.send(str.encode(msg))
-        except:
-            print("endpoint closed.")
+        if not self.finished:
+            try:
+                self.connection.send(str.encode(msg))
+            except:
+                pass
+                #print("endpoint closed.")
         return
 
     def getMessages(self):
@@ -130,15 +132,16 @@ class SocketComm(object):
         return
 
     def closeConnection(self):
-        self.finished = True
-        self.e.set()
-        self.getMessagesThread._stop_event.set()
-        self.sendMessage("end")
-        try:
-            self.getMessagesThread.join()
-        except:
-            pass
-        self.connection.close()
+        if(self.connected):
+            self.finished = True
+            self.e.set()
+            self.getMessagesThread._stop_event.set()
+            self.sendMessage("end")
+            try:
+                self.getMessagesThread.join()
+            except:
+                pass
+            self.connection.close()
         return
 
 

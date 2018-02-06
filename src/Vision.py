@@ -55,7 +55,7 @@ class WebcamVideoStream:
         return self.frame
 
     def stop(self):
-        self.stopped = true
+        self.stopped = True
         self.t._stop_event.set()
         self.t.join(3)
 

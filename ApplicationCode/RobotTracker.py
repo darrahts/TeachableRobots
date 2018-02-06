@@ -162,9 +162,11 @@ class Robot(GridSpace):
             #self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
         print("starting...")
         while(not self.finished):
-            self.frame = self.vs.read()
-            self.frame = imutils.resize(self.frame, width=640, height=480)
-            self.frameCopy = self.frame.copy()
+            self.Update(lambda: None)
+            #self.frame = self.vs.read()
+            #self.frame = imutils.resize(self.frame, width=640, height=480)
+            #self.frame = cv2.UMat(self.frame)
+            #self.frameCopy = self.frame.copy()
            
             f = self.ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
@@ -172,10 +174,11 @@ class Robot(GridSpace):
             #    self.goalFound = True
             #    c +=1
 
-            self.FrameOverlay(self.frame)
-            window = np.hstack([self.frame,self.textArea])
+            self.FrameOverlay()
+            #self.frame = cv2.UMat.get(self.frame)
+            self.window = np.hstack([self.frame,self.textArea])
             #window = self.frame
-            cv2.imshow(self.title, window)
+            cv2.imshow(self.title, self.window)
 
 
             key = cv2.waitKey(1) & 0xFF
@@ -210,8 +213,8 @@ class Robot(GridSpace):
             return -1
 
 
-    def FrameOverlay(self, frame): #TODO draw point, student name in text area
-        super().FrameOverlay(self.frame)
+    def FrameOverlay(self): #TODO draw point, student name in text area
+        super().FrameOverlay()
         #amazon = self.LocationToCoordinates(self.points[0])
         #office1 = self.LocationToCoordinates(self.points[1])
         #office2 = self.LocationToCoordinates(self.points[2])

@@ -36,6 +36,7 @@ class GridSpace:
     frame = imutils.resize(frame, width=640, height=480) 
     frameCenter = ((frame.shape[1] // 2) + 21, (frame.shape[0] // 2) + 11)
     textArea = np.zeros((frame.shape[0],550,3),dtype=np.uint8)
+    window = np.hstack([frame,textArea])
 
     square = np.ndarray([4,2], dtype=int)
     square[0] = [130, 40]
@@ -44,7 +45,7 @@ class GridSpace:
     square[3] = [550, 40]
 
 
-    def FrameOverlay(self, frame):
+    def FrameOverlay(self):
         ''' Builds the general output window.
 
         Args:
@@ -85,6 +86,26 @@ class GridSpace:
 ##        cv2.bitwise_and(maskk, self.frame, self.frame, mask=None)
 
         return 
+
+    def Update(self, callback):
+        self.frame = self.vs.read()
+        self.frame = imutils.resize(self.frame, width=640, height=480)
+        self.FrameOverlay()
+        self.window = np.hstack([self.frame,self.textArea])
+        callback()
+        return
+
+    def ShowFrame(self, fullWindow):
+        if(fullWindow):
+            cv2.imshow(self.title, self.window)
+
+        key = cv2.waitKey(1) & 0xFF
+        if(key == ord("q")):
+            self.finished = True
+        elif(key == ord("c")):
+            cv2.imwrite("picture%i.jpg" %i, window)
+            i += 1
+        return
 
 
     def ProcessFrame(self, frame, low, high):
