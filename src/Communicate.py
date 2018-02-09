@@ -8,7 +8,7 @@ import time
 #this class manages the communication between the robot and the application
 class AppComm(object):
     def __init__(self, parent, ipAdr, port):
-        self.appCommThread = Thread(target=self.GetAppResponse)
+        #self.appCommThread = Thread(target=self.GetAppResponse)
         self.appClient = SocketComm()
         self.appClient.port = port
         self.appOnline = True
@@ -95,6 +95,7 @@ class SocketComm(object):
         else:
             try:
                 self.connection.connect((self.address, self.port)) # i.e. client
+                print("line setup.")
             except socket.error as e:
                 self.connected = False
                 self.finished = True

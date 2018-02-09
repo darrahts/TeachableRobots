@@ -209,6 +209,7 @@ class Controller(object):
         self.responseThread.start()
         if(self.appComm.appOnline):
             self.appComm.appCommThread.start()
+            print("app comm thread started")
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")

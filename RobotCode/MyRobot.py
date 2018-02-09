@@ -37,6 +37,7 @@ if (__name__ == "__main__"):
             print("tcp server closed.")
             c.appComm.finished = True
             c.appComm.appClient.closeConnection()
+            print("appcomm closed.")
         except Exception as e:
             print("An exception during program exit occured.")
             print(str(e))
