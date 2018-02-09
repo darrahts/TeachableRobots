@@ -105,6 +105,8 @@ class SocketComm(object):
         return True
 
     def sendMessage(self, msg):
+        if(self.finished):
+            print("i am finished.")
         if not self.finished:
             try:
                 self.connection.send(str.encode(msg))
