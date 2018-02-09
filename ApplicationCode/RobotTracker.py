@@ -79,6 +79,7 @@ class Robot(GridSpace):
                                                 
         self.robotCommThread = threading.Thread(target=self.GetResponse)
         self.robotCommThread.e = threading.Event()
+        
         self.robotServer = SocketComm()
         self.robotServer.port = 5680
 
@@ -128,8 +129,8 @@ class Robot(GridSpace):
     def GetResponse(self):
         print("comm opened.")
         while(not self.robotServer.finished):
-            print("here")
             if(len(self.robotServer.inbox) > 0):
+                print("message received")
                 temp = ast.literal_eval(self.robotServer.inbox.pop())
                 if("location" in temp):
                     print("location: " + temp["location"])
