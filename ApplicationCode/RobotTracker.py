@@ -128,6 +128,7 @@ class Robot(GridSpace):
     def GetResponse(self):
         print("comm opened.")
         while(not self.robotServer.finished):
+            print("here")
             if(len(self.robotServer.inbox) > 0):
                 temp = ast.literal_eval(self.robotServer.inbox.pop())
                 if("location" in temp):
