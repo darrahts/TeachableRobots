@@ -99,7 +99,7 @@ class Controller(object):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
                     self.UpdateLocation()
-                    #print("+")
+                    print("+")
                     print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)
@@ -208,9 +208,7 @@ class Controller(object):
     def Run(self):
         self.responseThread.start()
         if(self.appComm.appOnline):
-            pass
-            #self.appComm.appCommThread.start()
-            #print("app comm online")
+            print("app comm online")
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")
@@ -235,7 +233,7 @@ class Controller(object):
             elif(self.userInput == "D"):
                 self.appComm.SendDirection()
             elif(self.userInput == "M"):
-                m = input()
+                m = input("enter message: ")
                 self.appComm.SendMessage(m)
             else:
                 self.GenerateCommandSequence()

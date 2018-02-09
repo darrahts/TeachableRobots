@@ -85,7 +85,7 @@ class Robot(GridSpace):
 
         print("waiting to connect to robot...")
         if(self.robotServer.setupLine("") == True):
-            print("connecteddd!")
+            print("connected to robot!")
         
         self.location = "(-5,-3)"
         self.direction = "Right"
@@ -127,10 +127,8 @@ class Robot(GridSpace):
 
 
     def GetResponse(self):
-        print("comm opened.")
         while(not self.robotServer.finished):
             if(len(self.robotServer.inbox) > 0):
-                print("message received")
                 temp = ast.literal_eval(self.robotServer.inbox.pop())
                 if("location" in temp):
                     print("location: " + temp["location"])
@@ -163,34 +161,21 @@ class Robot(GridSpace):
         i = 0
         if(self.robotServer.connected):
             self.robotCommThread.start()
-            #self.SendObjective("rLoc[0] > 0 and rLoc[1] > 0")
+            print("starting comm thread")
         print("starting...")
         while(not self.finished):
             self.Update(lambda: None)
-            #self.frame = self.vs.read()
-            #self.frame = imutils.resize(self.frame, width=640, height=480)
-            #self.frame = cv2.UMat(self.frame)
-            #self.frameCopy = self.frame.copy()
-           
             f = self.ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
-            #if(abs(self.rLoc[0] - self.goal[0]) < .5 and abs(self.rLoc[1] - self.goal[1] < .5)):
-            #    self.goalFound = True
-            #    c +=1
-
-            #self.FrameOverlay()
-            #self.frame = cv2.UMat.get(self.frame)
-            #self.window = np.hstack([self.frame,self.textArea])
-            #window = self.frame
             cv2.imshow(self.title, self.window)
-
-
+            
             key = cv2.waitKey(1) & 0xFF
             if(key == ord("q")):
                 self.finished = True
             elif(key == ord("c")):
                 cv2.imwrite("picture%i.jpg" %i, window)
                 i += 1
+                
         self.robotServer.e.set()
         self.robotServer.finished = True
         print("closing connection")
@@ -218,16 +203,9 @@ class Robot(GridSpace):
 
     def FrameOverlay(self): #TODO draw point, student name in text area
         super().FrameOverlay()
-        #amazon = self.LocationToCoordinates(self.points[0])
-        #office1 = self.LocationToCoordinates(self.points[1])
-        #office2 = self.LocationToCoordinates(self.points[2])
-        #office3 = self.LocationToCoordinates(self.points[3])
         if(self.displayGoals):
             self.DrawGoal(self.LocationToCoordinates(self.goal), self.displayGoalLoc)
-            #self.DrawGoal(amazon, self.displayGoalLoc)
-            #self.DrawGoal(office1, self.displayGoalLoc)
-            #self.DrawGoal(office2, self.displayGoalLoc)
-            #self.DrawGoal(office3, self.displayGoalLoc)
+
 
         self.rLoc = self.CoordinatesToLocation(self.robot)
             
@@ -283,8 +261,8 @@ class Robot(GridSpace):
         pass
 
 
-#r = Robot()
-#r.Run()
+r = Robot()
+r.Run()
 
 
 

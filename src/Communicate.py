@@ -3,6 +3,7 @@ from collections import deque
 from threading import Thread, Event
 import weakref
 import time
+import traceback
 
 
 #this class manages the communication between the robot and the application
@@ -31,8 +32,8 @@ class AppComm(object):
         if(self.appOnline):
             d = dict()
             d["direction"] = self.robot().direction
-            print("direction: " + str(self.robot().direction))
-            #self.appClient.sendMessage(str(d))
+            #print("direction: " + str(self.robot().direction))
+            self.appClient.sendMessage(str(d))
         return
         
 
@@ -40,8 +41,8 @@ class AppComm(object):
         if(self.appOnline):
             d = dict()
             d["location"] = str(self.robot().location)
-            print("location: " + str(self.robot().location))
-            #self.appClient.sendMessage(str(d))
+            #print("location: " + str(self.robot().location))
+            self.appClient.sendMessage(str(d))
         return
 
     def SendMessage(self, message):
@@ -88,20 +89,20 @@ class SocketComm(object):
                 self.connection.bind((self.address, self.port))
                 self.connection.listen(1)
                 self.connection, otherAddress = self.connection.accept()
-                print("connected to: " + otherAddress[0])
+                print("connected to client at: " + otherAddress[0])
             except socket.error as e:
                 print(str(e))
                 self.connected = False
-                #self.finished = True
+                self.finished = True
                 return False
         else:
             try:
                 self.connection.connect((self.address, self.port)) # i.e. client
-                print("line setup.")
+                print("connected to server")
             except socket.error as e:
                 print(str(e))
                 self.connected = False
-                #self.finished = True
+                self.finished = True
                 return False
                 
         self.getMessagesThread.start()
@@ -111,10 +112,11 @@ class SocketComm(object):
     def sendMessage(self, msg):
         try:
             self.connection.send(str.encode(msg))
-            print("sent: " + str.encode(msg))
-        except:
-            pass
-            #print("endpoint closed.")
+            print("sent: " + str(msg))
+        except Exception as e:
+            print(str(e))
+            traceback.print_exc()
+            print("exception caught.")
         return
 
     def getMessages(self):
@@ -124,13 +126,16 @@ class SocketComm(object):
                 received = self.connection.recv(1024)
                 decoded = received.decode('utf-8')
                 if len(decoded) > 0:
+                    if(decoded == "end"):
+                        self.finished = True
+                    else:
                         self.inbox.appendleft(decoded)
             except socket.error as e:
                 if(type(e).__name__ == "timeout"):
                     pass
                 else:
                     print("endpoint closed.")
-                self.finished = True
+                    self.finished = True
         return
 
     def closeConnection(self):
@@ -138,7 +143,7 @@ class SocketComm(object):
             self.finished = True
             self.e.set()
             self.getMessagesThread._stop_event.set()
-            #self.sendMessage("end")
+            self.sendMessage("end")
             try:
                 self.getMessagesThread.join()
             except:
