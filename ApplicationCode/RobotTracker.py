@@ -178,9 +178,9 @@ class Robot(GridSpace):
             #    self.goalFound = True
             #    c +=1
 
-            self.FrameOverlay()
+            #self.FrameOverlay()
             #self.frame = cv2.UMat.get(self.frame)
-            self.window = np.hstack([self.frame,self.textArea])
+            #self.window = np.hstack([self.frame,self.textArea])
             #window = self.frame
             cv2.imshow(self.title, self.window)
 
