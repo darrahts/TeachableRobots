@@ -94,12 +94,12 @@ class Controller(object):
                 if(ardIn == '~'):
                     time.sleep(.25)
                     ardIn = self.Read(True)
-                    print(ardIn)
+                    #print(ardIn)
                 elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
                     self.UpdateLocation()
-                    print("+")
+                    #print("+")
                     print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)

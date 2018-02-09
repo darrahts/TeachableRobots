@@ -31,7 +31,8 @@ class AppComm(object):
         if(self.appOnline):
             d = dict()
             d["direction"] = self.robot().direction
-            self.appClient.sendMessage(str(d))
+            print("direction: " + str(self.robot().direction))
+            #self.appClient.sendMessage(str(d))
         return
         
 
@@ -39,8 +40,8 @@ class AppComm(object):
         if(self.appOnline):
             d = dict()
             d["location"] = str(self.robot().location)
-            print("sent: " + str(self.robot().location))
-            self.appClient.sendMessage(str(d))
+            print("location: " + str(self.robot().location))
+            #self.appClient.sendMessage(str(d))
         return
 
     def SendMessage(self, message):
@@ -112,7 +113,8 @@ class SocketComm(object):
             self.connection.send(str.encode(msg))
             print("sent: " + str.encode(msg))
         except:
-            print("endpoint closed.")
+            pass
+            #print("endpoint closed.")
         return
 
     def getMessages(self):
