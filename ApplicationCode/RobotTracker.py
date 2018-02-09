@@ -75,9 +75,11 @@ class Robot(GridSpace):
         self.displayGoalLoc = False
         self.finished = False
 
-        
+
+                                                
         self.robotCommThread = threading.Thread(target=self.GetResponse)
         self.robotCommThread.e = threading.Event()
+        
         self.robotServer = SocketComm()
         self.robotServer.port = 5680
 
@@ -88,7 +90,7 @@ class Robot(GridSpace):
         self.location = "(-5,-3)"
         self.direction = "Right"
         self.message = ""
-        self.distanceTravelled = 20
+        self.distanceTravelled = 0
 
         self.points = [(2,-2), (2,1), (-2,1), (1,4)]
         
@@ -125,8 +127,10 @@ class Robot(GridSpace):
 
 
     def GetResponse(self):
+        print("comm opened.")
         while(not self.robotServer.finished):
             if(len(self.robotServer.inbox) > 0):
+                print("message received")
                 temp = ast.literal_eval(self.robotServer.inbox.pop())
                 if("location" in temp):
                     print("location: " + temp["location"])
@@ -205,8 +209,7 @@ class Robot(GridSpace):
                 else:
                     self.robot = rect
                     self.contour = cont
-                    M = cv2.moments(cont)
-                return M
+                    self.moments = cv2.moments(cont)
             else:
                 return -1
         else:
