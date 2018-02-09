@@ -108,7 +108,7 @@ class SocketComm(object):
         if not self.finished:
             try:
                 self.connection.send(str.encode(msg))
-                print("sent: " str.encode(msg))
+                print("sent: " + str.encode(msg))
             except:
                 pass
                 #print("endpoint closed.")
