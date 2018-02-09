@@ -16,6 +16,7 @@ class AppComm(object):
         
         try:
             self.appClient.setupLine(ipAdr)
+            self.appClient.finished = False
             print("connected!")
         except:
             print("app offline.")
@@ -76,7 +77,6 @@ class SocketComm(object):
         self.getMessagesThread.daemon = True
         self.e = Event()
         self.connected = False
-        print(self.address)
         return
     
     def setupLine(self, addr):
