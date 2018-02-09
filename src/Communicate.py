@@ -89,16 +89,18 @@ class SocketComm(object):
                 self.connection, otherAddress = self.connection.accept()
                 print("connected to: " + otherAddress[0])
             except socket.error as e:
+                print(str(e))
                 self.connected = False
-                self.finished = True
+                #self.finished = True
                 return False
         else:
             try:
                 self.connection.connect((self.address, self.port)) # i.e. client
                 print("line setup.")
             except socket.error as e:
+                print(str(e))
                 self.connected = False
-                self.finished = True
+                #self.finished = True
                 return False
                 
         self.getMessagesThread.start()
@@ -120,9 +122,6 @@ class SocketComm(object):
                 received = self.connection.recv(1024)
                 decoded = received.decode('utf-8')
                 if len(decoded) > 0:
-                    if decoded == "enddd":
-                        self.finished = True
-                    else:
                         self.inbox.appendleft(decoded)
             except socket.error as e:
                 if(type(e).__name__ == "timeout"):
@@ -137,7 +136,7 @@ class SocketComm(object):
             self.finished = True
             self.e.set()
             self.getMessagesThread._stop_event.set()
-            self.sendMessage("end")
+            #self.sendMessage("end")
             try:
                 self.getMessagesThread.join()
             except:
