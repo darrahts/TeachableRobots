@@ -99,7 +99,7 @@ class Controller(object):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
                     self.UpdateLocation()
-                    print("X")
+                    print("+")
                     print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)

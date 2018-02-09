@@ -38,6 +38,7 @@ class AppComm(object):
         if(self.appOnline):
             d = dict()
             d["location"] = str(self.robot().location)
+            print("sent: " + str(self.robot().location)
             self.appClient.sendMessage(str(d))
         return
 
