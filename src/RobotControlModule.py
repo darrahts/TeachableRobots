@@ -94,7 +94,7 @@ class Controller(object):
                 if(ardIn == '~'):
                     time.sleep(.25)
                     ardIn = self.Read(True)
-                    #print(ardIn)
+                    print(ardIn)
                 elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
@@ -208,8 +208,9 @@ class Controller(object):
     def Run(self):
         self.responseThread.start()
         if(self.appComm.appOnline):
+            pass
             #self.appComm.appCommThread.start()
-            print("app comm online")
+            #print("app comm online")
         self.Write("ml") #load parameters before beginning
         while(not self.finished):
             self.userInput = input(":")

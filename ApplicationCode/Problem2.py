@@ -16,7 +16,7 @@ def Problem2():
     r.SetGoal((-3,1))
     cv2.putText(r.textArea, "drive the robot to (-3,1)", (0, 40), 2, .5, (100,200,100), 1)
     t1 = time.time()
-    while(abs(r.rLoc[0] - r.goal[0]) > .6 or abs(r.rLoc[1] - r.goal[1]) > .6):
+    while(abs(r.rLoc[0] - r.goal[0]) > .7 or abs(r.rLoc[1] - r.goal[1]) > .7):
         t2 = time.time()
         if(t2 - t1 > 60):
             if(repeatCounter == 0):
@@ -53,7 +53,7 @@ def Problem2():
     r.displayGoals = True
     cv2.putText(r.textArea, "drive the robot to the point shown", (0, 40), 2, .5, (100,200,100), 1)
     t1 = time.time()
-    while(abs(r.rLoc[0] - r.goal[0]) > .6 or abs(r.rLoc[1] - r.goal[1] > .6)):
+    while(abs(r.rLoc[0] - r.goal[0]) > .7 or abs(r.rLoc[1] - r.goal[1] > .7)):
         t2 = time.time()
         if(t2 - t1 > 60):
             if(repeatCounter == 0):

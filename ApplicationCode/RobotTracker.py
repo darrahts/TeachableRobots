@@ -283,8 +283,8 @@ class Robot(GridSpace):
         pass
 
 
-r = Robot()
-r.Run()
+#r = Robot()
+#r.Run()
 
 
 

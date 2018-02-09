@@ -36,7 +36,6 @@ class GridSpace:
     frame = imutils.resize(frame, width=640, height=480) 
     frameCenter = ((frame.shape[1] // 2) + 21, (frame.shape[0] // 2) + 11)
     textArea = np.zeros((frame.shape[0],550,3),dtype=np.uint8)
-    textAreaCopy = textArea
     window = np.hstack([frame,textArea])
 
     square = np.ndarray([4,2], dtype=int)
@@ -89,7 +88,6 @@ class GridSpace:
         return 
 
     def Update(self, callback):
-        self.textArea = self.textAreaCopy
         self.frame = self.vs.read()
         self.frame = imutils.resize(self.frame, width=640, height=480)
         self.FrameOverlay()
