@@ -110,8 +110,7 @@ class SocketComm(object):
                 self.connection.send(str.encode(msg))
                 print("sent: " + str.encode(msg))
             except:
-                pass
-                #print("endpoint closed.")
+                print("endpoint closed.")
         return
 
     def getMessages(self):
