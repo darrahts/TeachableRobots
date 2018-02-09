@@ -5,7 +5,7 @@ This is a working repo, while we strive to do our best to ensure the code and in
   -- open a terminal
   -- type "sudo nano ~/.bashrc" (without quotes)
   -- at the end of the file add:
-       PYTHONPATH="${PYTHONPATH}:<absolute-path-to-teachablerobotsParentFolder/>"
+       PYTHONPATH="${PYTHONPATH}:[absolute-path-to-teachablerobotsParentFolder/]"
   -- save the file
   -- in the terminal type "source ~/.bashrc" (without quotes)
   -- DONE! :)
