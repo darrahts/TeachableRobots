@@ -78,12 +78,13 @@ def Problem2():
 
     cv2.putText(r.textArea, "Nice Work!", (0, 300), 4, 1.2, (100,200,100), 1)
     repeatCounter = 0
-    time.sleep(3)
+    time.sleep(5)
     r.textArea = np.zeros((r.frame.shape[0],550,3),dtype=np.uint8)
     r.displayGoals = False
     r.finished = True
-    e.set()
-    problemThread.join()
+    if(r.finished):
+        problemThread._stop_signal.set()
+    return
 
 if (__name__ == "__main__"):
     
@@ -92,7 +93,7 @@ if (__name__ == "__main__"):
 
     problemThread = Thread(target=Problem2)
     problemThread.isDaemon = True
-    e = Event()
+    problemThread._stop_signal = Event()
     problemThread.start()
 
     r.Run()    

@@ -52,6 +52,7 @@ class Controller(object):
 
     def UpdateDirection(self, val):
         print(val)
+        print("updating direction")
         if(val == '0'):
             self.direction = "right"
         elif(val == '1'):
@@ -64,6 +65,7 @@ class Controller(object):
         return
 
     def UpdateLocation(self):
+        print("updating location")
         if(self.direction == "right"):
             self.location = (self.location[0]+1, self.location[1])
         elif(self.direction == "left"):
@@ -97,7 +99,7 @@ class Controller(object):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
                     self.UpdateLocation()
-                    print("+")
+                    print("X")
                     print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)
