@@ -106,14 +106,11 @@ class SocketComm(object):
         return True
 
     def sendMessage(self, msg):
-        if(self.finished):
-            print("i am finished.")
-        if not self.finished:
-            try:
-                self.connection.send(str.encode(msg))
-                print("sent: " + str.encode(msg))
-            except:
-                print("endpoint closed.")
+        try:
+            self.connection.send(str.encode(msg))
+            print("sent: " + str.encode(msg))
+        except:
+            print("endpoint closed.")
         return
 
     def getMessages(self):
@@ -123,7 +120,7 @@ class SocketComm(object):
                 received = self.connection.recv(1024)
                 decoded = received.decode('utf-8')
                 if len(decoded) > 0:
-                    if decoded == "end":
+                    if decoded == "enddd":
                         self.finished = True
                     else:
                         self.inbox.appendleft(decoded)
