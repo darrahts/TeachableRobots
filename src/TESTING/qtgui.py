@@ -57,9 +57,9 @@ class MyWindowClass(QtWidgets.QMainWindow, form_class):
 
         self.startButton.clicked.connect(self.start_clicked)
         
-        self.window_width = self.ImgWidget.frameSize().width()
-        self.window_height = self.ImgWidget.frameSize().height()
-        self.ImgWidget = OwnImageWidget(self.ImgWidget)       
+        self.window_width = self.AppFeed.frameSize().width()
+        self.window_height = self.AppFeed.frameSize().height()
+        self.AppFeed = OwnImageWidget(self.AppFeed)       
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -93,7 +93,7 @@ class MyWindowClass(QtWidgets.QMainWindow, form_class):
             height, width, bpc = img.shape
             bpl = bpc * width
             image = QtGui.QImage(img.data, width, height, bpl, QtGui.QImage.Format_RGB888)
-            self.ImgWidget.setImage(image)
+            self.AppFeed.setImage(image)
 
     def closeEvent(self, event):
         global running
