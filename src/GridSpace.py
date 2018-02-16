@@ -36,6 +36,7 @@ class GridSpace:
     frame = imutils.resize(frame, width=640, height=480) 
     frameCenter = ((frame.shape[1] // 2) + 21, (frame.shape[0] // 2) + 11)
     textArea = np.zeros((frame.shape[0],550,3),dtype=np.uint8)
+    #textAreaCopy = textArea
     window = np.hstack([frame,textArea])
 
     square = np.ndarray([4,2], dtype=int)
@@ -90,9 +91,9 @@ class GridSpace:
     def Update(self, callback):
         self.frame = self.vs.read()
         self.frame = imutils.resize(self.frame, width=640, height=480)
-        self.FrameOverlay()
-        self.window = np.hstack([self.frame,self.textArea])
         callback()
+        #self.textArea = self.textAreaCopy
+        self.window = np.hstack([self.frame,self.textArea])
         return
 
     def ShowFrame(self, fullWindow):
@@ -106,30 +107,4 @@ class GridSpace:
             cv2.imwrite("picture%i.jpg" %i, window)
             i += 1
         return
-
-
-    def ProcessFrame(self, frame, low, high):
-        ''' Converts the frame to HSV, then masks the frame with the
-        chosen color, and finally performs erosion and dialation.
-
-            Args:
-
-                frame: The frame to process
-
-                low: The minimum HSV value to match
-
-                high: The maximum HSV value to match
-
-            Returns:
-
-                The processed frame
-    '''
-        
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        color = cv2.inRange(frame, low, high)
-        erode = cv2.erode(color, None, iterations=2)
-        dialate = cv2.dilate(erode, None, iterations=2)
-        return dialate
-
-
 

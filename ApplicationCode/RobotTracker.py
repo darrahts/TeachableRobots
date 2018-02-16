@@ -59,8 +59,8 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (40, 90, 0)
-        self.highColor = (150, 200, 60)
+        self.lowColor = (35, 80, 0)
+        self.highColor = (160, 210, 70)
         self.robot = 0,0,0,0
         self.contour = []
         self.ellipse = ((0,0),(0,0), 0)
@@ -122,6 +122,7 @@ class Robot(GridSpace):
         color = cv2.inRange(frame, low, high)
         erode = cv2.erode(color, None, iterations=2)
         dialate = cv2.dilate(erode, None, iterations=2)
+        
         return dialate
 
 
@@ -164,7 +165,7 @@ class Robot(GridSpace):
             print("starting comm thread")
         print("starting...")
         while(not self.finished):
-            self.Update(lambda: None)
+            self.Update(self.FrameOverlay)
             f = self.ProcessFrame(self.frame, self.lowColor, self.highColor)
             moments = self.FindRobot(f)
             cv2.imshow(self.title, self.window)
