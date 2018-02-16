@@ -198,7 +198,7 @@ void Left(int duration)
   digitalWrite(MTR_B_B, HIGH);
   if(managed)
   {
-      delay(80);
+      delay(100);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
@@ -265,7 +265,7 @@ void Right(int duration)
   digitalWrite(MTR_B_B, LOW);
   if(managed)
   {
-      delay(80);
+      delay(100);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
@@ -894,6 +894,8 @@ void loop()
 //    x = "";
     ParseCommand();
     ExecuteCommand();
+    //ReadLineSensors();
+    //delay(250);
 }
 
 
