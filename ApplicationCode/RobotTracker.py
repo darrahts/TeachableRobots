@@ -59,8 +59,8 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (35, 80, 0)
-        self.highColor = (160, 210, 70)
+        self.low = (33, 77, 0)
+        self.high = (165, 215, 75)
         self.robot = 0,0,0,0
         self.contour = []
         self.ellipse = ((0,0),(0,0), 0)
@@ -75,9 +75,12 @@ class Robot(GridSpace):
         self.displayGoalLoc = False
         self.finished = False
 
+        self.f = self.frame.copy()
 
+        
                                                 
         self.robotCommThread = threading.Thread(target=self.GetResponse)
+        self.robotCommThread.isDaemon = True
         self.robotCommThread.e = threading.Event()
         
         self.robotServer = SocketComm()
@@ -101,7 +104,7 @@ class Robot(GridSpace):
         office3 = cv2.imread("icons/office3.png")
 
 
-    def ProcessFrame(self, frame, low, high):
+    def ProcessFrame(self):
         ''' Converts the frame to HSV, then masks the frame with the
         chosen color, and finally performs erosion and dialation.
 
@@ -118,12 +121,13 @@ class Robot(GridSpace):
                 The processed frame
     '''
         
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        color = cv2.inRange(frame, low, high)
+        hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
+        color = cv2.inRange(self.frame, self.low, self.high)
         erode = cv2.erode(color, None, iterations=2)
         dialate = cv2.dilate(erode, None, iterations=2)
-        
+        self.frameCopy = cv2.cvtColor(dialate, cv2.COLOR_GRAY2BGR)
         return dialate
+        
 
 
 
@@ -160,14 +164,15 @@ class Robot(GridSpace):
     def Run(self):
         c = 0
         i = 0
-        if(self.robotServer.connected):
-            self.robotCommThread.start()
-            print("starting comm thread")
+        #if(self.robotServer.connected):
+        #    self.robotCommThread.start()
+        #    print("starting comm thread")
         print("starting...")
         while(not self.finished):
             self.Update(self.FrameOverlay)
-            f = self.ProcessFrame(self.frame, self.lowColor, self.highColor)
-            moments = self.FindRobot(f)
+            #f = self.ProcessFrame(self.frame, self.lowColor, self.highColor)
+            f = self.ProcessFrame()
+            self.FindRobot(f)
             cv2.imshow(self.title, self.window)
             
             key = cv2.waitKey(1) & 0xFF
@@ -188,14 +193,16 @@ class Robot(GridSpace):
         contours = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         if(len(contours) > 0):
             cont = max(contours, key=cv2.contourArea)
-            if(cv2.contourArea(cont) > 80 and cv2.contourArea(cont) < 700):
+            if(cv2.contourArea(cont) > 200 and cv2.contourArea(cont) < 700):
+                #print(cv2.contourArea(cont))
                 rect = cv2.boundingRect(cont)
-                if(abs(self.robot[0] - rect[0]) < 2 or abs(self.robot[1] - rect[1]) < 2):
-                    return 0
-                else:
-                    self.robot = rect
-                    self.contour = cont
-                    self.moments = cv2.moments(cont)
+                #if(abs(self.robot[0] - rect[0]) < 2 or abs(self.robot[1] - rect[1]) < 2):
+                #    print("returning")
+                #    return 0
+                #else:
+                self.robot = rect
+                self.contour = cont
+                #self.moments = cv2.moments(cont)
             else:
                 return -1
         else:
@@ -203,6 +210,7 @@ class Robot(GridSpace):
 
 
     def FrameOverlay(self): #TODO draw point, student name in text area
+        self.f = self.frame.copy()
         super().FrameOverlay()
         if(self.displayGoals):
             self.DrawGoal(self.LocationToCoordinates(self.goal), self.displayGoalLoc)
@@ -216,9 +224,9 @@ class Robot(GridSpace):
         #cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
         #cv2.circle(self.textArea, (208,8), 2, (100,200,100), 1)
 
-        cv2.putText(self.textArea, "Direction: " + self.direction, (0, 20), 3, .5, (100,200,100), 1)
-        cv2.putText(self.textArea, "Location: " + self.location, (200, 20), 3, .5, (100,200,100), 1)
-        cv2.putText(self.textArea, "Move Count: " + str(self.distanceTravelled), (400, 20), 3, .5, (100,200,100), 1)
+        #cv2.putText(self.textArea, "Direction: " + self.direction, (0, 20), 3, .5, (100,200,100), 1)
+        #cv2.putText(self.textArea, "Location: " + self.location, (200, 20), 3, .5, (100,200,100), 1)
+        #cv2.putText(self.textArea, "Move Count: " + str(self.distanceTravelled), (400, 20), 3, .5, (100,200,100), 1)
         
         
         if(len(self.contour) > 0):
