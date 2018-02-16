@@ -35,7 +35,7 @@ def init():
     glLightfv(GL_LIGHT0, GL_AMBIENT, (0.3, 0.3, 0.3, 1.0));
 
 def read_values():
-    link = "http://localhost:8080" # Change this address to your settings
+    link = "http://192.168.1.41:8080" # Change this address to your settings
     f = urllib.urlopen(link)
     myfile = f.read()
     return myfile.split(" ")
