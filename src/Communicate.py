@@ -85,7 +85,7 @@ class SocketComm(object):
         self.address = addr
         if self.address is "": #i.e. server on raspberry pi
             try:
-                self.connection.settimeout(10)
+                self.connection.settimeout(3)
                 self.connection.bind((self.address, self.port))
                 self.connection.listen(1)
                 self.connection, otherAddress = self.connection.accept()

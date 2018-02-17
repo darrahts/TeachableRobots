@@ -107,6 +107,29 @@ class GridSpace:
         return
 
 
+    def ProcessFrame(self, low, high):
+        ''' Converts the frame to HSV, then masks the frame with the
+        chosen color, and finally performs erosion and dialation.
+
+            Args:
+
+                frame: The frame to process
+
+                low: The minimum HSV value to match
+
+                high: The maximum HSV value to match
+
+            Returns:
+
+                The processed frame
+    '''
+        
+        #hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
+        color = cv2.inRange(self.vs.read()[27:467, 125:565], low, high)
+        erode = cv2.erode(color, None, iterations=2)
+        dialate = cv2.dilate(erode, None, iterations=2)
+        self.frameCopy = cv2.cvtColor(dialate, cv2.COLOR_GRAY2BGR)
+        return dialate
 
 
 

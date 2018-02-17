@@ -6,7 +6,7 @@ import math
 from time import sleep
 import threading
 import ast
-
+from multiprocessing import Process
 
 
 
@@ -79,9 +79,11 @@ class Robot(GridSpace):
 
         
                                                 
-        self.robotCommThread = threading.Thread(target=self.GetResponse)
-        self.robotCommThread.isDaemon = True
-        self.robotCommThread.e = threading.Event()
+        #self.robotCommThread = threading.Thread(target=self.GetResponse)
+        #self.robotCommThread.isDaemon = True
+        #self.robotCommThread.e = threading.Event()
+        self.P = Process(target=self.GetResponse)
+        self.P.e = Event()
         
         self.robotServer = SocketComm()
         self.robotServer.port = 5680
@@ -104,29 +106,6 @@ class Robot(GridSpace):
         office3 = cv2.imread("icons/office3.png")
 
 
-    def ProcessFrame(self):
-        ''' Converts the frame to HSV, then masks the frame with the
-        chosen color, and finally performs erosion and dialation.
-
-            Args:
-
-                frame: The frame to process
-
-                low: The minimum HSV value to match
-
-                high: The maximum HSV value to match
-
-            Returns:
-
-                The processed frame
-    '''
-        
-        hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-        color = cv2.inRange(self.frame, self.low, self.high)
-        erode = cv2.erode(color, None, iterations=2)
-        dialate = cv2.dilate(erode, None, iterations=2)
-        self.frameCopy = cv2.cvtColor(dialate, cv2.COLOR_GRAY2BGR)
-        return dialate
         
 
 
@@ -164,15 +143,14 @@ class Robot(GridSpace):
     def Run(self):
         c = 0
         i = 0
-        #if(self.robotServer.connected):
-        #    self.robotCommThread.start()
-        #    print("starting comm thread")
+        if(self.robotServer.connected):
+            self.P.start()
+            #self.robotCommThread.start()
+            print("starting comm thread")
         print("starting...")
         while(not self.finished):
             self.Update(self.FrameOverlay)
-            #f = self.ProcessFrame(self.frame, self.lowColor, self.highColor)
-            f = self.ProcessFrame()
-            self.FindRobot(f)
+            self.FindRobot()
             cv2.imshow(self.title, self.window)
             
             key = cv2.waitKey(1) & 0xFF
@@ -181,7 +159,9 @@ class Robot(GridSpace):
             elif(key == ord("c")):
                 cv2.imwrite("picture%i.jpg" %i, window)
                 i += 1
-                
+        self.P.e.set()
+        self.P.terminate()
+        self.P.join()
         self.robotServer.e.set()
         self.robotServer.finished = True
         print("closing connection")
@@ -189,17 +169,13 @@ class Robot(GridSpace):
 
             
 
-    def FindRobot(self, frame):
+    def FindRobot(self):
+        frame = self.ProcessFrame(self.low, self.high)
         contours = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         if(len(contours) > 0):
             cont = max(contours, key=cv2.contourArea)
             if(cv2.contourArea(cont) > 200 and cv2.contourArea(cont) < 700):
-                #print(cv2.contourArea(cont))
                 rect = cv2.boundingRect(cont)
-                #if(abs(self.robot[0] - rect[0]) < 2 or abs(self.robot[1] - rect[1]) < 2):
-                #    print("returning")
-                #    return 0
-                #else:
                 self.robot = rect
                 self.contour = cont
                 #self.moments = cv2.moments(cont)
@@ -210,7 +186,6 @@ class Robot(GridSpace):
 
 
     def FrameOverlay(self): #TODO draw point, student name in text area
-        self.f = self.frame.copy()
         super().FrameOverlay()
         if(self.displayGoals):
             self.DrawGoal(self.LocationToCoordinates(self.goal), self.displayGoalLoc)
