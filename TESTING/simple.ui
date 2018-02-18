@@ -479,14 +479,20 @@
      <property name="maximum">
       <number>100</number>
      </property>
+     <property name="value">
+      <number>50</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QScrollBar" name="DifficultyBar">
      <property name="geometry">
       <rect>
-       <x>440</x>
+       <x>450</x>
        <y>70</y>
        <width>16</width>
        <height>160</height>
@@ -498,8 +504,14 @@
      <property name="maximum">
       <number>100</number>
      </property>
+     <property name="value">
+      <number>30</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QPushButton" name="FormSubmitButton">
@@ -544,7 +556,7 @@
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>437</x>
+       <x>450</x>
        <y>60</y>
        <width>46</width>
        <height>16</height>
@@ -557,6 +569,42 @@
      </property>
      <property name="text">
       <string>difficulty</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>434</x>
+       <y>200</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>7</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>80</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>7</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>100</string>
      </property>
     </widget>
    </widget>
@@ -727,6 +775,11 @@
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
       <string>Tab 2</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Tab 3</string>
      </attribute>
     </widget>
    </widget>

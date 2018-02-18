@@ -66,7 +66,7 @@ class MyWindowClass(QtWidgets.QMainWindow, form_class):
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(1)
 
-
+   
     def start_clicked(self):
         global running
         running = True
