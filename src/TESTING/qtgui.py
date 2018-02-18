@@ -61,6 +61,7 @@ class MyWindowClass(QtWidgets.QMainWindow, form_class):
         self.window_height = self.AppFeed.frameSize().height()
         self.AppFeed = OwnImageWidget(self.AppFeed)       
 
+        self.ProblemDescription.parent = self.tab
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(1)

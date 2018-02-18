@@ -46,7 +46,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.groupBox.setTitle(_translate("MainWindow", "Video"))
         self.startButton.setText(_translate("MainWindow", "Start video"))
-
+        pass
 
 if __name__ == "__main__":
     import sys
