@@ -8,6 +8,21 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
+
+class MyTextEdit(QtWidgets.QTextEdit, QtWidgets.QGroupBox):
+    def __init__(self, parent, parent2):
+        super(MyTextEdit, self).__init__(parent2)
+
+    def keyPressEvent(self, event):
+        print(str(event.key()))
+        if(event.key() == QtCore.Qt.Key_Return):
+            print("ENTER PRESSED")
+            print(self.parent().parent().parent())
+        else:
+            self.setText(self.toPlainText() + chr(event.key()))
+
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -29,9 +44,6 @@ class Ui_MainWindow(object):
         self.startButton = QtWidgets.QPushButton(self.centralwidget)
         self.startButton.setGeometry(QtCore.QRect(10, 10, 120, 61))
         self.startButton.setObjectName("startButton")
-        self.TrackRobotButton = QtWidgets.QPushButton(self.centralwidget)
-        self.TrackRobotButton.setGeometry(QtCore.QRect(170, 10, 120, 61))
-        self.TrackRobotButton.setObjectName("TrackRobotButton")
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
         self.progressBar.setGeometry(QtCore.QRect(1470, 10, 118, 23))
         self.progressBar.setProperty("value", 24)
@@ -48,7 +60,7 @@ class Ui_MainWindow(object):
         self.AppFeedAlt.setGeometry(QtCore.QRect(10, 20, 445, 445))
         self.AppFeedAlt.setObjectName("AppFeedAlt")
         self.ToggleAltButton = QtWidgets.QPushButton(self.centralwidget)
-        self.ToggleAltButton.setGeometry(QtCore.QRect(810, 560, 111, 31))
+        self.ToggleAltButton.setGeometry(QtCore.QRect(800, 560, 121, 31))
         self.ToggleAltButton.setObjectName("ToggleAltButton")
         self.ProblemDescription = QtWidgets.QTextBrowser(self.centralwidget)
         self.ProblemDescription.setGeometry(QtCore.QRect(960, 100, 401, 271))
@@ -58,17 +70,24 @@ class Ui_MainWindow(object):
         self.ProblemDescription.setFrameShape(QtWidgets.QFrame.Box)
         self.ProblemDescription.setFrameShadow(QtWidgets.QFrame.Raised)
         self.ProblemDescription.setLineWidth(3)
+        self.ProblemDescription.setReadOnly(True)
         self.ProblemDescription.setObjectName("ProblemDescription")
+
+        
         self.InputGroupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.InputGroupBox.setGeometry(QtCore.QRect(960, 400, 491, 281))
         self.InputGroupBox.setAutoFillBackground(False)
         self.InputGroupBox.setFlat(False)
         self.InputGroupBox.setObjectName("InputGroupBox")
-        self.InputText = QtWidgets.QTextEdit(self.InputGroupBox)
+
+        #self.InputText = MyTextEdit(QtWidgets.QTextEdit(self.InputGroupBox))
+        self.InputText = MyTextEdit(QtWidgets.QTextEdit, self.InputGroupBox)
         self.InputText.setGeometry(QtCore.QRect(10, 30, 371, 61))
         self.InputText.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.InputText.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.InputText.setObjectName("InputText")
+
+
         self.ImageAlgorithm1 = QtWidgets.QLineEdit(self.InputGroupBox)
         self.ImageAlgorithm1.setGeometry(QtCore.QRect(10, 100, 113, 27))
         self.ImageAlgorithm1.setObjectName("ImageAlgorithm1")
@@ -246,10 +265,42 @@ class Ui_MainWindow(object):
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.tabWidget.addTab(self.tab_3, "")
+        self.locationLabel = QtWidgets.QLabel(self.centralwidget)
+        self.locationLabel.setGeometry(QtCore.QRect(30, 580, 67, 31))
+        font = QtGui.QFont()
+        font.setFamily("URW Bookman L")
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.locationLabel.setFont(font)
+        self.locationLabel.setObjectName("locationLabel")
+        self.directionLabel = QtWidgets.QLabel(self.centralwidget)
+        self.directionLabel.setGeometry(QtCore.QRect(130, 580, 67, 31))
+        font = QtGui.QFont()
+        font.setFamily("URW Bookman L")
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.directionLabel.setFont(font)
+        self.directionLabel.setObjectName("directionLabel")
+        self.distanceTravelledLabel = QtWidgets.QLabel(self.centralwidget)
+        self.distanceTravelledLabel.setGeometry(QtCore.QRect(230, 580, 67, 31))
+        font = QtGui.QFont()
+        font.setFamily("URW Bookman L")
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.distanceTravelledLabel.setFont(font)
+        self.distanceTravelledLabel.setObjectName("distanceTravelledLabel")
+        self.label_8 = QtWidgets.QLabel(self.centralwidget)
+        self.label_8.setGeometry(QtCore.QRect(30, 560, 291, 21))
+        self.label_8.setObjectName("label_8")
+        self.terminalWidget = QtWidgets.QWidget(self.centralwidget)
+        self.terminalWidget.setGeometry(QtCore.QRect(40, 630, 391, 121))
+        self.terminalWidget.setObjectName("terminalWidget")
         self.tabWidget.raise_()
         self.groupBox.raise_()
         self.startButton.raise_()
-        self.TrackRobotButton.raise_()
         self.progressBar.raise_()
         self.groupBox_2.raise_()
         self.ToggleAltButton.raise_()
@@ -261,9 +312,14 @@ class Ui_MainWindow(object):
         self.label.raise_()
         self.label_2.raise_()
         self.label_3.raise_()
+        self.locationLabel.raise_()
+        self.directionLabel.raise_()
+        self.distanceTravelledLabel.raise_()
+        self.label_8.raise_()
+        self.terminalWidget.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1600, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1600, 25))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -285,7 +341,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.groupBox.setTitle(_translate("MainWindow", "Main Feed"))
         self.startButton.setText(_translate("MainWindow", "Start video"))
-        self.TrackRobotButton.setText(_translate("MainWindow", "Find Robot"))
         self.groupBox_2.setTitle(_translate("MainWindow", "Alternate"))
         self.ToggleAltButton.setText(_translate("MainWindow", "Toggle Alternate"))
         self.ProblemDescription.setPlaceholderText(_translate("MainWindow", "Problem Description"))
@@ -328,6 +383,10 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Tab 1"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Tab 2"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Tab 3"))
+        self.locationLabel.setText(_translate("MainWindow", "(-5,-3)"))
+        self.directionLabel.setText(_translate("MainWindow", "right"))
+        self.distanceTravelledLabel.setText(_translate("MainWindow", "0"))
+        self.label_8.setText(_translate("MainWindow", " Location          Direction    Spaces Moved"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuOptions.setTitle(_translate("MainWindow", "Options"))
 

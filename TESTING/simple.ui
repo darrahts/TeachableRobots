@@ -59,19 +59,6 @@
      <string>Start video</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="TrackRobotButton">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>10</y>
-      <width>120</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Find Robot</string>
-    </property>
-   </widget>
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
@@ -117,9 +104,9 @@
    <widget class="QPushButton" name="ToggleAltButton">
     <property name="geometry">
      <rect>
-      <x>810</x>
+      <x>800</x>
       <y>560</y>
-      <width>111</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -150,6 +137,9 @@
     <property name="lineWidth">
      <number>3</number>
     </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
     <property name="placeholderText">
      <string>Problem Description</string>
     </property>
@@ -172,25 +162,6 @@
     <property name="flat">
      <bool>false</bool>
     </property>
-    <widget class="QTextEdit" name="InputText">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>371</width>
-       <height>61</height>
-      </rect>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="placeholderText">
-      <string>User Input</string>
-     </property>
-    </widget>
     <widget class="QLineEdit" name="ImageAlgorithm1">
      <property name="geometry">
       <rect>
@@ -783,10 +754,108 @@
      </attribute>
     </widget>
    </widget>
+   <widget class="QLabel" name="locationLabel">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>580</y>
+      <width>67</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>URW Bookman L</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>(-5,-3)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="directionLabel">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>580</y>
+      <width>67</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>URW Bookman L</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>right</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="distanceTravelledLabel">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>580</y>
+      <width>67</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>URW Bookman L</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>560</y>
+      <width>291</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string> Location          Direction    Spaces Moved</string>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="robotTextBox">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>650</y>
+      <width>421</width>
+      <height>121</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>630</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Robot Output</string>
+    </property>
+   </widget>
    <zorder>tabWidget</zorder>
    <zorder>groupBox</zorder>
    <zorder>startButton</zorder>
-   <zorder>TrackRobotButton</zorder>
    <zorder>progressBar</zorder>
    <zorder>groupBox_2</zorder>
    <zorder>ToggleAltButton</zorder>
@@ -798,6 +867,12 @@
    <zorder>label</zorder>
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
+   <zorder>locationLabel</zorder>
+   <zorder>directionLabel</zorder>
+   <zorder>distanceTravelledLabel</zorder>
+   <zorder>label_8</zorder>
+   <zorder>robotTextBox</zorder>
+   <zorder>label_9</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -805,7 +880,7 @@
      <x>0</x>
      <y>0</y>
      <width>1600</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
