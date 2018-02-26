@@ -1,27 +1,34 @@
 import socket
 from collections import deque
 from threading import Thread, Event
+from multiprocessing import Process, Queue, Event, Value
 import weakref
 import time
 import traceback
+import ast
 
 
 #this class manages the communication between the robot and the application
 class AppComm(object):
     def __init__(self, parent, ipAdr, port):
-        #self.appCommThread = Thread(target=self.GetAppResponse)
-        self.appClient = SocketComm()
-        self.appClient.port = port
-        self.appOnline = True
+        self.appClient = SocketComm(port)
+        self.appOnline = False
         self.robot = weakref.ref(parent)
         
         try:
-            self.appClient.setupLine(ipAdr)
-            self.appClient.finished = False
-            print("connected!")
+            print("waiting to connect to application...")
+            while(not self.appOnline):
+                try:
+                    if(self.appClient.setupLine(ipAdr)):
+                        self.appClient.finished.value = False
+                        self.appOnline = True
+                        print("connected!")
+                        break
+                except Exception as e:
+                    pass
+
         except:
             print("app offline.")
-            self.appOnline = False
 
     def SendEvaluation(self):
         if(self.appOnline):
@@ -52,61 +59,53 @@ class AppComm(object):
             self.appClient.sendMessage(str(d))
         return
 
-    #   from application
-    def GetAppResponse(self):
-        time.sleep(1)
-        while(not self.robot().finished):
-            if(len(self.appClient.inbox) > 0):
-                temp = ast.literal_eval(self.appClient.inbox.pop())
-                if("objective" in temp):
-                    self.robot().objective = temp["objective"]
-                print(self.objective)
-        self.appClient.finished = True
-        return
-
 
 
 
 class SocketComm(object):
-    def __init__(self):
+    def __init__(self,port):
         self.address = ""
-        self.port = 5580
-        self.finished = False
-        self.inbox = deque()
+        self.otherAddress = object
+        self.port = port
+        self.finished = Value("b", True)
+        self.inbox = Queue()
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.getMessagesThread = Thread(target=self.getMessages)
-        self.getMessagesThread._stop_event = Event()
-        self.getMessagesThread.daemon = True
+
+        self.getMessagesProcess = Process(target=self.getMessages)
+        self.getMessagesProcess._stop_event = Event()
+        self.getMessagesProcess.daemon = True
+        
         self.e = Event()
         self.connected = False
+        self.timeout = 3
         return
     
     def setupLine(self, addr):
         self.address = addr
         if self.address is "": #i.e. server on raspberry pi
             try:
-                self.connection.settimeout(3)
+                self.connection.settimeout(self.timeout)
                 self.connection.bind((self.address, self.port))
+                print("binding with port: " + str(self.port))
                 self.connection.listen(1)
-                self.connection, otherAddress = self.connection.accept()
-                print("connected to client at: " + otherAddress[0])
+                self.connection, self.otherAddress = self.connection.accept()
+                print("connected to client at: " + self.otherAddress[0])
             except socket.error as e:
                 print(str(e))
-                self.connected = False
-                self.finished = True
                 return False
         else:
             try:
+                #print("connecting to port: " + str(self.port))
                 self.connection.connect((self.address, self.port)) # i.e. client
                 print("connected to server")
             except socket.error as e:
-                print(str(e))
-                self.connected = False
-                self.finished = True
+                #print(str(e))
                 return False
                 
-        self.getMessagesThread.start()
+        self.getMessagesProcess.start()
         self.connected = True
+        self.finished.value = False
+        print("inbox at: " + str(id(self.inbox)))
         return True
 
     def sendMessage(self, msg):
@@ -114,38 +113,42 @@ class SocketComm(object):
             self.connection.send(str.encode(msg))
             print("sent: " + str(msg))
         except Exception as e:
-            print(str(e))
-            traceback.print_exc()
+            #print(str(e))
+            #traceback.print_exc()
             print("exception caught.")
         return
 
     def getMessages(self):
+        print("getting messages now")
         self.connection.settimeout(1)
-        while not self.finished:
+        while(not self.finished.value):
+            #print("checking inbox")
+            #print("inbox length: " + str(len(self.inbox)))
             try:
                 received = self.connection.recv(1024)
                 decoded = received.decode('utf-8')
                 if len(decoded) > 0:
                     if(decoded == "end"):
-                        self.finished = True
+                        self.finished.value = True
                     else:
-                        self.inbox.appendleft(decoded)
+                        self.inbox.put(decoded)
+                        print("received: " + str(decoded))
             except socket.error as e:
                 if(type(e).__name__ == "timeout"):
                     pass
                 else:
                     print("endpoint closed.")
-                    self.finished = True
+                    self.finished.value = True
         return
 
     def closeConnection(self):
         if(self.connected):
-            self.finished = True
+            self.finished.value = True
             self.e.set()
-            self.getMessagesThread._stop_event.set()
+            self.getMessagesProcess._stop_event.set()
             self.sendMessage("end")
             try:
-                self.getMessagesThread.join()
+                self.getMessagesProcess.join()
             except:
                 pass
             self.connection.close()
