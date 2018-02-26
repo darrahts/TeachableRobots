@@ -4,8 +4,10 @@ import time
 import threading
 import sys
 import traceback
-from teachablerobots.src.Communicate import SocketComm, AppComm
+from teachablerobots.src.Communicate import AppComm
 import ast
+from multiprocessing import Process, Queue, Event, Value, Lock, Manager
+from ctypes import c_char_p
 
 
 def TryParseInt(val):
@@ -19,20 +21,38 @@ def TryParseInt(val):
 
 class Controller(object):
     def __init__(self, port):
-        self.tcpWatcher = threading.Thread(target=self.GetCommandSequence)
-        self.responseThread = threading.Thread(target=self.GetResponse)
-        self.arduino = serial.Serial(port, 9600)
-        self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
-        self.userInput = ""
+
+
+
+        self.m = Manager()
+        self.userInput = self.m.Value(c_char_p, b"")
+        self.lock = Lock()
         self.tokens = []
         self.cmds = []
         self.sequence = ""
         self.finished = False
         self.validSequence = False
-        self.tcpServer = SocketComm()
         
-        self.appComm = AppComm(self, "192.168.1.91", 5680)
+        #   application communication
+        self.appComm = AppComm(self, "192.168.1.91", 5580)
+        #self.appResponseThread = threading.Thread(target=self.appComm.GetAppResponse)
+        #self.appResponseThread.e = threading.Event()
 
+        self.appResponseProcess = Process(target=self.GetAppResponse, args=(self.userInput,))
+        #self.appResponseProcess.daemon = True
+        self.appResponseProcess.e = Event()
+        
+        #   arduino communication
+        self.arduino = serial.Serial(port, 9600)
+        self.arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
+        self.arduinoResponseThread.e = threading.Event()
+
+          
+        self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
+
+        
+        #self.tcpServer = SocketComm(5480)
+        
         
         #   updated from arduino
         self.numSpacesMoved = 0
@@ -48,6 +68,7 @@ class Controller(object):
 
         #   (will succeed, number of spaces moved, ending location, distance from goal)
         self.evaluation = (True, 4, (0,0), (0,0))
+
 
 
     def UpdateDirection(self, val):
@@ -81,14 +102,37 @@ class Controller(object):
         #TODO Evaluates sequence
         pass
 
-    
+
+    #   from application
+    def GetAppResponse(self, userInput):
+        time.sleep(1)
+        while(not self.appComm.appClient.finished.value):
+            #print("checking app response")
+            time.sleep(.5)
+            if(not self.appComm.appClient.inbox.empty()):
+                #print("new message!")
+                temp = ast.literal_eval(self.appComm.appClient.inbox.get())
+                if("objective" in temp):
+                    self.objective = temp["objective"]
+                    print(self.objective)
+                elif("sequence" in temp):
+                    self.lock.acquire()
+                    try:
+                        userInput.value = temp["sequence"].rstrip().encode('ascii')
+                        print("user input is: " + userInput.value.decode('ascii'))
+                    finally:
+                        self.lock.release()
+                    #self.robot().arduino.write(bytes(self.sequence.encode('ascii')))
+        print("finished")   
+        return
 
         
     #   from arduino
-    def GetResponse(self):
+    def GetArduinoResponse(self):
         ardIn = ""
         while(not self.finished):
             if(self.arduino.inWaiting() > 0):
+                print("arduino sent a message!")
                 ardIn = self.Read(False)
                 print(ardIn)
                 if(ardIn == '~'):
@@ -115,7 +159,43 @@ class Controller(object):
         return
 
 
-    #   from gme or other 3rd party application using tcpWatcher thread
+    #   from terminal
+    def GenerateCommandSequence(self, userIn):
+        if(userIn == ""):
+            print("returning")
+            return
+        for a in userIn.split(','):
+            t = a.split(' ')
+            for b in t:
+                if b is not "":
+                    self.tokens.append(b)
+        for val in self.tokens:
+            x = ""
+            if(val == "forward"):
+                x = "1-"
+            elif(val == "back"):
+                x = "2-"
+            elif(val == "left"):
+                x = "3-90_"
+            elif(val == "right"):
+                x = "4-90_"
+            elif("stop" in val):
+                x = "*"
+            elif(TryParseInt(val) != False):
+                x = val + "_"
+            else:
+                print(val)
+                print("couldn't parse the commands. check your entry.")
+                self.validSequence = False
+                return False
+            self.cmds.append(x)
+        self.sequence = "".join(self.cmds)
+        print("valid sequence")
+        self.validSequence = True
+        return True
+
+
+        #   from gme or other 3rd party application using tcpWatcher thread
     def GetCommandSequence(self):
         while(not self.finished):
             if(len(self.tcpServer.inbox) > 0):
@@ -131,58 +211,28 @@ class Controller(object):
                 break
         return
 
-    #   from terminal
-    def GenerateCommandSequence(self):
-        userIn = self.userInput.split(',')
-        for a in userIn:
-            t = a.split(' ')
-            for b in t:
-                if b is not "":
-                    self.tokens.append(b)
-        for val in self.tokens:
-            x = ""
-            if(val == "forward"):
-                x = "1-"
-            elif(val == "back"):
-                x = "2-"
-            elif(val == "left"):
-                x = "3-90_"
-            elif(val == "right"):
-                x = "4-90_"
-            elif(val == "stop"):
-                x = "*"
-            elif(TryParseInt(val) != False):
-                x = val + "_"
-            else:
-                print("couldn't parse the commands. check your entry.")
-                self.validSequence = False
-                return
-            self.cmds.append(x)
-        self.sequence = "".join(self.cmds)
-        self.validSequence = True
-        return
-
 
     #   run with gme or other 3rd party application
-    def GMEdemo(self):
-        print("awaiting connection...")
-        self.tcpServer.setupLine("")
-        self.tcpWatcher.start()
-        while(not self.finished):
-            if(self.sequence != "" and self.validSequence):
-                self.arduino.write(bytes(self.sequence.encode('ascii')))
-                self.sequence = ""
-        return
+#    def GMEdemo(self):
+#        print("awaiting connection...")
+#        self.tcpServer.timeout = 100
+#        self.tcpServer.setupLine("")
+#        self.tcpWatcher.start()
+#        while(not self.finished):
+#            if(self.sequence != "" and self.validSequence):
+#                self.arduino.write(bytes(self.sequence.encode('ascii')))
+#                self.sequence = ""
+#        return
 
 
     def ManualMode(self):
         while(True):
             time.sleep(.1)
-            self.userInput = input(">")
+            self.userInput.value = input(">")
             time.sleep(.1)
-            self.arduino.write(bytes(self.userInput.encode('ascii')))
-            if(self.userInput == "q"):
-                self.userInput = ""
+            self.arduino.write(bytes(self.userInput.value.encode('ascii')))
+            if(self.userInput.value == "q"):
+                self.userInput.value = ""
                 break
         return
 
@@ -206,44 +256,128 @@ class Controller(object):
     
         
     def Run(self):
-        self.responseThread.start()
+        userIn = ""
         if(self.appComm.appOnline):
             print("app comm online")
+            self.appResponseProcess.start()
+            #self.appResponseThread.start()
+            self.arduinoResponseThread.start()
+            #print(self.appComm.appClient.address)
+            #print(self.appComm.appClient.port)
+            print(self.appComm.appClient.connection)
+            #print(self.appComm.appClient.connected)
+            #print(self.appComm.appClient.finished)
+            print("inbox at: " + str(id(self.appComm.appClient.inbox)))
+        else:
+            return
+
         self.Write("ml") #load parameters before beginning
-        while(not self.finished):
-            self.userInput = input(":")
-            if(self.userInput == "mm"):
+        while(not self.finished and not self.appComm.appClient.finished.value):
+            #self.userInput.value = input(":")
+            self.lock.acquire()
+            try:
+                userIn = self.userInput.value.decode('ascii')
+            finally:
+                self.lock.release()
+            #print("in main...")
+            #time.sleep(.5)
+            #print("userin is: " + userIn)
+            #if(userIn != ""):
+            #    print("input is: " + userIn)
+            if(userIn == "mm"):
                 self.mode = 1
-                self.arduino.write(bytes(self.userInput.encode('ascii')))
+                self.arduino.write(bytes(userIn.encode('ascii')))
                 time.sleep(.5)
                 self.ManualMode()
                 self.mode = 0
-            elif(self.userInput == "mv" or self.userInput == "md" or self.userInput == "mr" or self.userInput == "ml" or self.userInput == "ms"):
-                self.arduino.write(bytes(self.userInput.encode('ascii')))
-            elif(self.userInput == "G"):
-                self.GMEdemo()
-                self.finished = False
-            elif(self.userInput == "Q"):
+            elif(userIn == "mv" or userIn == "md" or userIn == "mr" or userIn == "ml" or userIn == "ms"):
+                #print("checking...")
+                self.arduino.write(bytes(userIn.encode('ascii')))
+                self.lock.acquire()
+                try:
+                    self.userInput.value = b""
+                finally:
+                    self.lock.release()
+            #elif(self.userInput == "G"):
+            #    self.GMEdemo()
+            #    self.finished = False
+            elif(userIn == "Q"):
                 self.finished = True
-                self.responseThread.finished = True
-                self.responseThread.join()
+                print("ending the program.")
                 break
-            elif(self.userInput == "L"):
-                self.appComm.SendLocation()
-            elif(self.userInput == "D"):
-                self.appComm.SendDirection()
-            elif(self.userInput == "M"):
-                m = input("enter message: ")
-                self.appComm.SendMessage(m)
-            else:
-                self.GenerateCommandSequence()
-                if(self.validSequence):
+
+            elif(userIn != "" and userIn != "Q" and "m" not in userIn):
+                print("uuuser input is: " + userIn)
+                if(self.GenerateCommandSequence(userIn)):
                     #print("sent: " + self.sequence)
                     self.arduino.write(bytes(self.sequence.encode('ascii')))
-            self.userInput = ""
-            self.sequence = ""
-            self.tokens = []
-            self.cmds = []
+                    self.lock.acquire()
+                    try:
+                        self.userInput.value = b""
+                    finally:
+                        self.lock.release()
+                    self.sequence = ""
+                    self.tokens = []
+                    self.cmds = []
+            else:
+                pass
+            #print("resetting userIn")
+            userIn = ""
+
+        self.Stop()
         return
-                    
+
+
+
+
+    def Stop(self):
+        try:
+            self.finished = True
+            self.appComm.appClient.finished.value = True #process
+            self.appComm.appClient.closeConnection()
+            if(self.appResponseProcess.is_alive()):
+                print("joining app response process ")
+                self.appResponseProcess.e.set()
+                self.appResponseProcess.join()
+            #if(self.appResponseThread.isAlive()):
+            #    self.appResponseThread.e.set()
+            #    self.appResponseThread.join()
+                print("app thread joined.")
+            if(self.arduinoResponseThread.isAlive()):
+                self.arduinoResponseThread.e.set()
+                self.arduinoResponseThread.join()
+      #      if(self.inputThread.isAlive()):
+      #          self.inputThread.e.set()
+      #          self.inputThread.join()
+                print("arduino thread joined.")
+            self.Write("ms") #save parameters before finishing
+            self.arduino.close()
+            #self.tcpServer.closeConnection()
+            #print("tcp server closed.")
+        except Exception as e:
+            #print("An exception during program exit occured.")
+            #print(str(e))
+            #traceback.print_exc()
+            pass
+        print("finished.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     

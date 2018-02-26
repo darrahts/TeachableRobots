@@ -198,18 +198,18 @@ void Left(int duration)
   digitalWrite(MTR_B_B, HIGH);
   if(managed)
   {
-      delay(100);
+      delay(250);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(10);
+      delay(15);
       while(readings[2] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(10);
+      delay(15);
       while(readings[0] < BLACK) 
       {
         ReadLineSensors();
@@ -265,18 +265,18 @@ void Right(int duration)
   digitalWrite(MTR_B_B, LOW);
   if(managed)
   {
-      delay(100);
+      delay(250);
       ReadLineSensors();
       while(readings[1] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(10);
+      delay(15);
       while(readings[0] > WHITE)
       {
         ReadLineSensors();
       }
-      delay(10);
+      delay(15);
       while(readings[2] < BLACK) 
       {
         ReadLineSensors();
@@ -645,7 +645,7 @@ void AssertCourse()
             leftCount += 1;
             if(leftCount == 8 && state == 1 && previousState != 4)
             {
-              OFFSET += 1;
+              //OFFSET += 1;
               leftCount = 0;
             }
             if(dir == 1)
@@ -668,7 +668,7 @@ void AssertCourse()
             leftCount += 1;
             if(leftCount == 8 && state == 1 && previousState != 4)
             {
-              OFFSET += 1;
+              //OFFSET += 1;
               leftCount = 0;
             }
             if(dir == 1)
@@ -691,7 +691,7 @@ void AssertCourse()
             rightCount += 1;
             if(rightCount == 8 && state == 1 && previousState != 3)
             {
-              OFFSET -= 1;
+              //OFFSET -= 1;
               rightCount = 0;
             }
             if(dir == 1)
@@ -713,7 +713,7 @@ void AssertCourse()
             rightCount += 1;
             if(rightCount == 8 && state == 1 && previousState != 3)
             {
-              OFFSET -= 1;
+              //OFFSET -= 1;
               rightCount = 0;
             }
             if(dir == 1)
@@ -840,7 +840,7 @@ unsigned int ReadIntEEPROM(int adr)
 void setup() 
 {
     //load saved parameters from eeprom
-    //OFFSET = 22;
+    OFFSET = 25;
     //SaveParameters();
     LoadParameters();
     
