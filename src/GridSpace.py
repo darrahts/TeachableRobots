@@ -28,8 +28,8 @@ class GridSpace:
         ProcessFrame(self, frame, low, high)
 '''
     
-    title = "Robot Grid Space"
-    cv2.namedWindow(title)
+    #title = "Robot Grid Space"
+    #cv2.namedWindow(title)
     vs = WebcamVideoStream(0).start()
     frame = vs.read()[27:467, 125:565]
     frameCenter = ((frame.shape[1] // 2), (frame.shape[0] // 2) + 5)
@@ -37,7 +37,7 @@ class GridSpace:
     #textAreaCopy = textArea
     frameCopy = frame
     #window = np.hstack([frame,textArea])
-    window = np.hstack([frame,frameCopy])
+    #window = np.hstack([frame,frameCopy])
     
     square = np.ndarray([4,2], dtype=int)
     square[0] = [10, 10]
@@ -52,7 +52,8 @@ class GridSpace:
     '''
         cv2.drawContours(self.frame, [self.square], -1, (0, 255, 0), 2)
         cv2.circle(self.frame, (self.frameCenter[0],self.frameCenter[1]), 15, (0,255,255), 2)
-        #self.textArea = np.zeros((self.frame.shape[0],440,3),dtype=np.uint8)
+
+      #self.textArea = np.zeros((self.frame.shape[0],440,3),dtype=np.uint8)
 
         #   draw the axis tick marks
 
@@ -85,11 +86,13 @@ class GridSpace:
         return 
 
     def Update(self, callback):
+
         self.frame = self.vs.read()[27:467, 125:565]
         callback()
         #self.textArea = self.textAreaCopy
         #self.window = np.hstack([self.frame,self.textArea])
-        self.window = np.hstack([self.frame,self.frameCopy])
+        #self.window = np.hstack([self.frame,self.frameCopy])
+        #self.ProcessFrame((33, 77, 0),(165, 215, 75))
         return
 
     def ShowFrame(self, fullWindow):
@@ -126,6 +129,7 @@ class GridSpace:
         
         #hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
         color = cv2.inRange(self.vs.read()[27:467, 125:565], low, high)
+        #color = cv2.inRange(hsv, low, high)
         erode = cv2.erode(color, None, iterations=2)
         dialate = cv2.dilate(erode, None, iterations=2)
         self.frameCopy = cv2.cvtColor(dialate, cv2.COLOR_GRAY2BGR)

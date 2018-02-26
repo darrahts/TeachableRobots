@@ -4,16 +4,15 @@ from teachablerobots.src.Communicate import SocketComm
 from teachablerobots.src.GridSpace import *
 import math
 from time import sleep
-import threading
+#import threading
 import ast
-from multiprocessing import Process
+from multiprocessing import Process, Queue, Event, Value, Lock, Manager
+from ctypes import c_char_p
 
 
 
-
-class Robot(GridSpace):
-    ''' This class inherits from GridSpace and is used to track a robot
-    on said gridspace.
+class Robot():
+    ''' 
 
     Attributes:
 
@@ -58,7 +57,7 @@ class Robot(GridSpace):
     
 '''
     
-    def __init__(self):
+    def __init__(self, gridSpace):
         self.low = (33, 77, 0)
         self.high = (165, 215, 75)
         self.robot = 0,0,0,0
@@ -73,58 +72,90 @@ class Robot(GridSpace):
         self.goalFound = False
         self.displayGoals = False
         self.displayGoalLoc = False
-        self.finished = False
-
-        self.f = self.frame.copy()
-
+        self._finished = False
+        self.frame = gridSpace.frame
+        self.frameCenter = gridSpace.frameCenter
         
+        self.gs = gridSpace
+
+        self.m = Manager()
+        self.lock = Lock()
+
+        self.location = self.m.Value(c_char_p, b"(-5,-3)")
+        self.direction = self.m.Value(c_char_p, b"Right")
+        self.distanceTravelled = self.m.Value('i', 0)
+          
                                                 
-        #self.robotCommThread = threading.Thread(target=self.GetResponse)
-        #self.robotCommThread.isDaemon = True
-        #self.robotCommThread.e = threading.Event()
-        self.P = Process(target=self.GetResponse)
-        self.P.e = Event()
+        self.robotServer = SocketComm(5580)
+
+        self.robotComm = Process(target=self.GetRobotResponse, args=(self.location,self.direction,self.distanceTravelled,))
+        self.robotComm.e = Event()
+        self.robotComm.daemon = True
         
-        self.robotServer = SocketComm()
-        self.robotServer.port = 5680
 
         print("waiting to connect to robot...")
         if(self.robotServer.setupLine("") == True):
             print("connected to robot!")
-        
-        self.location = "(-5,-3)"
-        self.direction = "Right"
-        self.message = ""
-        self.distanceTravelled = 0
-
-        self.points = [(2,-2), (2,1), (-2,1), (1,4)]
+            #print(self.robotServer.address)
+            #print(self.robotServer.port)
+            print(self.robotServer.connection)
+            #print(self.robotServer.connected)
+            #print(self.robotServer.finished)
         
 
-        amazon = cv2.imread("icons/amazon.png")
-        office = cv2.imread("icons/office.png")
-        office2 = cv2.imread("icons/office2.png")
-        office3 = cv2.imread("icons/office3.png")
-
-
+##        self.points = [(2,-2), (2,1), (-2,1), (1,4)]
+        
+##
+##        amazon = cv2.imread("icons/amazon.png")
+##        office = cv2.imread("icons/office.png")
+##        office2 = cv2.imread("icons/office2.png")
+##        office3 = cv2.imread("icons/office3.png")
+##
+##
         
 
 
 
-    def GetResponse(self):
-        while(not self.robotServer.finished):
-            if(len(self.robotServer.inbox) > 0):
-                temp = ast.literal_eval(self.robotServer.inbox.pop())
-                if("location" in temp):
-                    print("location: " + temp["location"])
-                    self.location = temp["location"]
-                    self.distanceTravelled += 1
-                    print("distance travelled: " + str(self.distanceTravelled))
-                if("direction" in temp):
-                    print("direction: " + temp["direction"])
-                    self.direction = temp["direction"]
-                if("message" in temp):
-                    print("message: " + temp["message"])
-                    self.message = temp["message"]
+    def GetRobotResponse(self, loc, _dir, dist):
+        #print("watching inbox")
+        #print(self.robotServer.address)
+        #print(self.robotServer.port)
+        #print(self.robotServer.connection)
+        #print(self.robotServer.otherAddress)
+        #print(self.robotServer.connected)
+        #print(self.robotServer.finished)
+        #print("inbox at: " + str(id(self.robotServer.inbox)))
+        d = dict()
+        while(not self.robotServer.finished.value):
+            #print("size of inbox: " + str(self.robotServer.inbox.qsize()))
+            sleep(1)
+            if(not self.robotServer.inbox.empty()):
+                temp = ast.literal_eval(self.robotServer.inbox.get())
+                self.lock.acquire()
+                try:
+                    if("location" in temp):
+                        loc.value = temp["location"].rstrip().encode('ascii')
+                        dist.value = dist.value + 1
+                        print("distance travelled: " + str(dist.value))
+                        print("location: " + loc.value.decode('ascii'))
+                    elif("direction" in temp):
+                        _dir.value = temp["direction"].rstrip().encode('ascii')
+                        print("direction: " + _dir.value.decode('ascii'))
+                    else:
+                        print("unknown: " + str(temp))
+                finally:
+                    self.lock.release()
+        return
+
+
+    def SendCommandSequence(self, seq):
+        if(len(seq) == 1 and seq == "0"):
+            self.robotServer.sendMessage("0")
+            return
+        else:
+            d = dict()
+            d["sequence"] = seq
+            self.robotServer.sendMessage(str(d))
         return
 
 
@@ -144,33 +175,35 @@ class Robot(GridSpace):
         c = 0
         i = 0
         if(self.robotServer.connected):
-            self.P.start()
-            #self.robotCommThread.start()
+            #self.P.start()
+            self.robotCommThread.start()
             print("starting comm thread")
         print("starting...")
-        while(not self.finished):
-            self.Update(self.FrameOverlay)
-            self.FindRobot()
-            cv2.imshow(self.title, self.window)
+        while(not self._finished):
+            #print("length of inbox in loop: " + str(len(self.robotServer.inbox)))
+            self.gs.Update(self.FrameOverlay)
+            #self.FindRobot()
+            #cv2.imshow(self.gs.title, self.gs.window)
             
-            key = cv2.waitKey(1) & 0xFF
-            if(key == ord("q")):
-                self.finished = True
-            elif(key == ord("c")):
-                cv2.imwrite("picture%i.jpg" %i, window)
-                i += 1
-        self.P.e.set()
-        self.P.terminate()
-        self.P.join()
+##            key = cv2.waitKey(1) & 0xFF
+##            if(key == ord("q")):
+##                self.finished = True
+##            elif(key == ord("c")):
+##                cv2.imwrite("picture%i.jpg" %i, window)
+##                i += 1
+                
+        #self.P.e.set()
+        #self.P.terminate()
+        #self.P.join()
         self.robotServer.e.set()
-        self.robotServer.finished = True
+        self.robotServer.finished.value = True
         print("closing connection")
         self.robotServer.closeConnection()
 
             
 
-    def FindRobot(self):
-        frame = self.ProcessFrame(self.low, self.high)
+    def FindRobot(self, frame):
+        #frame = self.ProcessFrame(self.low, self.high)
         contours = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         if(len(contours) > 0):
             cont = max(contours, key=cv2.contourArea)
@@ -186,7 +219,7 @@ class Robot(GridSpace):
 
 
     def FrameOverlay(self): #TODO draw point, student name in text area
-        super().FrameOverlay()
+        #super().FrameOverlay()
         if(self.displayGoals):
             self.DrawGoal(self.LocationToCoordinates(self.goal), self.displayGoalLoc)
 
@@ -213,7 +246,7 @@ class Robot(GridSpace):
         #if(self.goalFound):
         #    cv2.putText(self.textArea, "Goal Found!", (10, 100), 3, .7, (100,200,100), 1)
         
-        return
+        return self.frame
 
 
     def LocationToCoordinates(self, location):
@@ -245,8 +278,10 @@ class Robot(GridSpace):
         pass
 
 
-r = Robot()
-r.Run()
+#gs = GridSpace()
+
+#r = Robot(gs)
+#r.Run()
 
 
 
