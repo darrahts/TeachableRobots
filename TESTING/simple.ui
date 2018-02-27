@@ -50,9 +50,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
-      <width>120</width>
-      <height>61</height>
+      <y>40</y>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -104,8 +104,8 @@
    <widget class="QPushButton" name="ToggleAltButton">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>560</y>
+      <x>480</x>
+      <y>40</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -579,7 +579,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QSlider" name="HColorSlider">
+   <widget class="QSlider" name="HColorSliderLow">
     <property name="geometry">
      <rect>
       <x>530</x>
@@ -604,7 +604,7 @@
      <number>20</number>
     </property>
    </widget>
-   <widget class="QSlider" name="SColorSlider">
+   <widget class="QSlider" name="SColorSliderLow">
     <property name="geometry">
      <rect>
       <x>530</x>
@@ -629,7 +629,7 @@
      <number>20</number>
     </property>
    </widget>
-   <widget class="QSlider" name="VColorSlider">
+   <widget class="QSlider" name="VColorSliderLow">
     <property name="geometry">
      <rect>
       <x>530</x>
@@ -853,6 +853,107 @@
      <string>Robot Output</string>
     </property>
    </widget>
+   <widget class="QSlider" name="VColorSliderHigh">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>670</y>
+      <width>160</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>V Color for HSV colorspace</string>
+    </property>
+    <property name="maximum">
+     <number>360</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <property name="tickPosition">
+     <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="tickInterval">
+     <number>20</number>
+    </property>
+   </widget>
+   <widget class="QSlider" name="HColorSliderHigh">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>590</y>
+      <width>160</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>H color for HSV colorspace</string>
+    </property>
+    <property name="maximum">
+     <number>180</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <property name="tickPosition">
+     <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="tickInterval">
+     <number>20</number>
+    </property>
+   </widget>
+   <widget class="QSlider" name="SColorSliderHigh">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>630</y>
+      <width>160</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>S Color for HSV colorspace</string>
+    </property>
+    <property name="maximum">
+     <number>360</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <property name="tickPosition">
+     <enum>QSlider::TicksBelow</enum>
+    </property>
+    <property name="tickInterval">
+     <number>20</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lowRangeLabel">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>710</y>
+      <width>181</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Low Range = (0,0,0)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="highRangeLabel">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>710</y>
+      <width>211</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>high Range = (180,360,360)</string>
+    </property>
+   </widget>
    <zorder>tabWidget</zorder>
    <zorder>groupBox</zorder>
    <zorder>startButton</zorder>
@@ -861,9 +962,9 @@
    <zorder>ToggleAltButton</zorder>
    <zorder>ProblemDescription</zorder>
    <zorder>InputGroupBox</zorder>
-   <zorder>HColorSlider</zorder>
-   <zorder>SColorSlider</zorder>
-   <zorder>VColorSlider</zorder>
+   <zorder>HColorSliderLow</zorder>
+   <zorder>SColorSliderLow</zorder>
+   <zorder>VColorSliderLow</zorder>
    <zorder>label</zorder>
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
@@ -873,6 +974,11 @@
    <zorder>label_8</zorder>
    <zorder>robotTextBox</zorder>
    <zorder>label_9</zorder>
+   <zorder>VColorSliderHigh</zorder>
+   <zorder>HColorSliderHigh</zorder>
+   <zorder>SColorSliderHigh</zorder>
+   <zorder>lowRangeLabel</zorder>
+   <zorder>highRangeLabel</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

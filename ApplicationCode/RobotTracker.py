@@ -57,12 +57,24 @@ class Robot():
     
 '''
     
-    def __init__(self, gridSpace):
-        self.low = (33, 77, 0)
-        self.high = (165, 215, 75)
+    def __init__(self, gridSpace, color="green"):
+
+        if(color == "green"):
+            self.low = (48, 52, 149)
+            self.high = (89, 325, 340)
+
+        if(color == "pink"):
+            self.low = (56, 82, 127)
+            self.high = (180,271,258)
+
+        if(color == "blue"):
+            self.low = (55,132,142)
+            self.high = (114,273,273)
+
+        
         self.robot = 0,0,0,0
         self.contour = []
-        self.ellipse = ((0,0),(0,0), 0)
+        self.minRect = ((0,0),(0,0), 0)
         self.heading = 0
         self.dir = "fwd"
         
@@ -236,12 +248,19 @@ class Robot():
         #cv2.putText(self.textArea, "Location: " + self.location, (200, 20), 3, .5, (100,200,100), 1)
         #cv2.putText(self.textArea, "Move Count: " + str(self.distanceTravelled), (400, 20), 3, .5, (100,200,100), 1)
         
-        
+
         if(len(self.contour) > 0):
-            self.ellipse = cv2.fitEllipse(self.contour)
-            w = self.ellipse[1][0] * 1.25
-            l = self.ellipse[1][1] * 1.25
-            cv2.ellipse(self.frame, (self.ellipse[0],(w,l),self.ellipse[2]), (0,255,0), 2)
+            self.minRect = cv2.minAreaRect(self.contour)
+            box = cv2.boxPoints(self.minRect)
+            box = np.int0(box)
+            cv2.drawContours(self.frame, [box], 0, (0, 255, 0), 2)
+            #print("rectangle is: " + str(rect))
+        
+        #if(len(self.contour) > 0):
+        #    self.ellipse = cv2.fitEllipse(self.contour)
+        #    w = self.ellipse[1][0] * 1.25
+        #    l = self.ellipse[1][1] * 1.25
+        #    cv2.ellipse(self.frame, (self.ellipse[0],(w,l),self.ellipse[2]), (0,255,0), 2)
 
         #if(self.goalFound):
         #    cv2.putText(self.textArea, "Goal Found!", (10, 100), 3, .7, (100,200,100), 1)
