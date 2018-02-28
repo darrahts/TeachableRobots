@@ -64,7 +64,7 @@ class Robot():
             self.high = (89, 325, 340)
 
         if(color == "pink"):
-            self.low = (56, 82, 127)
+            self.low = (56, 82, 170)
             self.high = (180,271,258)
 
         if(color == "blue"):
@@ -72,9 +72,8 @@ class Robot():
             self.high = (114,273,273)
 
         
-        self.robot = 0,0,0,0
+        self.robot = ((0,0),(0,0), 0)
         self.contour = []
-        self.minRect = ((0,0),(0,0), 0)
         self.heading = 0
         self.dir = "fwd"
         
@@ -85,10 +84,9 @@ class Robot():
         self.displayGoals = False
         self.displayGoalLoc = False
         self._finished = False
-        self.frame = gridSpace.frame
-        self.frameCenter = gridSpace.frameCenter
         
         self.gs = gridSpace
+        
 
         self.m = Manager()
         self.lock = Lock()
@@ -115,28 +113,9 @@ class Robot():
             #print(self.robotServer.finished)
         
 
-##        self.points = [(2,-2), (2,1), (-2,1), (1,4)]
-        
-##
-##        amazon = cv2.imread("icons/amazon.png")
-##        office = cv2.imread("icons/office.png")
-##        office2 = cv2.imread("icons/office2.png")
-##        office3 = cv2.imread("icons/office3.png")
-##
-##
-        
-
 
 
     def GetRobotResponse(self, loc, _dir, dist):
-        #print("watching inbox")
-        #print(self.robotServer.address)
-        #print(self.robotServer.port)
-        #print(self.robotServer.connection)
-        #print(self.robotServer.otherAddress)
-        #print(self.robotServer.connected)
-        #print(self.robotServer.finished)
-        #print("inbox at: " + str(id(self.robotServer.inbox)))
         d = dict()
         while(not self.robotServer.finished.value):
             #print("size of inbox: " + str(self.robotServer.inbox.qsize()))
@@ -197,16 +176,14 @@ class Robot():
             #self.FindRobot()
             #cv2.imshow(self.gs.title, self.gs.window)
             
-##            key = cv2.waitKey(1) & 0xFF
-##            if(key == ord("q")):
-##                self.finished = True
-##            elif(key == ord("c")):
-##                cv2.imwrite("picture%i.jpg" %i, window)
-##                i += 1
+            key = cv2.waitKey(1) & 0xFF
+            if(key == ord("q")):
+                self.finished = True
+            elif(key == ord("c")):
+                cv2.imwrite("picture%i.jpg" %i, window)
+                i += 1
                 
-        #self.P.e.set()
-        #self.P.terminate()
-        #self.P.join()
+
         self.robotServer.e.set()
         self.robotServer.finished.value = True
         print("closing connection")
@@ -214,74 +191,44 @@ class Robot():
 
             
 
-    def FindRobot(self, frame):
-        #frame = self.ProcessFrame(self.low, self.high)
-        contours = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    def FindRobot(self):
+        contours = cv2.findContours(self.gs.processedFrame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         if(len(contours) > 0):
             cont = max(contours, key=cv2.contourArea)
             if(cv2.contourArea(cont) > 200 and cv2.contourArea(cont) < 700):
-                rect = cv2.boundingRect(cont)
-                self.robot = rect
-                self.contour = cont
-                #self.moments = cv2.moments(cont)
-            else:
-                return -1
-        else:
-            return -1
+                temp = cv2.minAreaRect(cont)
+                if(abs(temp[0][0] - self.robot[0][0]) > .02 and abs(temp[0][1] - self.robot[0][1]) > .02):
+                    self.contour = cont
+                    self.robot = temp
+        return
 
 
     def FrameOverlay(self): #TODO draw point, student name in text area
-        #super().FrameOverlay()
         if(self.displayGoals):
-            self.DrawGoal(self.LocationToCoordinates(self.goal), self.displayGoalLoc)
-
-
-        self.rLoc = self.CoordinatesToLocation(self.robot)
+            self.DrawGoal(self.LocToCoord(self.goal), self.displayGoalLoc)
             
-        cv2.putText(self.frame, "(0,0)", (self.frameCenter[0],self.frameCenter[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (0,255,250), 2)
-        #cv2.putText(self.frame, "(%.1f" % self.rLoc[0] + ", %.1f)" %self.rLoc[1], (self.robot[0]+15,self.robot[1]+30), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
-        
-        #cv2.putText(self.textArea, "Heading: %.2f" % self.ellipse[2], (10, 20), 3, .7, (100,200,100), 1)
-        #cv2.circle(self.textArea, (208,8), 2, (100,200,100), 1)
-
-        #cv2.putText(self.textArea, "Direction: " + self.direction, (0, 20), 3, .5, (100,200,100), 1)
-        #cv2.putText(self.textArea, "Location: " + self.location, (200, 20), 3, .5, (100,200,100), 1)
-        #cv2.putText(self.textArea, "Move Count: " + str(self.distanceTravelled), (400, 20), 3, .5, (100,200,100), 1)
-        
-
         if(len(self.contour) > 0):
-            self.minRect = cv2.minAreaRect(self.contour)
-            box = cv2.boxPoints(self.minRect)
+            box = cv2.boxPoints(self.robot)
             box = np.int0(box)
-            cv2.drawContours(self.frame, [box], 0, (0, 255, 0), 2)
-            #print("rectangle is: " + str(rect))
-        
-        #if(len(self.contour) > 0):
-        #    self.ellipse = cv2.fitEllipse(self.contour)
-        #    w = self.ellipse[1][0] * 1.25
-        #    l = self.ellipse[1][1] * 1.25
-        #    cv2.ellipse(self.frame, (self.ellipse[0],(w,l),self.ellipse[2]), (0,255,0), 2)
-
-        #if(self.goalFound):
-        #    cv2.putText(self.textArea, "Goal Found!", (10, 100), 3, .7, (100,200,100), 1)
-        
-        return self.frame
+            cv2.drawContours(self.gs.frame, [box], 0, (0, 255, 0), 2)
+            
+        return self.gs.frame
 
 
-    def LocationToCoordinates(self, location):
-        return (int(location[0] *38 + self.frameCenter[0])), (int(-location[1]*38 + self.frameCenter[1]))
-
-
-    def CoordinatesToLocation(self, coordinates):
-        return (coordinates[0] - self.frameCenter[0]) / 38, (self.frameCenter[1] - coordinates[1]) / 38
+    def LocToCoord(self, location):
+        return (location[0] - self.gs.frameCenter[0]) / 38, (self.gs.frameCenter[1] - location[1]) / 38
     
+    
+    def CoordToLoc(self, coordinates):
+        return (int(coordinates[0] *38 + self.gs.frameCenter[0])), (int(-coordinates[1]*38 + self.gs.frameCenter[1]))
 
+    
     def DrawGoal(self, goal, showXY):
         cv2.circle(self.frame,(goal[0], goal[1]), 2, (220,80,80), 2)
         cv2.circle(self.frame,(goal[0], goal[1]), 7, (220,80,80), 2)
         cv2.circle(self.frame,(goal[0], goal[1]), 12, (220,80,80), 2)
         if(showXY):
-            cv2.putText(self.frame, str(self.CoordinatesToLocation(goal)), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
+            cv2.putText(self.frame, str(self.CoordToLoc(goal)), (goal[0]+10, goal[1]+10), cv2.FONT_HERSHEY_PLAIN, .95, (50,100,200), 2)
 
 
     def DrawLine(self, point1, point2):
@@ -296,11 +243,6 @@ class Robot():
     def GetHeading(self, frame):
         pass
 
-
-#gs = GridSpace()
-
-#r = Robot(gs)
-#r.Run()
 
 
 
