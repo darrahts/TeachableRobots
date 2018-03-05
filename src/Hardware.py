@@ -8,17 +8,17 @@ import tty
 #bus = smbus.SMBus(1)
 #gyroAddress = 0x68
 
-buzzer = 13
-greenLED = 8
-green1LED = 37
-yellowLED = 40
-redLED = 10
+#buzzer = 13
+#greenLED = 8
+#green1LED = 37
+#yellowLED = 40
+#redLED = 10
 
-panServo = 11
-tiltServo = 7
+#panServo = 11
+#tiltServo = 7
 
-ECHO = 18
-TRIG = 12
+ECHO = 22
+TRIG = 16
 
 
 
@@ -26,14 +26,14 @@ TRIG = 12
 GPIO.setmode(GPIO.BOARD)
 
 
-GPIO.setup(buzzer, GPIO.OUT)
-GPIO.setup(greenLED, GPIO.OUT)
-GPIO.setup(green1LED, GPIO.OUT)
-GPIO.setup(yellowLED, GPIO.OUT)
-GPIO.setup(redLED, GPIO.OUT)
+#GPIO.setup(buzzer, GPIO.OUT)
+#GPIO.setup(greenLED, GPIO.OUT)
+#GPIO.setup(green1LED, GPIO.OUT)
+#GPIO.setup(yellowLED, GPIO.OUT)
+#GPIO.setup(redLED, GPIO.OUT)
 
-GPIO.setup(panServo, GPIO.OUT)
-GPIO.setup(tiltServo, GPIO.OUT)
+#GPIO.setup(panServo, GPIO.OUT)
+#GPIO.setup(tiltServo, GPIO.OUT)
 
 GPIO.setup(TRIG,GPIO.OUT)
 GPIO.setup(ECHO,GPIO.IN)
@@ -81,9 +81,13 @@ def Pan(direction):
         os.system("echo 1=-1 > /dev/servoblaster")
     return
 
-os.system("sudo /home/pi/TeachableRobots/RobotCode/PiBits/ServoBlaster/user/servod")
-os.system("echo 0=130 > /dev/servoblaster")
-os.system("echo 1=150 > /dev/servoblaster")
+#os.system("sudo ./ServoBlaster/user/servod")
+#os.system("echo 0=135 > /dev/servoblaster")
+#os.system("echo 1=150 > /dev/servoblaster")
+
+#print("done")
+
+#os.system("sudo killall servod")
 
 '''
 try:
