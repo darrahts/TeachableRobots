@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
-from Hardware import *
+from teachablerobots.src.Hardware import *
 
 class Sense(object):
     def __init__(self):
@@ -55,6 +55,9 @@ class Sense(object):
         if(printAll):
             print("______")
         return int(total / 4.0)
+
+    def CleanUp(self):
+        HardwareCleanup()
 
 
 ##if (__name__ == "__main__"):

@@ -1,25 +1,19 @@
-import weakref
+import threading
+
+def fcn1():
+    print("hello")
+
+t1 = threading.Thread(target=fcn1)
 
 
-class AppComm(object):
-    def __init__(self, parent):
-        self.robot = weakref.ref(parent)
+t1.start()
+print(threading.activeCount())
+t1.join()
 
+t1 = threading.Thread(target=fcn1)
 
-    def SetObjective(self, objective):
-        self.robot().objective = objective
-        return
+t1.start()
+print(threading.activeCount())
+t1.join()
 
-
-
-class Controller(object):
-    def __init__(self):
-        self.appComm = AppComm(self)
-        self.objective = ""
-
-
-c = Controller()
-print(c.objective)
-c.appComm.SetObjective("new objective")
-
-print(c.objective)
+print(threading.activeCount())

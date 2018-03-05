@@ -6,6 +6,7 @@ import sys
 import traceback
 from teachablerobots.src.Communicate import AppComm
 from teachablerobots.src.Sense import Sense
+from teachablerobots.src.Hardware import *
 import ast
 from multiprocessing import Process, Queue, Event, Value, Lock, Manager
 from ctypes import c_char_p
@@ -141,13 +142,15 @@ class Controller(object):
                 elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
-                    self.UpdateLocation()
+                    if(self.withApp):
+                        self.UpdateLocation()
                     print("+")
                     print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)
                     ardIn = self.Read(False)
-                    self.UpdateDirection(ardIn)
+                    if(self.withApp):
+                        self.UpdateDirection(ardIn)
                 elif(ardIn != ""):
                     print("   ^ " + ardIn + " ^")
                     if(self.mode == 0):
@@ -239,12 +242,15 @@ class Controller(object):
     #   from arduino
     def Read(self, line):
         temp = ""
-        if(line):
-            temp = self.arduino.readline().decode("ascii")
-        else:
-            temp = self.arduino.read().decode("ascii")
-        temp = temp.replace("\r", "")
-        temp = temp.replace("\n", "")
+        try:
+            if(line):
+                temp = self.arduino.readline().decode("ascii")
+            else:
+                temp = self.arduino.read().decode("ascii")
+            temp = temp.replace("\r", "")
+            temp = temp.replace("\n", "")
+        except UnicodeDecodeError as e:
+            print("ignoring decode error.")
         return temp
 
 
@@ -358,6 +364,7 @@ class Controller(object):
             #print(str(e))
             #traceback.print_exc()
             pass
+        HardwareCleanup()
         print("finished.")
 
 

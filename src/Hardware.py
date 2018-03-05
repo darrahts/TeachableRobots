@@ -35,12 +35,16 @@ def Setup():
     #GPIO.setup(yellowLED, GPIO.OUT)
     #GPIO.setup(redLED, GPIO.OUT)
 
-    GPIO.setup(panServo, GPIO.OUT)
-    GPIO.setup(tiltServo, GPIO.OUT)
+    #GPIO.setup(panServo, GPIO.OUT)
+    #GPIO.setup(tiltServo, GPIO.OUT)
 
+    GPIO.setup(ARDINT, GPIO.OUT)
+    
     GPIO.setup(TRIG,GPIO.OUT)
     GPIO.setup(ECHO,GPIO.IN)
-    GPIO.output(TRIG, False)
+
+    GPIO.output(TRIG, GPIO.LOW)
+    GPIO.output(ARDINT, GPIO.LOW)
 
     return
 
