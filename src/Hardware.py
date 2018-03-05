@@ -14,8 +14,8 @@ import tty
 #yellowLED = 40
 #redLED = 10
 
-#panServo = 11
-#tiltServo = 7
+panServo = 11
+tiltServo = 7
 
 ECHO = 22
 TRIG = 13
@@ -33,8 +33,8 @@ def Setup():
     #GPIO.setup(yellowLED, GPIO.OUT)
     #GPIO.setup(redLED, GPIO.OUT)
 
-    #GPIO.setup(panServo, GPIO.OUT)
-    #GPIO.setup(tiltServo, GPIO.OUT)
+    GPIO.setup(panServo, GPIO.OUT)
+    GPIO.setup(tiltServo, GPIO.OUT)
 
     GPIO.setup(TRIG,GPIO.OUT)
     GPIO.setup(ECHO,GPIO.IN)
@@ -64,6 +64,7 @@ def GetKey():
 
 def HardwareCleanup():
     GPIO.cleanup()
+    #os.system("sudo killall servod")
     return
 
 def Tilt(direction):

@@ -5,6 +5,7 @@ import threading
 import sys
 import traceback
 from teachablerobots.src.Communicate import AppComm
+from teachablerobots.src.Sense import Sense
 import ast
 from multiprocessing import Process, Queue, Event, Value, Lock, Manager
 from ctypes import c_char_p
@@ -20,8 +21,7 @@ def TryParseInt(val):
 
 
 class Controller(object):
-    def __init__(self, port):
-
+    def __init__(self, port, withApp=True):
 
 
         self.m = Manager()
@@ -32,15 +32,17 @@ class Controller(object):
         self.sequence = ""
         self.finished = False
         self.validSequence = False
+        self.withApp = withApp
+
+        self.sensors = Sense()
         
         #   application communication
-        self.appComm = AppComm(self, "192.168.1.91", 5580)
-        #self.appResponseThread = threading.Thread(target=self.appComm.GetAppResponse)
-        #self.appResponseThread.e = threading.Event()
-
-        self.appResponseProcess = Process(target=self.GetAppResponse, args=(self.userInput,))
-        #self.appResponseProcess.daemon = True
-        self.appResponseProcess.e = Event()
+        if(self.withApp):
+            self.appComm = AppComm(self, "192.168.1.91", 5580)
+        
+            self.appResponseProcess = Process(target=self.GetAppResponse, args=(self.userInput,))
+            #self.appResponseProcess.daemon = True
+            self.appResponseProcess.e = Event()
         
         #   arduino communication
         self.arduino = serial.Serial(port, 9600)
@@ -50,9 +52,6 @@ class Controller(object):
           
         self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
 
-        
-        #self.tcpServer = SocketComm(5480)
-        
         
         #   updated from arduino
         self.numSpacesMoved = 0
@@ -181,7 +180,7 @@ class Controller(object):
                 x = "4-90_"
             elif("stop" in val):
                 x = "*"
-            elif(TryParseInt(val) != False):
+            elif(TryParseInt(val) != False and int(val) < 10):
                 x = val + "_"
             else:
                 print(val)
@@ -257,33 +256,32 @@ class Controller(object):
         
     def Run(self):
         userIn = ""
-        if(self.appComm.appOnline):
-            print("app comm online")
-            self.appResponseProcess.start()
-            #self.appResponseThread.start()
-            self.arduinoResponseThread.start()
-            #print(self.appComm.appClient.address)
-            #print(self.appComm.appClient.port)
-            print(self.appComm.appClient.connection)
-            #print(self.appComm.appClient.connected)
-            #print(self.appComm.appClient.finished)
-            print("inbox at: " + str(id(self.appComm.appClient.inbox)))
+        condition = ""
+        
+        if(self.withApp):
+            if(self.appComm.appOnline):
+                print("app comm online")
+                self.appResponseProcess.start()
+                print(self.appComm.appClient.connection)
+                #print("inbox at: " + str(id(self.appComm.appClient.inbox)))
+                condition = "not self.finished and not self.appComm.appClient.finished.value"
+            else:
+                return
         else:
-            return
-
+            condition = "not self.finished"
+            
+        self.arduinoResponseThread.start()
         self.Write("ml") #load parameters before beginning
-        while(not self.finished and not self.appComm.appClient.finished.value):
-            #self.userInput.value = input(":")
+        
+        while(eval(condition)):
             self.lock.acquire()
+            if(not self.withApp):
+                self.userInput.value = input(":").encode('ascii')
             try:
                 userIn = self.userInput.value.decode('ascii')
             finally:
                 self.lock.release()
-            #print("in main...")
-            #time.sleep(.5)
-            #print("userin is: " + userIn)
-            #if(userIn != ""):
-            #    print("input is: " + userIn)
+                
             if(userIn == "mm"):
                 self.mode = 1
                 self.arduino.write(bytes(userIn.encode('ascii')))
@@ -291,13 +289,14 @@ class Controller(object):
                 self.ManualMode()
                 self.mode = 0
             elif(userIn == "mv" or userIn == "md" or userIn == "mr" or userIn == "ml" or userIn == "ms"):
-                #print("checking...")
                 self.arduino.write(bytes(userIn.encode('ascii')))
+            
                 self.lock.acquire()
                 try:
                     self.userInput.value = b""
                 finally:
                     self.lock.release()
+                    
             #elif(self.userInput == "G"):
             #    self.GMEdemo()
             #    self.finished = False
@@ -307,7 +306,7 @@ class Controller(object):
                 break
 
             elif(userIn != "" and userIn != "Q" and "m" not in userIn):
-                print("uuuser input is: " + userIn)
+                print("user input is: " + userIn)
                 if(self.GenerateCommandSequence(userIn)):
                     #print("sent: " + self.sequence)
                     self.arduino.write(bytes(self.sequence.encode('ascii')))

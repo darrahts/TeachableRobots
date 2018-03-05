@@ -38,7 +38,7 @@ class Sense(object):
         total = 0.0
         prevVal = -1
         for i in range(0,4):
-            val = self.GetRange()
+            val = self._getRange()
             if(printAll):
                 print(val)
                 
@@ -52,13 +52,15 @@ class Sense(object):
                 i = i -1
             time.sleep(.075)
 
-        return total / 4.0
+        if(printAll):
+            print("______")
+        return int(total / 4.0)
 
 
 if (__name__ == "__main__"):
     s = Sense()
     time.sleep(2)
-    print(s.GetRange())
+    print(s.GetRange(True))
     HardwareCleanup()
     
 
