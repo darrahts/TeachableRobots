@@ -7,16 +7,20 @@ import numpy as np
 import threading
 from multiprocessing import Process, Queue, Event
 import time
+import argparse
+
 
 formXML = uic.loadUiType("robotGUI.ui")[0]
 
 
+
+
 class App():
-    def __init__(self):
+    def __init__(self,color,mode):
         self.app = QtWidgets.QApplication(sys.argv)
         self.gs = GridSpace("gui")
-        self.r = Robot(self.gs, "pink")
-        self.w = MainWindow(self)
+        self.r = Robot(self.gs, color, mode)
+        self.w = MainWindow(self, mode)
         self.w.setWindowTitle("GUI Test")
         self.running = False
         self.counter = 0
@@ -71,13 +75,15 @@ class ImageWidget(QtWidgets.QWidget):
 
 
 class MainWindow(QtWidgets.QMainWindow, formXML):
-    def __init__(self, parentApp, parent=None):
+    def __init__(self, parentApp, mode, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setupUi(self)
 
         self.parentApp = parentApp
         self.gs = parentApp.gs
         self.r = parentApp.r
+
+        self.mode = mode
 
         self.InputText = MyTextEdit(QtWidgets.QTextEdit, self.InputGroupBox)
         self.InputText.setGeometry(QtCore.QRect(10, 30, 371, 61))
@@ -148,9 +154,10 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
 
 
     def SendCommands(self):
-        self.r.SendCommandSequence(self.InputText.toPlainText())
-        self.ProblemDescription.setText(self.InputText.toPlainText())
-        self.InputText.setText("")
+        if(self.mode == "connected"):
+            self.r.SendCommandSequence(self.InputText.toPlainText())
+            self.ProblemDescription.setText(self.InputText.toPlainText())
+            self.InputText.setText("")
    
     def start_clicked(self):
         self.parentApp.running = True
@@ -213,8 +220,15 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
 
 
 # ************************* MAIN ************************* #
-a = App()
-a.Run()
+
+if(__name__ == "__main__"):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-c", "--color", required=True, help="color of robot")
+    ap.add_argument("-m", "--mode", required=True, help="mode (standalone or with robot)")
+    args = vars(ap.parse_args())
+    
+    a = App(str(args["color"]), str(args["mode"]))
+    a.Run()
 
 
 

@@ -535,8 +535,8 @@ void ExecuteCommand()
             commands[i] = -1;
             amounts[i] = 0;
         }
+        Serial.write(0x21);
     }
-    Serial.write(0x21);
 }
 
 /*                            MANUAL CONTROL          

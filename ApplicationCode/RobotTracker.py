@@ -11,7 +11,7 @@ from ctypes import c_char_p
 
 
 
-class Robot():
+class Robot(object):
     ''' 
 
     Attributes:
@@ -57,7 +57,7 @@ class Robot():
     
 '''
     
-    def __init__(self, gridSpace, color="green"):
+    def __init__(self, gridSpace, color, mode):
 
         if(color == "green"):
             self.low = (48, 52, 149)
@@ -103,15 +103,18 @@ class Robot():
         self.robotComm.daemon = True
         
 
-        print("waiting to connect to robot...")
-        if(self.robotServer.setupLine("") == True):
-            print("connected to robot!")
-            #print(self.robotServer.address)
-            #print(self.robotServer.port)
-            print(self.robotServer.connection)
-            #print(self.robotServer.connected)
-            #print(self.robotServer.finished)
-        
+        if(mode == "standalone"):
+            pass
+        elif(mode == "connected"):
+            print("waiting to connect to robot...")
+            if(self.robotServer.setupLine("") == True):
+                print("connected to robot!")
+                #print(self.robotServer.address)
+                #print(self.robotServer.port)
+                print(self.robotServer.connection)
+                #print(self.robotServer.connected)
+                #print(self.robotServer.finished)
+            
 
 
 
