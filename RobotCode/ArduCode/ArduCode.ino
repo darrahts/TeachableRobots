@@ -128,7 +128,6 @@ bool rightTriggered = false;
 int leftCount = 0;
 int rightCount = 0;
 
-volatile int testInt = 0;
 
 /********************************************************************************************************
  *                                                  FUNCTIONS                                           *
@@ -874,13 +873,19 @@ void setup()
     
     pinMode(ardInt, INPUT);
     digitalWrite(ardInt, LOW);
-    attachInterrupt(digitalPinToInterrupt(ardInt), test, RISING);
+    attachInterrupt(digitalPinToInterrupt(ardInt), InterruptRoutine, RISING);
 }
 
 
-void test()
+void InterruptRoutine()
 {
-    testInt += 1;
+    Stop();
+    Serial.write(0x40);
+    for(int i = 0; i < SEQUENCE_LENGTH; i++)
+    {
+      commands[i] = -1;
+      amounts[i] = 0;
+    }
   
 }
 
@@ -890,11 +895,16 @@ void test()
 String x = "";
 void loop() 
 {
-    Serial.println(testInt);
-    delay(500);
+
+    //Forward();
+    //delay(3000);
+    //Stop();
+    //delay(3000);
+    //Serial.println(testInt);
+    //delay(500);
     
-    //ParseCommand();
-    //ExecuteCommand();
+    ParseCommand();
+    ExecuteCommand();
     
     //ReadLineSensors();
     //delay(250);
