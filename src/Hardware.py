@@ -18,26 +18,29 @@ import tty
 #tiltServo = 7
 
 ECHO = 22
-TRIG = 16
+TRIG = 13
 
 
 
 
-GPIO.setmode(GPIO.BOARD)
+def Setup():
+    GPIO.setmode(GPIO.BOARD)
 
 
-#GPIO.setup(buzzer, GPIO.OUT)
-#GPIO.setup(greenLED, GPIO.OUT)
-#GPIO.setup(green1LED, GPIO.OUT)
-#GPIO.setup(yellowLED, GPIO.OUT)
-#GPIO.setup(redLED, GPIO.OUT)
+    #GPIO.setup(buzzer, GPIO.OUT)
+    #GPIO.setup(greenLED, GPIO.OUT)
+    #GPIO.setup(green1LED, GPIO.OUT)
+    #GPIO.setup(yellowLED, GPIO.OUT)
+    #GPIO.setup(redLED, GPIO.OUT)
 
-#GPIO.setup(panServo, GPIO.OUT)
-#GPIO.setup(tiltServo, GPIO.OUT)
+    #GPIO.setup(panServo, GPIO.OUT)
+    #GPIO.setup(tiltServo, GPIO.OUT)
 
-GPIO.setup(TRIG,GPIO.OUT)
-GPIO.setup(ECHO,GPIO.IN)
-GPIO.output(TRIG, False)
+    GPIO.setup(TRIG,GPIO.OUT)
+    GPIO.setup(ECHO,GPIO.IN)
+    GPIO.output(TRIG, False)
+
+    return
 
 
 
