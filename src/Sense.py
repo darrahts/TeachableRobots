@@ -29,7 +29,7 @@ class Sense(object):
         pulseEnd = time.time()
 
         duration = pulseEnd - pulseStart
-        totalDistance = duration * 34326 #distance sound travels in cm per second
+        totalDistance = duration * 34300 #distance sound travels in cm per second
         objDistance = totalDistance / 2
 
         return objDistance
