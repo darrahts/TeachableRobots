@@ -41,7 +41,6 @@ unsigned long t2 = millis();
 
 //time between polling the gps in ms
 unsigned long delayTime = 1800000L;
-//unsigned long delayTime = 60000L;
 
 //start of the memory address, memAdr = 0 : value of next memAdr, persistant through power cycles
 //2 = atLoc_1, 4 = atLoc_2, 6 = atLoc_3, 8 = atLoc_4, 10 = atLoc_5, 12 = atLoc_6
@@ -77,7 +76,7 @@ byte atLoc_6 = 0;
 
 /************************************************************************************************************/
 //$GPRMC,200215.00,A,3608.71203,N,08647.59642,W,0.362,82.71,131117,,,A*4C
-//       hour     valid     lat          long     speed       date
+//       hour     valid     lat          long   speed, tmg,   date
 /************************************************************************************************************/
 
 /*
@@ -536,8 +535,9 @@ void Main()
 
 void loop() 
 {   
-    //QueryGPS();
-    Main();
+    QueryGPS();
+    
+    //Main();
 }
 
 
