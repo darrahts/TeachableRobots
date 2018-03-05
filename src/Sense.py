@@ -19,19 +19,24 @@ class Sense(object):
         GPIO.output(TRIG, GPIO.LOW)
 
         while(GPIO.input(ECHO) == 0):
+            if(time.time() - pulseStart > .5):
+                return -1
             pass
 
         pulseStart = time.time()
 
         while(GPIO.input(ECHO) == 1):
+            if(time.time() - pulseStart > .5):
+                return -1
             pass
 
         pulseEnd = time.time()
 
         duration = pulseEnd - pulseStart
-        totalDistance = duration * 34300 #distance sound travels in cm per second
+        totalDistance = duration * 34326 #distance sound travels in cm per second
         objDistance = totalDistance / 2
 
+        
         return objDistance
 
 
@@ -39,7 +44,12 @@ if (__name__ == "__main__"):
     s = Sense()
     time.sleep(2)
     for i in range(0,4):
-        print(s.GetRange())
+        val = s.GetRange()
+        if(val > 0):
+            print(val)
+        else:
+            i = i -1
+        time.sleep(.075)
 
     HardwareCleanup()
     
