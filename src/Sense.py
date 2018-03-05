@@ -5,12 +5,8 @@ from Hardware import *
 class Sense(object):
     def __init__(self):
         Setup()
-        self.r1 = 0.0
-        self.r2 = 0.0
-        self.r3 = 0.0
 
-
-    def GetRange(self):
+    def _getRange(self):
         pulseStart = time.time()
         pulseEnd = time.time()
 
@@ -33,24 +29,36 @@ class Sense(object):
         pulseEnd = time.time()
 
         duration = pulseEnd - pulseStart
-        totalDistance = duration * 34326 #distance sound travels in cm per second
+        totalDistance = duration * 34300 #distance sound travels in cm per second
         objDistance = totalDistance / 2
 
-        
         return objDistance
+
+    def GetRange(self, printAll=False):
+        total = 0.0
+        prevVal = -1
+        for i in range(0,4):
+            val = self.GetRange()
+            if(printAll):
+                print(val)
+                
+            if(val > 0):
+                if(prevVal == -1 or abs(prevVal - val) < 20):
+                    prevVal = val
+                    total += val
+                else:
+                    i = i - 1
+            else:
+                i = i -1
+            time.sleep(.075)
+
+        return total / 4.0
 
 
 if (__name__ == "__main__"):
     s = Sense()
     time.sleep(2)
-    for i in range(0,4):
-        val = s.GetRange()
-        if(val > 0):
-            print(val)
-        else:
-            i = i -1
-        time.sleep(.075)
-
+    print(s.GetRange())
     HardwareCleanup()
     
 
