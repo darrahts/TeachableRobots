@@ -57,11 +57,11 @@ class Sense(object):
         return int(total / 4.0)
 
 
-if (__name__ == "__main__"):
-    s = Sense()
-    time.sleep(2)
-    print(s.GetRange(True))
-    HardwareCleanup()
+##if (__name__ == "__main__"):
+##    s = Sense()
+##    time.sleep(2)
+##    print(s.GetRange(True))
+##    HardwareCleanup()
     
 
     

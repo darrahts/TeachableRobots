@@ -20,6 +20,8 @@ tiltServo = 7
 ECHO = 22
 TRIG = 13
 
+ARDINT = 40
+
 
 
 

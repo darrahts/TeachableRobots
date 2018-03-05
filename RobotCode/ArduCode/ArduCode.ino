@@ -27,6 +27,7 @@
 //voltage sensor
 #define VOLTAGE_SR A1
 
+int ardInt = 2;
 
 
 /********************************************************************************************************
@@ -126,6 +127,8 @@ bool rightTriggered = false;
 
 int leftCount = 0;
 int rightCount = 0;
+
+volatile int testInt = 0;
 
 /********************************************************************************************************
  *                                                  FUNCTIONS                                           *
@@ -868,8 +871,18 @@ void setup()
     
     //turn motors off
     Stop();
+    
+    pinMode(ardInt, INPUT);
+    digitalWrite(ardInt, LOW);
+    attachInterrupt(digitalPinToInterrupt(ardInt), test, RISING);
 }
 
+
+void test()
+{
+    testInt += 1;
+  
+}
 
 /********************************************************************************************************
  *                                                MAIN                                                  *                                                  
@@ -877,23 +890,12 @@ void setup()
 String x = "";
 void loop() 
 {
-//    if(Serial.available() > 0)
-//    {
-//        x = Serial.readString();
-//    }
-//    if(x != "")
-//    {
-//        delay(5);
-//        Serial.flush();
-//        delay(5);
-//        Serial.println(x);  
-//        delay(5);
-//        Serial.flush();
-//    }
-//    
-//    x = "";
-    ParseCommand();
-    ExecuteCommand();
+    Serial.println(testInt);
+    delay(500);
+    
+    //ParseCommand();
+    //ExecuteCommand();
+    
     //ReadLineSensors();
     //delay(250);
 }
