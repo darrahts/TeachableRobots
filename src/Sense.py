@@ -1,66 +1,38 @@
-
-
- 
-
-import RPi.GPIO as GPIO
+# -*- coding: utf-8 -*-
 import time
- 
-#GPIO Mode (BOARD / BCM)
-GPIO.setmode(GPIO.BOARD)
- 
-#set GPIO Pins
-GPIO_TRIGGER = 13
-GPIO_ECHO = 22
- 
-#set GPIO direction (IN / OUT)
-GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
-GPIO.setup(GPIO_ECHO, GPIO.IN)
- 
-def distance():
+from Hardware import *
 
- 
-    StartTime = time.time()
-    StopTime = time.time()
+class Sense(object):
+    def __init__(self):
+        Setup()
+        self.r1 = 0.0
+        self.r2 = 0.0
+        self.r3 = 0.0
 
-    # set Trigger to HIGH
-    GPIO.output(GPIO_TRIGGER, True)
- 
-    # set Trigger after 0.01ms to LOW
-    time.sleep(0.00001)
-    GPIO.output(GPIO_TRIGGER, False)
 
- 
-    # save StartTime
-    while GPIO.input(GPIO_ECHO) == 0:
-        pass
+    def GetRange(self):
+        pulseStart = time.time()
+        pulseEnd = time.time()
 
-    StartTime = time.time()
+        GPIO.output(TRIG, GPIO.HIGH)
+        time.sleep(.00001)
+        GPIO.output(TRIG, GPIO.LOW)
+
+        while(GPIO.input(ECHO) == 0):
+            pass
+
+        pulseStart = time.time()
+
+        while(GPIO.input(ECHO) == 1):
+            pass
+
+        pulseEnd = time.time()
+
+        duration = pulseEnd - pulseStart
+        totalDistance = duration * 34326 #distance sound travels in cm per second
+        objDistance = totalDistance / 2
+
+        return objDistance
     
-    # save time of arrival
-    while GPIO.input(GPIO_ECHO) == 1:
-        pass
 
-    StopTime = time.time()
-
-        
-    # time difference between start and arrival
-    TimeElapsed = StopTime - StartTime
-    # multiply with the sonic speed (34300 cm/s)
-    # and divide by 2, because there and back
-    distance = (TimeElapsed * 34300) / 2
- 
-    return distance
- 
-if __name__ == '__main__':
-    try:
-        time.sleep(2)
-        while True:
-            dist = distance()
-            print ("Measured Distance = %.1f cm" % dist)
-            time.sleep(.5)
- 
-        # Reset by pressing CTRL + C
-    except KeyboardInterrupt:
-        print("Measurement stopped by User")
-        GPIO.cleanup()
-
+    
