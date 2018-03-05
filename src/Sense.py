@@ -33,6 +33,15 @@ class Sense(object):
         objDistance = totalDistance / 2
 
         return objDistance
+
+
+if (__name__ == "__main__"):
+    s = Sense()
+    time.sleep(2)
+    for i in range(0,4):
+        print(s.GetRange())
+
+    HardwareCleanup()
     
 
     
