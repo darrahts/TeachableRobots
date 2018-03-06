@@ -129,10 +129,10 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
             print("robot online.")
 
     def ShowMaze(self):
-        if(self.self.gs.showMaze):
-            self.self.gs.showMaze = False
+        if(self.gs.showMaze):
+            self.gs.showMaze = False
         else:
-            self.self.gs.showMaze = True
+            self.gs.showMaze = True
 
     def UpdateColors(self, val):
         if(val == 1):
