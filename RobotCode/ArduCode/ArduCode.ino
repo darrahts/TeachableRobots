@@ -128,6 +128,8 @@ bool rightTriggered = false;
 int leftCount = 0;
 int rightCount = 0;
 
+volatile bool interrupted = false;
+
 
 /********************************************************************************************************
  *                                                  FUNCTIONS                                           *
@@ -441,7 +443,7 @@ void ParseCommand()
  */
 void ExecuteCommand()
 {
-    if(execute && commands[0] > 0)
+    if(execute && commands[0] > 0  && !interrupted)
     {
         onCourse = false;
         for(int i = 0; i < SEQUENCE_LENGTH; i++)
@@ -450,7 +452,7 @@ void ExecuteCommand()
             {
                 previousState = state;
                 state = 1;
-                while(count != amounts[i])
+                while(count != amounts[i] && !interrupted)
                 {
                     Forward();
                     ReadLineSensors();
@@ -462,7 +464,7 @@ void ExecuteCommand()
             {
                 previousState = state;
                 state = 2;
-                while(count != amounts[i])
+                while(count != amounts[i] && !interrupted)
                 {
                     Backward();
                     ReadLineSensors();
@@ -537,6 +539,7 @@ void ExecuteCommand()
         }
         Serial.write(0x21);
     }
+    interrupted = false;
 }
 
 /*                            MANUAL CONTROL          
@@ -887,6 +890,7 @@ void InterruptRoutine()
       commands[i] = -1;
       amounts[i] = 0;
     }
+    interrupted = true;
   
 }
 
