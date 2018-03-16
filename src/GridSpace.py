@@ -27,7 +27,7 @@ class GridSpace(object):
 
         ProcessFrame(self, frame, low, high)
 '''
-    def __init__(self, mode):
+    def __init__(self, mode="gui"):
 
         if(mode == ""):
             self.title = "Robot Grid Space"
@@ -38,21 +38,20 @@ class GridSpace(object):
         self.vs = WebcamVideoStream(0).start()
         self.frame = self.vs.read()[27:467, 125:565]
         self.frameCenter = ((self.frame.shape[1] // 2), (self.frame.shape[0] // 2) + 5)
-        #textArea = np.zeros((frame.shape[0],550,3),dtype=np.uint8)
-        #textAreaCopy = textArea
+
         self.frameCopy = self.frame
         self.processedFrame = self.frame
-        #window = np.hstack([frame,textArea])
-        #window = np.hstack([frame,frameCopy])
         
         self.square = np.ndarray([4,2], dtype=int)
         self.square[0] = [10, 10]
         self.square[1] = [10, 435]
         self.square[2] = [425, 435]
         self.square[3] = [425, 10]
-        self.showMaze = True
+        self.showMaze = False
 
         self._finished = False
+
+        self.i = 0 #picture counter 
 
 
     def FrameOverlay(self):
@@ -292,19 +291,24 @@ class GridSpace(object):
 
         return
 
-    def ShowFrame(self, fullWindow):
-        i = 0
-        if(fullWindow):
-            cv2.imshow(self.title, self.window)
-        else:
-            cv2.imshow(self.title, self.frame)
+    def NullFunction(self):
+        return
+
+    def ShowFrame(self,title):
+        cv2.imshow(title, self.frame)
 
         key = cv2.waitKey(1) & 0xFF
         if(key == ord("q")):
             self._finished = True
         elif(key == ord("c")):
-            cv2.imwrite("picture%i.jpg" %i, window)
-            i += 1
+            cv2.imwrite("picture%i.jpg" %self.i, self.frame)
+            self.i += 1
+        return
+
+
+    def CaptureFrame(self):
+        cv2.imwrite("picture&i.jpg" %self.i, self.frame)
+        i += 1
         return
 
 
