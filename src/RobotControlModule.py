@@ -37,7 +37,7 @@ class Controller(object):
 
         self.sensors = Sense()
         
-        #   application communication
+        #   This is how the robot connects to the application
         if(self.withApp):
             self.appComm = AppComm(self, "192.168.1.91", 5580)
         
@@ -50,7 +50,11 @@ class Controller(object):
         self.arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
         self.arduinoResponseThread.e = threading.Event()
 
-          
+
+        self.rangeProcess = Process(target=self.WatchRange, args=(self.sensors.currentRange,))
+        self.rangeProcess.e = Event()
+
+        
         self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
 
         
@@ -71,9 +75,19 @@ class Controller(object):
 
 
 
+    def WatchRange(self, r):
+        '''monitors the robot's range and stops it if necessary'''
+        while(not self.finished):
+            #print(r.value)
+            if(r.value > 0 and r.value < 16):
+                TriggerInterrupt()
+                print("Too Close!")
+                while(r.value < 16):
+                    pass
+        
+
+
     def UpdateDirection(self, val):
-        #print(val)
-        #print("updating direction")
         if(val == '0'):
             self.direction = "right"
         elif(val == '1'):
@@ -132,27 +146,27 @@ class Controller(object):
         ardIn = ""
         while(not self.finished):
             if(self.arduino.inWaiting() > 0):
-                print("arduino sent a message!")
+                #print("arduino sent a message!")
                 ardIn = self.Read(False)
                 print(ardIn)
                 if(ardIn == '~'):
                     time.sleep(.25)
                     ardIn = self.Read(True)
-                    print(ardIn)
+                #    print(ardIn)
                 elif(ardIn == '+'):
                     time.sleep(.25)
                     self.numSpacesMoved += 1
                     if(self.withApp):
                         self.UpdateLocation()
-                    print("+")
-                    print(self.numSpacesMoved)
+                #    print("+")
+                #    print(self.numSpacesMoved)
                 elif(ardIn == '$'):
                     time.sleep(.25)
                     ardIn = self.Read(False)
                     if(self.withApp):
                         self.UpdateDirection(ardIn)
                 elif(ardIn != ""):
-                    print("   ^ " + ardIn + " ^")
+                #    print("   ^ " + ardIn + " ^")
                     if(self.mode == 0):
                         print(":", end = "")
                     else:
@@ -214,19 +228,6 @@ class Controller(object):
         return
 
 
-    #   run with gme or other 3rd party application
-#    def GMEdemo(self):
-#        print("awaiting connection...")
-#        self.tcpServer.timeout = 100
-#        self.tcpServer.setupLine("")
-#        self.tcpWatcher.start()
-#        while(not self.finished):
-#            if(self.sequence != "" and self.validSequence):
-#                self.arduino.write(bytes(self.sequence.encode('ascii')))
-#                self.sequence = ""
-#        return
-
-
     def ManualMode(self):
         while(True):
             time.sleep(.1)
@@ -275,7 +276,9 @@ class Controller(object):
                 return
         else:
             condition = "not self.finished"
-            
+
+        self.sensors.rangeProcess.start()
+        self.rangeProcess.start()
         self.arduinoResponseThread.start()
         self.Write("ml") #load parameters before beginning
         
@@ -296,16 +299,16 @@ class Controller(object):
                 self.mode = 0
             elif(userIn == "mv" or userIn == "md" or userIn == "mr" or userIn == "ml" or userIn == "ms"):
                 self.arduino.write(bytes(userIn.encode('ascii')))
-            
                 self.lock.acquire()
                 try:
                     self.userInput.value = b""
                 finally:
                     self.lock.release()
-                    
-            #elif(self.userInput == "G"):
-            #    self.GMEdemo()
-            #    self.finished = False
+            elif(userIn == "cd"): #   prints values from the sonic range sensor
+                for i in range(0,5):
+                    print(self.sensors._getRange())
+                    time.sleep(.05)
+            
             elif(userIn == "Q"):
                 self.finished = True
                 print("ending the program.")
@@ -338,6 +341,15 @@ class Controller(object):
     def Stop(self):
         try:
             self.finished = True
+            self.sensors.finished.value = True
+            if(self.sensors.rangeProcess.is_alive()):
+                self.sensors.rangeProcess.e.set()
+                self.sensors.rangeProcess.terminate()
+                self.sensors.rangeProcess.join()
+            if(self.rangeProcess.is_alive()):
+                self.rangeProcess.e.set()
+                self.rangeProcess.terminate()
+                self.rangeProcess.join()
             self.appComm.appClient.finished.value = True #process
             self.appComm.appClient.closeConnection()
             if(self.appResponseProcess.is_alive()):

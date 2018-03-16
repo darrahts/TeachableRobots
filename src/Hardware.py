@@ -4,6 +4,7 @@ import os
 import sys
 import termios
 import tty
+import time
 
 #bus = smbus.SMBus(1)
 #gyroAddress = 0x68
@@ -49,6 +50,11 @@ def Setup():
     return
 
 
+def TriggerInterrupt():
+    GPIO.output(ARDINT, GPIO.HIGH)
+    time.sleep(.1)
+    GPIO.output(ARDINT, GPIO.LOW)
+    return
 
 def GetKey():
     fd = sys.stdin.fileno()
