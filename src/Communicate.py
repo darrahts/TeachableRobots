@@ -55,7 +55,7 @@ class AppComm(object):
     def SendRange(self):
         if(self.appOnline):
             d = dict()
-            d["range"] = str(self.robot().sensors.currentRange)
+            d["range"] = str(self.robot().sensors.currentRange.value)
             self.appClient.sendMessage(str(d))
         return
 
