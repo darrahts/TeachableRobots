@@ -124,6 +124,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         self.connectButton.clicked.connect(self.ConnectRobot)
         self.radialSubmitButton.clicked.connect(self.SetRobotIP)
         self.scanNetworkButton.clicked.connect(self.ScanNetwork)
+        self.rangeDetectionButton.clicked.connect(self.DetectRange)
         
         ########################################
         #####           SLIDERS            #####
@@ -144,6 +145,8 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         self.radialButtons.append(self.radioButton_3)
         self.radialButtons.append(self.radioButton_4)
         self.radialButtons.append(self.radioButton_5)
+        for r in self.radialButtons:
+            r.setEnabled(False)
 
         ########################################
         #####          CHECK BOXES         #####
@@ -170,6 +173,10 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         
         return
 
+
+    def DetectRange(self):
+        pass
+
     def SetRobotIP(self):
         for r in self.radialButtons:
             if(r.isChecked()):
@@ -188,6 +195,8 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         res = msgBox.exec_()
         if(res == 0):
             result = subprocess.check_output(["nmap", "-sn", "192.168.1.0/24"])
+            for r in self.radialButtons:
+                r.setEnabled(True)
         elif(res == 1):
             result = subprocess.check_output(["nmap", "-sn", "74.125.224.0/24"])
         else:
@@ -261,6 +270,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
                     r.setVisible(False)
                 self.scanNetworkButton.setVisible(False)
                 self.radialSubmitButton.setVisible(False)
+                self.networkLabel.setVisible(False)
                 self.parentApp.problemStage = 1
             else:
                 self.outputTextBox.setText("Couldn't connect to robot.\nCheck the robotIP address.")
@@ -290,15 +300,18 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
             self.problemDescription.setText("Establish a connection with the robot.")
         if(self.parentApp.problemStage == 1):
             self.problemDescription.setText("navigate your way through the maze. Use the waypoints and short command sequences.")
+        if(self.parentApp.problemStage == 2):
+            pass
         else:
             self.problemDescription.setText("")
         
         try:
-            if(self.r.goalFound == True):
+            if(not self.r.mazeFinished and self.r.goalFound == True):
                 cv2.putText(self.gs.frameCopy, "Good Job!", (100, 240), 2, 1, (0, 255, 0), 3)
                 time.sleep(5)
                 self.r.mazeFinished = True
                 self.r.goalFound = False
+                self.parentApp.problemStage = 2
         except Exception as e:
             pass
 

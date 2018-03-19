@@ -52,14 +52,14 @@ class Sense(object):
         GPIO.output(TRIG, GPIO.LOW)
 
         while(GPIO.input(ECHO) == 0):
-            if(time.time() - pulseStart > .05):
+            if(time.time() - pulseStart > .02):
                 return -1
             pass
 
         pulseStart = time.time()
 
         while(GPIO.input(ECHO) == 1):
-            if(time.time() - pulseStart > .05):
+            if(time.time() - pulseStart > .02):
                 return -1
             pass
 
@@ -95,7 +95,7 @@ class Sense(object):
 
         if(printAll):
             print("______")
-        return int(total / 4.0)
+        return int(total / 5.0)
 
     def CleanUp(self):
         HardwareCleanup()
