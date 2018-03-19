@@ -104,8 +104,9 @@ class Sense(object):
 ##if (__name__ == "__main__"):
 ##    s = Sense()
 ##    time.sleep(2)
-##    print(s.GetAvgRange(True))
+##    for i in range(0, 5):
+##        print(s.GetAvgRange(True))
 ##    HardwareCleanup()
-##    
+    
 
     

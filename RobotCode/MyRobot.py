@@ -1,4 +1,8 @@
-
+import sys
+sys.path.append("/home/pi/")
+sys.path.append("/home/pi/teachablerobots/")
+sys.path.append("/home/pi/teachablerobots")
+sys.path.append("/home/pi")
 import traceback
 from teachablerobots.src.RobotControlModule import *
 import argparse

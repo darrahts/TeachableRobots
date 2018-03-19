@@ -13,14 +13,18 @@ message = "start robot"
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 serverSocket.bind((UDP_ADR, UDP_PORT))
+print(serverSocket)
 
 initialized = False
 pid = -1
 
 def StartProcess():
-    proc = subprocess.Popen(["python3","/home/pi/teachablerobots/RobotCode/MyRobot.py"])
-    initialized = True
-    return proc.pid
+    try:
+        proc = subprocess.Popen(["python3","/home/pi/teachablerobots/RobotCode/MyRobot.py"])
+        initialized = True
+        return proc.pid
+    except Exception as e:
+        print(e.message())
 
 
 def CheckProcess():
@@ -48,6 +52,6 @@ while True:
         else:
             if(CheckProcess() == 1):
                 pid = StartProcess()
-        #print("message: ", msg)
+        print("message: ", msg)
         
     
