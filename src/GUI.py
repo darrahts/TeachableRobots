@@ -295,19 +295,17 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
 
 
     def Run(self):
-
-        self.rangeLabel.setText(str(self.parentApp.r.range.value))
-
         if(self.parentApp.problemStage == 0):
             self.problemDescription.setText("Establish a connection with the robot.")
-        if(self.parentApp.problemStage == 1):
+        elif(self.parentApp.problemStage == 1):
             self.problemDescription.setText("navigate your way through the maze. Use the waypoints and short command sequences.")
-        if(self.parentApp.problemStage == 2):
+        elif(self.parentApp.problemStage == 2):
             pass
         else:
             self.problemDescription.setText("")
         
         try:
+            self.rangeLabel.setText(str(self.parentApp.r.range.value))
             if(not self.r.mazeFinished and self.r.goalFound == True):
                 cv2.putText(self.gs.frameCopy, "Good Job!", (100, 240), 2, 1, (0, 255, 0), 3)
                 time.sleep(5)
