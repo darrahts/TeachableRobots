@@ -79,6 +79,8 @@ class Controller(object):
         '''monitors the robot's range and stops it if necessary'''
         while(not self.finished):
             #print(r.value)
+            time.sleep(1)
+            self.appComm.SendRange()
             if(r.value > 0 and r.value < 16):
                 TriggerInterrupt()
                 print("Too Close!")

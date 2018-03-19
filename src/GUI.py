@@ -296,6 +296,8 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
 
     def Run(self):
 
+        self.rangeLabel.setText(str(self.parentApp.r.range.value))
+
         if(self.parentApp.problemStage == 0):
             self.problemDescription.setText("Establish a connection with the robot.")
         if(self.parentApp.problemStage == 1):

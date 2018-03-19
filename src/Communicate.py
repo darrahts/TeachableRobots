@@ -52,10 +52,10 @@ class AppComm(object):
             self.appClient.sendMessage(str(d))
         return
 
-    def SendMessage(self, message):
+    def SendRange(self):
         if(self.appOnline):
             d = dict()
-            d["message"] = message
+            d["range"] = str(self.robot().sensors.currentRange)
             self.appClient.sendMessage(str(d))
         return
 

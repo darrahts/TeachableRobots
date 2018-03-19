@@ -93,19 +93,20 @@ class Robot(object):
 
         self.location = self.m.Value(c_char_p, b"(-5,-3)")
         self.direction = self.m.Value(c_char_p, b"Right")
+        self.range = self.m.Value("i", 0)
         self.distanceTravelled = self.m.Value('i', 0)
           
                                                 
         self.robotServer = SocketComm(5580)
 
-        self.robotComm = Process(target=self.GetRobotResponse, args=(self.location,self.direction,self.distanceTravelled,))
+        self.robotComm = Process(target=self.GetRobotResponse, args=(self.location,self.direction,self.distanceTravelled,self.range,))
         self.robotComm.e = Event()
         self.robotComm.daemon = True
         
 
 
 
-    def GetRobotResponse(self, loc, _dir, dist):
+    def GetRobotResponse(self, loc, _dir, dist, r):
         d = dict()
         while(not self.robotServer.finished.value):
             #print("size of inbox: " + str(self.robotServer.inbox.qsize()))
@@ -122,6 +123,9 @@ class Robot(object):
                     elif("direction" in temp):
                         _dir.value = temp["direction"].rstrip().encode('ascii')
                         print("direction: " + _dir.value.decode('ascii'))
+                    elif("range" in temp):
+                        print("range: " + str(temp["range"]))
+                        r.value = temp["range"]
                     else:
                         print("unknown: " + str(temp))
                 finally:
