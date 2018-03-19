@@ -7,33 +7,39 @@ import numpy as np
 import threading
 from multiprocessing import Process, Queue, Event
 import time
-import argparse
-
+import socket
+import subprocess
 
 formXML = uic.loadUiType("/home/tdarrah/Documents/teachablerobots/src/robotGUI1.ui")[0]
 
 
 
 class App():
-    #def __init__(self, gridspace, robot):
+    '''The parent application that runs the window and actual GUI'''
     def __init__(self):
+        '''Initializes the application and dependancies.'''
         self.app = QtWidgets.QApplication(sys.argv)
         self.gs = GridSpace()
-        #self.r = robot
         self.r = object
         self.w = MainWindow(self)
-        self.w.setWindowTitle("GUI Test")
+        self.w.setWindowTitle("Robot Command Interface")
         self.running = False
-        self.t1 = time.time()
+        self.robotIP = ""
+        self.problemStage = 0 
         
         self.updateThread = threading.Thread(target=self.Update)
+        self.commSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
     def Run(self):
+        '''The entry point into the program. This actually calls the Run function
+           in the MainWindow class.'''
         self.w.show()
         self.app.exec_()
 
 
     def Update(self):
+        '''This handles the gridspace camerafeed, and always updates the gs.frame which
+           is what is displayed in the app.'''
         while(self.running):
             if(type(self.r) == Robot):
                 self.gs.Update(lambda: self.gs.ProcessFrame(self.r.low, self.r.high))
@@ -43,8 +49,9 @@ class App():
                 self.gs.Update(lambda: self.gs.ProcessFrame((0,0,0), (180,360,360)))
 
 
-#   reimplement text edit class to override keyPressEvent to capture the enter key
+
 class MyTextEdit(QtWidgets.QTextEdit, QtWidgets.QGroupBox):
+    '''reimplement text edit class to override keyPressEvent to capture the enter key.'''
     def __init__(self, parent, parent2):
         super(MyTextEdit, self).__init__(parent2)
 
@@ -88,8 +95,6 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         self.window_height = self.AppFeed.frameSize().height()
         self.AppFeed = ImageWidget(self.AppFeed)
         self.AppFeedAlt = ImageWidget(self.AppFeedAlt)
-
-        self.ProblemDescription.parent = self.tab
         
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.Run)
@@ -112,10 +117,13 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         ########################################
         #####           BUTTONS            #####
         ########################################
-        self.toggleAltButton.clicked.connect(self.ShowMaze)
+        self.showMazeButton.clicked.connect(self.ShowMaze)
+        self.showWaypointsButton.clicked.connect(self.ShowWaypoints)
         self.startButton.clicked.connect(self.Start)
         self.textSubmitButton.clicked.connect(self.SendCommands)
         self.connectButton.clicked.connect(self.ConnectRobot)
+        self.radialSubmitButton.clicked.connect(self.SetRobotIP)
+        self.scanNetworkButton.clicked.connect(self.ScanNetwork)
         
         ########################################
         #####           SLIDERS            #####
@@ -127,8 +135,65 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         self.SColorSliderHigh.valueChanged.connect(lambda: self.UpdateColors(5))
         self.VColorSliderHigh.valueChanged.connect(lambda: self.UpdateColors(6))
 
+        ########################################
+        #####        RADIAL BUTTONS        #####
+        ########################################
+        self.radialButtons = []
+        self.radialButtons.append(self.radioButton_1)
+        self.radialButtons.append(self.radioButton_2)
+        self.radialButtons.append(self.radioButton_3)
+        self.radialButtons.append(self.radioButton_4)
+        self.radialButtons.append(self.radioButton_5)
+
+        ########################################
+        #####          CHECK BOXES         #####
+        ########################################
+        self.checkBoxes = []
+        self.checkBoxes.append(self.checkBox_1)
+        self.checkBoxes.append(self.checkBox_2)
+        self.checkBoxes.append(self.checkBox_3)
+        self.checkBoxes.append(self.checkBox_4)
+        self.checkBoxes.append(self.checkBox_5)
+        for c in self.checkBoxes:
+            c.setVisible(False)
+
+        ########################################
+        #####           IMG ALGOS          #####
+        ########################################        
+        self.imgBoxes = []
+        self.imgBoxes.append(self.imgAlgorithm_1)
+        self.imgBoxes.append(self.imgAlgorithm_2)
+        self.imgBoxes.append(self.imgAlgorithm_3)
+        self.imgBoxes.append(self.imgAlgorithm_4)
+        for i in self.imgBoxes:
+            i.setVisible(False)
+        
         return
 
+    def SetRobotIP(self):
+        for r in self.radialButtons:
+            if(r.isChecked()):
+               self.parentApp.robotIP = r.text()
+               self.robotIPadrLabel.setText(self.parentApp.robotIP)
+
+    def ScanNetwork(self):
+        msgBox = QtWidgets.QMessageBox()
+        msgBox.setText("which network should we scan?")
+        msgBox.setWindowTitle("select a network to scan")
+        msgBox.setDetailedText("hint: open a terminal (press ctrl+alt+t) and type in the command to determine your computer's IP address...")
+        msgBox.addButton("192.168.1.0", 0)
+        msgBox.addButton("74.125.224.0", 0)
+        msgBox.addButton("209.85.0.0", 0)
+        self.outputTextBox.setText("scanning...")
+        res = msgBox.exec_()
+        if(res == 0):
+            result = subprocess.check_output(["nmap", "-sn", "192.168.1.0/24"])
+        elif(res == 1):
+            result = subprocess.check_output(["nmap", "-sn", "74.125.224.0/24"])
+        else:
+            result = subprocess.check_output(["nmap", "-sn", "209.85.0.0/24"])
+        self.outputTextBox.setText(result.decode("ascii"))
+        
 
     def InitRobotData(self):
         self.HColorSliderLow.setValue(self.r.low[0])
@@ -147,6 +212,12 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
             self.gs.showMaze = False
         else:
             self.gs.showMaze = True
+
+    def ShowWaypoints(self):
+        if(self.gs.showWaypoints):
+            self.gs.showWaypoints = False
+        else:
+            self.gs.showWaypoints = True
 
     def UpdateColors(self, val):
         if(val == 1):
@@ -169,25 +240,38 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
     def ConnectRobot(self):
         if(self.colorSelection.currentText() == "robot color"):
             QtWidgets.QMessageBox.about(self, "Error", "you must select a color first.")
+            
             return
         else:
+            self.outputTextBox.setText("attempting to connect...")
+            self.outputTextBox.repaint()
+            self.parentApp.commSocket.sendto("start robot".encode("ascii"), (self.parentApp.robotIP, 6789))
+            time.sleep(.25)
             self.colorSelection.setEnabled(False)
             self.r = Robot(self.gs, self.colorSelection.currentText())
+            self.r.robotServer.allow_reuse_address = True
             self.parentApp.r = self.r
             self.InitRobotData()
             if(self.r.robotServer.setupLine("") == True):
                 self.connectButton.setText("connected")
                 self.connectButton.setEnabled(False)
                 self.r.robotComm.start()
-                print("robot online")
-                print(self.r.robotServer.connection)
+                self.outputTextBox.setText("robot online\n" + str(self.r.robotServer.connection))
+                for r in self.radialButtons:
+                    r.setVisible(False)
+                self.scanNetworkButton.setVisible(False)
+                self.radialSubmitButton.setVisible(False)
+                self.parentApp.problemStage = 1
+            else:
+                self.outputTextBox.setText("Couldn't connect to robot.\nCheck the robotIP address.")
+                self.r.robotServer.connection.close()
                 return
 
 
     def SendCommands(self):
         if(self.r.robotServer.connected):
             self.r.SendCommandSequence(self.InputText.toPlainText())
-            self.ProblemDescription.setText(self.InputText.toPlainText())
+            self.commandHistory.setText(self.commandHistory.toPlainText() + self.InputText.toPlainText())
             self.InputText.setText("")
    
     def Start(self):
@@ -201,7 +285,23 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
 
 
     def Run(self):
+
+        if(self.parentApp.problemStage == 0):
+            self.problemDescription.setText("Establish a connection with the robot.")
+        if(self.parentApp.problemStage == 1):
+            self.problemDescription.setText("navigate your way through the maze. Use the waypoints and short command sequences.")
+        else:
+            self.problemDescription.setText("")
         
+        try:
+            if(self.r.goalFound == True):
+                cv2.putText(self.gs.frameCopy, "Good Job!", (100, 240), 2, 1, (0, 255, 0), 3)
+                time.sleep(5)
+                self.r.mazeFinished = True
+                self.r.goalFound = False
+        except Exception as e:
+            pass
+
         if(self.parentApp.running):
             self.startButton.setText("Camera is live")
 

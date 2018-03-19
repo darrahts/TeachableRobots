@@ -48,6 +48,7 @@ class GridSpace(object):
         self.square[2] = [425, 435]
         self.square[3] = [425, 10]
         self.showMaze = False
+        self.showWaypoints = False
 
         self._finished = False
 
@@ -94,18 +95,48 @@ class GridSpace(object):
         if(self.showMaze):
             self.DrawMaze(self.frameCopy)
             #self.DrawMaze(self.frame)
+        if(self.showWaypoints):
+            self.DrawWaypoints(self.frameCopy)
             
         return 
 
+
+    def DrawWaypoints(self, frame):
+        color1 = (0,0,255)
+        cv2.circle(frame, (140, 340), 5, color1, 2)
+        cv2.circle(frame, (19, 305), 5, color1, 2)
+        cv2.circle(frame, (64, 266), 5, color1, 2)
+        cv2.circle(frame, (210, 380), 5, color1, 2)
+        cv2.circle(frame, (293, 340), 5, color1, 2)
+        cv2.circle(frame, (260, 232), 5, color1, 2)
+        cv2.circle(frame, (338, 265), 5, color1, 2)
+        cv2.circle(frame, (292, 380), 5, color1, 2)
+        cv2.circle(frame, (140, 33), 5, color1, 2)
+        cv2.circle(frame, (180, 65), 5, color1, 2)
+        cv2.circle(frame, (105, 110), 5, color1, 2)
+        cv2.circle(frame, (220, 110), 5, color1, 2)
+        cv2.circle(frame, (293, 110), 5, color1, 2)
+        cv2.circle(frame, (19, 150), 5, color1, 2)
+        cv2.circle(frame, (220, 190), 5, color1, 2)
+        cv2.circle(frame, (180, 190), 5, color1, 2)
+        cv2.circle(frame, (338, 30), 5, color1, 2)
+        cv2.circle(frame, (380, 380), 5, color1, 2)
+        cv2.circle(frame, (370, 70), 5, color1, 2)
+        
 
     def DrawMaze(self, frame):
 
         color1 = (0, 0, 255)
         color2 = (0, 255, 0)
+        color3 = (255, 0, 0)
 
 
         j = 41
         k = 49
+
+        #   scale marks
+        cv2.line(frame, (j+13,k+300), (j+13, k+310), color3, 2)
+        cv2.line(frame, (j+54,k+300), (j+54, k+310), color3, 2)
 
         #   VERTICAL LINES
 
@@ -280,6 +311,7 @@ class GridSpace(object):
 
         cv2.putText(frame, "START", (10, 374), 2, .5, color1, 2)
         cv2.putText(frame, "END", (400, 262), 2, .5, color1, 2)
+        cv2.putText(frame, "*distance travelled in 1 move", (175, 435), 2, .35, color3, 1)
         
         return
 
