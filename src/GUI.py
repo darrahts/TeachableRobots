@@ -254,7 +254,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         else:
             self.outputTextBox.setText("attempting to connect...")
             self.outputTextBox.repaint()
-            self.parentApp.commSocket.sendto("start robot".encode("ascii"), (self.parentApp.robotIP, 6789))
+            #self.parentApp.commSocket.sendto("start robot".encode("ascii"), (self.parentApp.robotIP, 6789))
             time.sleep(.25)
             self.colorSelection.setEnabled(False)
             self.r = Robot(self.gs, self.colorSelection.currentText())

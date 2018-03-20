@@ -28,9 +28,11 @@ class Sense(object):
             assigns the value to currentRange.value'''
         temp = -1
         while(not self.finished.value):
+            #print("here")
             time.sleep(.1)
             while(temp < 0):
                 temp = self._getRange()
+                print(str(temp))
             if(temp > 8 and temp < 200):
                 #if(self.currentRange.value == 0 or abs(self.currentRange.value - temp) < 20):
                 self.lock.acquire()
@@ -101,12 +103,12 @@ class Sense(object):
         HardwareCleanup()
 
 
-if (__name__ == "__main__"):
-    s = Sense()
-    time.sleep(2)
-    for i in range(0, 5):
-        print(s.GetAvgRange(True))
-    HardwareCleanup()
+##if (__name__ == "__main__"):
+##    s = Sense()
+##    time.sleep(2)
+##    for i in range(0, 5):
+##        print(s.GetAvgRange(True))
+##    HardwareCleanup()
     
 
     
