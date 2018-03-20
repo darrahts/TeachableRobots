@@ -24,7 +24,8 @@ class App():
         self.w = MainWindow(self)
         self.w.setWindowTitle("Robot Command Interface")
         self.running = False
-        self.robotIP = "192.168.1.41"
+        self.robotIP = ""
+        #self.robotIP = "192.168.1.41"
         self.problemStage = 0 
         
         self.updateThread = threading.Thread(target=self.Update)
@@ -247,36 +248,36 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
 
 
     def ConnectRobot(self):
-##        if(self.colorSelection.currentText() == "robot color"):
-##            QtWidgets.QMessageBox.about(self, "Error", "you must select a color first.")
-##            
-##            return
-##        else:
-        self.outputTextBox.setText("attempting to connect...")
-        self.outputTextBox.repaint()
-        self.parentApp.commSocket.sendto("start robot".encode("ascii"), (self.parentApp.robotIP, 6789))
-        time.sleep(.25)
-        self.colorSelection.setEnabled(False)
-        #self.r = Robot(self.gs, self.colorSelection.currentText())
-        self.r = Robot(self.gs, "green")
-        self.r.robotServer.allow_reuse_address = True
-        self.parentApp.r = self.r
-        self.InitRobotData()
-        if(self.r.robotServer.setupLine("") == True):
-            self.connectButton.setText("connected")
-            self.connectButton.setEnabled(False)
-            self.r.robotComm.start()
-            self.outputTextBox.setText("robot online\n" + str(self.r.robotServer.connection))
-            for r in self.radialButtons:
-                r.setVisible(False)
-            self.scanNetworkButton.setVisible(False)
-            self.radialSubmitButton.setVisible(False)
-            self.networkLabel.setVisible(False)
-            self.parentApp.problemStage = 1
-        else:
-            self.outputTextBox.setText("Couldn't connect to robot.\nCheck the robotIP address.")
-            self.r.robotServer.connection.close()
+        if(self.colorSelection.currentText() == "robot color"):
+            QtWidgets.QMessageBox.about(self, "Error", "you must select a color first.")
+            
             return
+        else:
+            self.outputTextBox.setText("attempting to connect...")
+            self.outputTextBox.repaint()
+            self.parentApp.commSocket.sendto("start robot".encode("ascii"), (self.parentApp.robotIP, 6789))
+            time.sleep(.25)
+            self.colorSelection.setEnabled(False)
+            self.r = Robot(self.gs, self.colorSelection.currentText())
+            #self.r = Robot(self.gs, "green")
+            self.r.robotServer.allow_reuse_address = True
+            self.parentApp.r = self.r
+            self.InitRobotData()
+            if(self.r.robotServer.setupLine("") == True):
+                self.connectButton.setText("connected")
+                self.connectButton.setEnabled(False)
+                self.r.robotComm.start()
+                self.outputTextBox.setText("robot online\n" + str(self.r.robotServer.connection))
+                for r in self.radialButtons:
+                    r.setVisible(False)
+                self.scanNetworkButton.setVisible(False)
+                self.radialSubmitButton.setVisible(False)
+                self.networkLabel.setVisible(False)
+                self.parentApp.problemStage = 1
+            else:
+                self.outputTextBox.setText("Couldn't connect to robot.\nCheck the robotIP address.")
+                self.r.robotServer.connection.close()
+                return
 
 
     def SendCommands(self):
