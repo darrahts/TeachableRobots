@@ -95,13 +95,14 @@ class Robot(object):
         self.direction = self.m.Value(c_char_p, b"Right")
         self.range = self.m.Value("i", 0)
         self.distanceTravelled = self.m.Value('i', 0)
+
           
                                                 
         self.robotServer = SocketComm(5580)
 
         self.robotComm = Process(target=self.GetRobotResponse, args=(self.location,self.direction,self.distanceTravelled,self.range,))
         self.robotComm.e = Event()
-        self.robotComm.daemon = True
+        #self.robotComm.daemon = True
         
 
 
@@ -110,26 +111,30 @@ class Robot(object):
         d = dict()
         while(not self.robotServer.finished.value):
             #print("size of inbox: " + str(self.robotServer.inbox.qsize()))
-            sleep(1)
             if(not self.robotServer.inbox.empty()):
                 temp = ast.literal_eval(self.robotServer.inbox.get())
-                self.lock.acquire()
                 try:
                     if("location" in temp):
+                        self.lock.acquire()
                         loc.value = temp["location"].rstrip().encode('ascii')
+                        self.lock.release()
                         dist.value = dist.value + 1
-                        print("distance travelled: " + str(dist.value))
-                        print("location: " + loc.value.decode('ascii'))
+                        #print("distance travelled: " + str(dist.value))
+                        #print("location: " + loc.value.decode('ascii'))
                     elif("direction" in temp):
+                        self.lock.acquire()
                         _dir.value = temp["direction"].rstrip().encode('ascii')
-                        print("direction: " + _dir.value.decode('ascii'))
+                        self.lock.release()
+                        #print("direction: " + _dir.value.decode('ascii'))
                     elif("range" in temp):
-                        print("range: " + str(temp["range"]))
+                        self.lock.acquire()
                         r.value = temp["range"]
+                        print("range: " + str(temp["range"]))
+                        self.lock.release()
                     else:
                         print("unknown: " + str(temp))
                 finally:
-                    self.lock.release()
+                    pass
         return
 
 
