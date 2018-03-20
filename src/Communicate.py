@@ -111,15 +111,16 @@ class SocketComm(object):
     def sendMessage(self, msg):
         try:
             self.connection.send(str.encode(msg))
-            print("sent: " + str(msg))
+            #print("sent: " + str(msg))
         except Exception as e:
+            pass
             #print(str(e))
             #traceback.print_exc()
-            print("exception caught.")
+            #print("exception caught.")
         return
 
     def getMessages(self):
-        print("getting messages now")
+        #print("getting messages now")
         self.connection.settimeout(1)
         while(not self.finished.value):
             #print("checking inbox")

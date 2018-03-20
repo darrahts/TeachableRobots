@@ -26,18 +26,17 @@ class Sense(object):
     def SetInstantRange(self, r):
         '''reads the sonic range sensor with _getRange function and
             assigns the value to currentRange.value'''
-        temp = -1
         while(not self.finished.value):
-            print("here")
+            temp = -1
             time.sleep(.1)
             while(temp < 0):
                 temp = self._getRange()
-                print(str(temp))
-            if(temp > 8 and temp < 200):
-                #if(self.currentRange.value == 0 or abs(self.currentRange.value - temp) < 20):
                 self.lock.acquire()
                 try:
-                    r.value = temp
+                    if(temp > 0 and temp < 300):
+                        r.value = temp
+                    else:
+                        r.value = -2
                 finally:
                     self.lock.release()
 

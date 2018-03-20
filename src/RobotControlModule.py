@@ -77,15 +77,19 @@ class Controller(object):
 
     def WatchRange(self, r):
         '''monitors the robot's range and stops it if necessary'''
+        time.sleep(3)
+        triggered = False
         while(not self.finished):
             #print(r.value)
-            time.sleep(1)
+            time.sleep(.25)
             self.appComm.SendRange()
-            if(r.value > 0 and r.value < 20):
+            if(not triggered and r.value > 5 and r.value < 15):
                 TriggerInterrupt()
+                triggered = True
                 print("Too Close!")
-                while(r.value < 20):
-                    pass
+            if(triggered and r.value > 15):
+                triggered = False
+
         
 
 
@@ -170,9 +174,11 @@ class Controller(object):
                 elif(ardIn != ""):
                 #    print("   ^ " + ardIn + " ^")
                     if(self.mode == 0):
-                        print(":", end = "")
+                        pass
+                        #print(":", end = "")
                     else:
-                        print(">", end = "");
+                        pass
+                        #print(">", end = "");
                     sys.stdout.flush()
         return
 
@@ -180,7 +186,7 @@ class Controller(object):
     #   from terminal
     def GenerateCommandSequence(self, userIn):
         if(userIn == ""):
-            print("returning")
+            #print("returning")
             return
         for a in userIn.split(','):
             t = a.split(' ')
@@ -202,13 +208,13 @@ class Controller(object):
             elif(TryParseInt(val) != False and int(val) < 10):
                 x = val + "_"
             else:
-                print(val)
-                print("couldn't parse the commands. check your entry.")
+                #print(val)
+                #print("couldn't parse the commands. check your entry.")
                 self.validSequence = False
                 return False
             self.cmds.append(x)
         self.sequence = "".join(self.cmds)
-        print("valid sequence")
+        #print("valid sequence")
         self.validSequence = True
         return True
 
