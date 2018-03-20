@@ -13,7 +13,8 @@ class Sense(object):
         self.finished = self.m.Value('i',0)
         self.finished.value = False
 
-        self.rangeProcess = Process(target=self.SetInstantRange, args=(self.currentRange,))
+        #   args=self.currentRange means the currentRange gets passed to the function
+        self.rangeProcess = Process(target=self.GetRangeContinuous, args=(self.currentRange,))
         self.rangeProcess.e = Event()
         #self.rangeProcess.daemon = True
         
@@ -23,12 +24,14 @@ class Sense(object):
         return self.currentRange.value
 
     def GetRangeContinuous(self, r):
+        '''Continuously updates the currentRange (r) with an averaging grouped median'''
         while(not self.finished.value):
             self.lock.acquire()
             try:
                 r.value = self.GetAvgRange(False)
             finally:
                 self.lock.release()
+        return
 
     def SetInstantRange(self, r):
         '''reads the sonic range sensor with _getRange function and
@@ -114,11 +117,12 @@ class Sense(object):
                 #    i -= 1
             else:
                 i -= 1
-            time.sleep(.05)
+            time.sleep(.06)
             i+=1
 
         if(printAll):
             print("______")
+        #print(rangeVals)
         return int(statistics.median_grouped(rangeVals))#int(total / 5.0)
 
     def CleanUp(self):

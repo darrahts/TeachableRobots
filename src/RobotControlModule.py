@@ -80,10 +80,14 @@ class Controller(object):
         '''monitors the robot's range and stops it if necessary'''
         time.sleep(3)
         triggered = False
+        prevRange = 0
         while(not self.finished):
             #print(r.value)
-            time.sleep(.25)
-            self.appComm.SendRange()
+            if(r.value == prevRange):
+                pass
+            else:
+                prevRange = r.value
+                self.appComm.SendRange()
             if(not triggered and r.value > 10 and r.value < 15):
                 TriggerInterrupt()
                 triggered = True
@@ -135,12 +139,12 @@ class Controller(object):
                 temp = ast.literal_eval(self.appComm.appClient.inbox.get())
                 if("objective" in temp):
                     self.objective = temp["objective"]
-                    print(self.objective)
+                    #print(self.objective)
                 elif("sequence" in temp):
                     self.lock.acquire()
                     try:
                         userInput.value = temp["sequence"].rstrip().encode('ascii')
-                        print("user input is: " + userInput.value.decode('ascii'))
+                        #print("user input is: " + userInput.value.decode('ascii'))
                     finally:
                         self.lock.release()
                     #self.robot().arduino.write(bytes(self.sequence.encode('ascii')))
@@ -155,7 +159,7 @@ class Controller(object):
             if(self.arduino.inWaiting() > 0):
                 #print("arduino sent a message!")
                 ardIn = self.Read(False)
-                print(ardIn)
+                #print(ardIn)
                 if(ardIn == '~'):
                     time.sleep(.25)
                     ardIn = self.Read(True)
@@ -324,7 +328,7 @@ class Controller(object):
                 break
 
             elif(userIn != "" and userIn != "Q" and "m" not in userIn):
-                print("user input is: " + userIn)
+                #print("user input is: " + userIn)
                 if(self.GenerateCommandSequence(userIn)):
                     #print("sent: " + self.sequence)
                     self.arduino.write(bytes(self.sequence.encode('ascii')))
