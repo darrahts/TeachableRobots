@@ -32,12 +32,12 @@ class Sense(object):
             while(temp < 0):
                 temp = self._getRange()
             if(temp > 8 and temp < 200):
-                if(self.currentRange.value == 0 or abs(self.currentRange.value - temp) < 20):
-                    self.lock.acquire()
-                    try:
-                        r.value = temp
-                    finally:
-                        self.lock.release()
+                #if(self.currentRange.value == 0 or abs(self.currentRange.value - temp) < 20):
+                self.lock.acquire()
+                try:
+                    r.value = temp
+                finally:
+                    self.lock.release()
 
         return
 
@@ -101,12 +101,12 @@ class Sense(object):
         HardwareCleanup()
 
 
-##if (__name__ == "__main__"):
-##    s = Sense()
-##    time.sleep(2)
-##    for i in range(0, 5):
-##        print(s.GetAvgRange(True))
-##    HardwareCleanup()
+if (__name__ == "__main__"):
+    s = Sense()
+    time.sleep(2)
+    for i in range(0, 5):
+        print(s.GetAvgRange(True))
+    HardwareCleanup()
     
 
     

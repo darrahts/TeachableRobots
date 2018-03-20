@@ -81,10 +81,10 @@ class Controller(object):
             #print(r.value)
             time.sleep(1)
             self.appComm.SendRange()
-            if(r.value > 0 and r.value < 16):
+            if(r.value > 0 and r.value < 20):
                 TriggerInterrupt()
                 print("Too Close!")
-                while(r.value < 16):
+                while(r.value < 20):
                     pass
         
 
