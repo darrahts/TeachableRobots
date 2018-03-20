@@ -28,7 +28,7 @@ class Sense(object):
             assigns the value to currentRange.value'''
         temp = -1
         while(not self.finished.value):
-            #print("here")
+            print("here")
             time.sleep(.1)
             while(temp < 0):
                 temp = self._getRange()
