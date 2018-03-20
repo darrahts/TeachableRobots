@@ -2,7 +2,7 @@
 import time
 from teachablerobots.src.Hardware import *
 from multiprocessing import Process, Queue, Event, Value, Lock, Manager
-
+import statistics
 
 class Sense(object):
     def __init__(self):
@@ -21,7 +21,14 @@ class Sense(object):
     def GetRange(self):
         '''returns the current range value'''
         return self.currentRange.value
-            
+
+    def GetRangeContinuous(self, r):
+        while(not self.finished.value):
+            self.lock.acquire()
+            try:
+                r.value = self.GetAvgRange(False)
+            finally:
+                self.lock.release()
 
     def SetInstantRange(self, r):
         '''reads the sonic range sensor with _getRange function and
@@ -33,11 +40,13 @@ class Sense(object):
                 temp = self._getRange()
                 self.lock.acquire()
                 try:
-                    if(temp > 0 and temp < 300):
+                    if(temp > 0 and temp < 300): # 0 to 300 is the sensor range
                         r.value = temp
-                    else:
+                    elif(temp < 0): # if the sensor gives < 0 then the reading is bad
                         r.value = -2
-                finally:
+                    else:
+                        r.value = 302 # if the sensor is > 300 then give max + 2
+                finally:              # to show the sensor is reading past its max
                     self.lock.release()
 
         return
@@ -70,33 +79,47 @@ class Sense(object):
         totalDistance = duration * 34300 #distance sound travels in cm per second
         objDistance = totalDistance / 2
 
+##        duration = pulseStart + pulseEnd
+##        totalDistance = duration / 34300
+##        objDistance = totalDistance * 2
+##
+##        duration = pulseEnd - time.time()
+##        totalDistance = duration * 34300
+##        objDistance = totalDistance / 2
+##
+##        duration = 1.0006
+##        totalDistance = 500
+##        objDistance = 250
+
         return int(objDistance)
 
     def GetAvgRange(self, printAll=False):
-        '''averages 5 "good" readings of the sonic range sensor
+        '''averages 4 "good" readings of the sonic range sensor
             using _getRange function'''
         total = 0.0
-        prevVal = -1
+        #prevVal = -1
         i = 0
-        while(i < 5):
+        rangeVals = [0,0,0,0]
+        while(i < 4):
             val = self._getRange()
             if(printAll):
                 print(val)
                 
             if(val > 0):
-                if(prevVal == -1 or abs(prevVal - val) < 10):
-                    prevVal = val
-                    total += val
-                else:
-                    i -= 1
+                rangeVals[i] = val
+                #if(prevVal == -1 or abs(prevVal - val) < 10):
+                 #   prevVal = val
+                  #  total += val
+                #else:
+                #    i -= 1
             else:
                 i -= 1
-            time.sleep(.075)
+            time.sleep(.05)
             i+=1
 
         if(printAll):
             print("______")
-        return int(total / 5.0)
+        return int(statistics.median_grouped(rangeVals))#int(total / 5.0)
 
     def CleanUp(self):
         HardwareCleanup()

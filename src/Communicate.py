@@ -133,7 +133,7 @@ class SocketComm(object):
                         self.finished.value = True
                     else:
                         self.inbox.put(decoded)
-                        print("received: " + str(decoded))
+                        #print("received: " + str(decoded))
             except socket.error as e:
                 if(type(e).__name__ == "timeout"):
                     pass

@@ -50,10 +50,11 @@ class Controller(object):
         self.arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
         self.arduinoResponseThread.e = threading.Event()
 
-
+        #   monitors the range sensor
         self.rangeProcess = Process(target=self.WatchRange, args=(self.sensors.currentRange,))
         self.rangeProcess.e = Event()
 
+        
         
         self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
 
@@ -83,7 +84,7 @@ class Controller(object):
             #print(r.value)
             time.sleep(.25)
             self.appComm.SendRange()
-            if(not triggered and r.value > 5 and r.value < 15):
+            if(not triggered and r.value > 10 and r.value < 15):
                 TriggerInterrupt()
                 triggered = True
                 print("Too Close!")
