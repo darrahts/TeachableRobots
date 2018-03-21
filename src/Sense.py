@@ -78,21 +78,13 @@ class Sense(object):
 
         pulseEnd = time.time()
 
-        duration = pulseEnd - pulseStart
-        totalDistance = duration * 34300 #distance sound travels in cm per second
-        objDistance = totalDistance / 2
-
-##        duration = pulseStart + pulseEnd
-##        totalDistance = duration / 34300
-##        objDistance = totalDistance * 2
-##
-##        duration = pulseEnd - time.time()
-##        totalDistance = duration * 34300
+##        duration = pulseEnd - pulseStart
+##        totalDistance = duration * 34300 #distance sound travels in cm per second
 ##        objDistance = totalDistance / 2
-##
-##        duration = 1.0006
-##        totalDistance = 500
-##        objDistance = 250
+
+        duration = pulseStart + pulseEnd
+        totalDistance = duration / 34300
+        objDistance = totalDistance * 2
 
         return int(objDistance)
 
@@ -132,7 +124,7 @@ class Sense(object):
 ##if (__name__ == "__main__"):
 ##    s = Sense()
 ##    time.sleep(2)
-##    for i in range(0, 5):
+##    for i in range(0, 2):
 ##        print(s.GetAvgRange(True))
 ##    HardwareCleanup()
     
