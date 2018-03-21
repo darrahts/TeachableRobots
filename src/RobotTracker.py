@@ -215,7 +215,7 @@ class Robot(object):
 
         if(not self.mazeFinished and abs(5-x) < .5 and abs(0-y) < .5):
             self.goalFound = True
-
+            cv2.putText(self.gs.frameCopy, "Good Job!", (100, 240), 2, 1, (0, 255, 0), 3)
         return self.gs.frame
 
 
