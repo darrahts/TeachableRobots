@@ -6,13 +6,16 @@ from teachablerobots.src.GUI import *
 # ************************* MAIN ************************* #
 
 
+def InitialCondition(a):
+    a.robotIP = "192.168.1.41"
+    a.problemStage = -1
+    a.w.rangeSensorButton.setEnabled(True)
+    a.w.Start()
+    a.ConnectRobot()
+
 if(__name__ == "__main__"):
     a = App()
-##    a.robotIP = "192.168.1.41"
-##    a.problemStage = 2
-##    a.w.rangeSensorButton.setEnabled(True)
-##    a.w.Start()
-##    a.ConnectRobot()
+    InitialCondition(a)
     a.Run()
 
 

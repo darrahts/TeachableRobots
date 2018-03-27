@@ -355,7 +355,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
                 self.locationLabel.setText(str(self.r.location.value.decode('ascii')))
                 self.directionLabel.setText(str(self.r.direction.value.decode('ascii')))
                 self.distanceTravelledLabel.setText(str(self.r.distanceTravelled.value))
-                if(not self.r.mazeFinished and self.r.goalFound == True):
+                if(not self.r.mazeFinished and self.r.goalFound == True and self.parentApp.problemStage == 1):
                     self.outputTextBox.setText("Good Job!!")
                     self.r.mazeFinished = True
                     self.r.goalFound = False
