@@ -71,6 +71,8 @@ class App():
             self.w.connectButton.setText("connected")
             self.w.connectButton.setEnabled(False)
             self.w.colorSelection.setEnabled(False)
+            self.w.networkGroupBox.setEnabled(False)
+            self.w.networkGroupBox.setVisible(False)
             self.r.robotComm.start()
             self.w.outputTextBox.setText("robot online\n" + str(self.r.robotServer.connection))
             for r in self.w.radialButtons:

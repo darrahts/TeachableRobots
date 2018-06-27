@@ -91,10 +91,10 @@ class Robot(object):
         self.m = Manager()
         self.lock = Lock()
 
-        self.location = self.m.Value(c_char_p, b"(-5,-3)")
-        self.direction = self.m.Value(c_char_p, b"Right")
+        self.location = self.m.Value(c_char_p, b"(4,1)")
+        self.direction = self.m.Value(c_char_p, b"Up")
         self.range = self.m.Value("i", 0)
-        self.distanceTravelled = self.m.Value('i', 0)
+        self.distanceTravelled = self.m.Value('i', 28)
 
           
                                                 
