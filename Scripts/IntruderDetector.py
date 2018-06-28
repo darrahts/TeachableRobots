@@ -69,7 +69,7 @@ def detectIntruders():
             print("intruder detected.")
             evidence = capture()
             mailMan.AttachImage(evidence)
-            mailMan.SetMessageData(destEmail="tim.darrah1@gmail.com", "subject here", "body here")
+            mailMan.SetMessageData(destEmail="your_email@gmail.com", "subject here", "body here")
             mailMan.SendEmail(evidence, msg)
             GPIO.output(led, GPIO.HIGH)
             alert(1000)

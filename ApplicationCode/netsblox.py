@@ -1,49 +1,74 @@
 import socket
-import sys
 import uuid
 import time
 import numpy as np
+import select
+import random
+
+
+def GetRange():
+    r = random.randint(5, 300)
+    print(r)
+    return(r)
 
 
 
-def GetTime(t):
-    h1 = b"\xff"
-    h2 = b"\xfe"
-    l1 = b"\xfd"
-    l2 = b"\xfc"
-    return bytearray(h1 + h2 + l1 + l2)
 
 
-
-val = np.uint32(123344)
-print(val)
-print(sys.getsizeof(val()))
-
-
-
+#wheel speeds
+left = 0
+right = 0
 
 
 timeNow = lambda: int(round(time.time() * 1000))
 start = timeNow()
 
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket.setblocking(0)
 
-server = ("52.73.65.98", 1973)
+#server = ("52.73.65.98", 1973)
 
-#server = ("localhost", 12345)
+server = ("localhost", 1973)
 
-#mac = bytes((hex(uuid.getnode()))[2:], "ascii")
 mac = hex(uuid.getnode())[2:]
 
-##for i in range(0, 300):
-##    t = GetTime(i)
-##    msg = bytearray.fromhex(mac)
-##    msg += t
-##    msg += b"\x49"
-##    print(msg)
-##    sent = socket.sendto(msg, server)
-##    time.sleep(1)
-##    
+for i in range(0, 300):
+    t = (timeNow() - start).to_bytes(4, byteorder="little")
+    #print(t)
+    msg = bytearray.fromhex(mac)
+    msg += t
+    msg += b"\x49" # I for identification
+    #print(msg)
+    sent = socket.sendto(msg, server)
+    time.sleep(.9)
+
+    ready = select.select([socket], [], [], .1)
+    if(ready[0]):
+        response = socket.recv(1024)
+        print(response)
+
+        rcv = list(response)
+        #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
+        #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
+        print(rcv)
+
+
+        if(rcv[0] == 82): #send range
+            msg = bytearray.fromhex(mac)
+            msg += (timeNow() - start).to_bytes(4, byteorder="little")
+            msg += b"\x52"
+            msg += GetRange().to_bytes(2, byteorder="little")
+            print(list(msg))
+            socket.sendto(msg, server)
+        
+        if(rcv[0] == 83): #set speed
+            left = int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True)
+            right = int.from_bytes([rcv[3], rcv[4]], byteorder="little", signed=True)
+            print(left)
+            print(right)
+
+
+        
 
 
 
