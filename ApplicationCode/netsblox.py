@@ -17,10 +17,6 @@ def Buzz(msec, tone):
     time.sleep(msec / 1000)
     return
 
-#   to arduino
-def Write(self, toWrite):
-    self.arduino.write(bytes(toWrite.encode('ascii')))
-    return
 
 def GenerateCommandSequence(self, userIn):
     if(userIn == ""):
@@ -146,11 +142,10 @@ for i in range(0, 300):
             right = int.from_bytes([rcv[3], rcv[4]], byteorder="little", signed=True)
             if(left == right):
                 print("equal")
-                arduino.Write("1-3_*")
+                arduino.write("1-3_*".encode('ascii'))
             print(left)
             print(type(left))
             print(right)
-
         elif(rcv[0] == 87): #send whisker status
             msg = bytearray.fromhex(mac)
             msg += (timeNow() - start).to_bytes(4, byteorder="little")
