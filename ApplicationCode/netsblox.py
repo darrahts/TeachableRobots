@@ -6,7 +6,6 @@ import select
 import random
 import math
 
-
 def GetRange():
     r = random.randint(5, 300)
     print(r)
@@ -19,6 +18,7 @@ def Buzz(msec, tone):
 
 
 #############################################################
+
 
 buttonState = 0
 
@@ -74,6 +74,8 @@ for i in range(0, 300):
     if(ready[0]):
         response = socket.recv(1024)
         print(response)
+        if(response == b'AA'):
+            print("YES")
 
         rcv = list(response)
         #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
@@ -91,6 +93,8 @@ for i in range(0, 300):
         elif(rcv[0] == 83): #set speed
             left = int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True)
             right = int.from_bytes([rcv[3], rcv[4]], byteorder="little", signed=True)
+            if(left == right):
+                pass
             print(left)
             print(right)
 
