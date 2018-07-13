@@ -58,7 +58,14 @@ def GenerateCommandSequence(self, userIn):
 
 
 #############################################################
-arduino = serial.Serial(port, 9600)
+try:
+    arduino = serial.Serial("/dev/ttyACM0", 9600)
+except Exception as e:
+    try:
+        arduino = serial.Serial("/dev/ttyACM1", 9600)
+    except Exception as e:
+        print("couldnt open arduino port.")
+        
 
 buttonState = 0
 
