@@ -52,7 +52,7 @@ def CheckProcess():
         print("process is not running.")
         return 1
 
-bool flag = False
+flag = False
 
 while True:
     t = (timeNow() - start).to_bytes(4, byteorder="little")
@@ -64,20 +64,28 @@ while True:
     sent = socket.sendto(msg, server)
     time.sleep(.95)
     
-    ready = select.select([socket], [], [], .1)
-    if(ready[0]):
-        response = socket.recv(1024)
-        if(response == b'AA'):
-            print("connected to netsblox")
-            flag = True
-            serverSocket.close()
+    try:
+        ready = select.select([socket], [], [], .1)
+        if(ready[0]):
+            response = socket.recv(1024)
+            if(response == b'AA'):
+                print("connected to netsblox")
+                flag = True
+                serverSocket.close()
+    finally:
+        pass
 
-    data, adr = serverSocket.recvfrom(1024)
-    msg = data.decode("ascii")
-    if(msg == "start robot"):
-        print("connected to gui")
-        flag = True
-        socket.close()
+    try:
+        ready2 = select.select([serverSocket], [], [], .1)
+        if(ready2[0]):
+            data, adr = serverSocket.recvfrom(1024)
+            msg = data.decode("ascii")
+            if(msg == "start robot"):
+                print("connected to gui")
+                flag = True
+                socket.close()
+    finally:
+        pass
 
     if(flag):
         if(not initialized and pid == -1):
