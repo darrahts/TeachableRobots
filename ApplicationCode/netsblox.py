@@ -41,7 +41,8 @@ socket.setblocking(0)
 
 #server = ("52.73.65.98", 1973)
 
-server = ("localhost", 1973)
+#server = ("localhost", 1973)
+server = ("192.168.1.91", 1973)
 
 mac = hex(uuid.getnode())[2:]
 
