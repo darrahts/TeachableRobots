@@ -16,9 +16,48 @@ def Buzz(msec, tone):
     time.sleep(msec / 1000)
     return
 
+#   to arduino
+def Write(self, toWrite):
+    self.arduino.write(bytes(toWrite.encode('ascii')))
+    return
+
+def GenerateCommandSequence(self, userIn):
+    if(userIn == ""):
+        #print("returning")
+        return
+    for a in userIn.split(','):
+        t = a.split(' ')
+        for b in t:
+            if b is not "":
+                self.tokens.append(b)
+    for val in self.tokens:
+        x = ""
+        if(val == "forward"):
+            x = "1-"
+        elif(val == "back"):
+            x = "2-"
+        elif(val == "left"):
+            x = "3-90_"
+        elif(val == "right"):
+            x = "4-90_"
+        elif("stop" in val):
+            x = "*"
+        elif(TryParseInt(val) != False and int(val) < 10):
+            x = val + "_"
+        else:
+            #print(val)
+            #print("couldn't parse the commands. check your entry.")
+            self.validSequence = False
+            return False
+        self.cmds.append(x)
+    self.sequence = "".join(self.cmds)
+    #print("valid sequence")
+    self.validSequence = True
+    return True
+
 
 #############################################################
-
+arduino = serial.Serial(port, 9600)
 
 buttonState = 0
 
@@ -81,7 +120,9 @@ for i in range(0, 300):
         rcv = list(response)
         #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
         #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
+        print("received: ")
         print(rcv)
+        print("***")
 
         if(rcv[0] == 82): #send range
             msg = bytearray.fromhex(mac)
@@ -92,11 +133,14 @@ for i in range(0, 300):
             socket.sendto(msg, server)
         
         elif(rcv[0] == 83): #set speed
+            print("speed")
             left = int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True)
             right = int.from_bytes([rcv[3], rcv[4]], byteorder="little", signed=True)
             if(left == right):
-                pass
+                print("equal")
+                arduino.Write("1-3_*")
             print(left)
+            print(type(left))
             print(right)
 
         elif(rcv[0] == 87): #send whisker status
