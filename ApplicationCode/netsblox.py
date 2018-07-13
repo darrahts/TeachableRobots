@@ -5,6 +5,7 @@ import numpy as np
 import select
 import random
 import math
+import serial
 
 def GetRange():
     r = random.randint(5, 300)
