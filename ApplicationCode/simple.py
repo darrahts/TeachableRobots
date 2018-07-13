@@ -6,4 +6,4 @@ G = GridSpace("")
 
 while(not G._finished):
     G.Update(G.FrameOverlay)
-    G.ShowFrame(False)
+    G.ShowFrame("")

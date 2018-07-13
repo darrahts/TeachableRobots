@@ -107,7 +107,7 @@ class GridSpace:
     '''
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        color = cv2.inRange(frame, low, high)
+        color = cv2.inRange(hsv, low, high)
         erode = cv2.erode(color, None, iterations=2)
         dialate = cv2.dilate(erode, None, iterations=2)
         return dialate
@@ -162,8 +162,8 @@ class Robot(GridSpace):
 '''
     
     def __init__(self):
-        self.lowColor = (87, 146, 0)
-        self.highColor = (150, 208, 52)
+        self.lowColor = (48, 152, 149)
+        self.highColor = (89, 325, 340)
         #self.lowColor = (60, 140, 0)
         #self.highColor = (157, 200, 130)        
         #self.lowColor = (111,150,48)
@@ -304,7 +304,7 @@ class Robot(GridSpace):
 if (__name__ == "__main__"):
 
     r = Robot()
-    r.SetGoal((1,-2))
+    #r.SetGoal((1,-2))
     r.Run()
 
     
