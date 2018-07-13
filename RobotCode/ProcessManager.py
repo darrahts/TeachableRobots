@@ -72,6 +72,8 @@ while True:
                 print("connected to netsblox")
                 flag = True
                 serverSocket.close()
+    except Exception as e:
+        pass
     finally:
         pass
 
@@ -84,6 +86,8 @@ while True:
                 print("connected to gui")
                 flag = True
                 socket.close()
+    except Exception as e:
+        pass
     finally:
         pass
 
