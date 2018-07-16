@@ -40,6 +40,7 @@ class Controller(object):
         #   This is how the robot connects to the application
         if(self.withApp):
             self.appComm = AppComm(self, "192.168.1.91", 5580)
+            print("with app.")
         
             self.appResponseProcess = Process(target=self.GetAppResponse, args=(self.userInput,))
             #self.appResponseProcess.daemon = True
@@ -54,10 +55,7 @@ class Controller(object):
         self.rangeProcess = Process(target=self.WatchRange, args=(self.sensors.currentRange,))
         self.rangeProcess.e = Event()
 
-        
-        
         self.mode = 0 #0 for auto, 1 for manual used for char display on terminal
-
         
         #   updated from arduino
         self.numSpacesMoved = 0
@@ -286,8 +284,10 @@ class Controller(object):
                 #print("inbox at: " + str(id(self.appComm.appClient.inbox)))
                 condition = "not self.finished and not self.appComm.appClient.finished.value"
             else:
+                print("app not online.")
                 return
         else:
+            print("not with app.")
             condition = "not self.finished"
 
         self.sensors.rangeProcess.start()

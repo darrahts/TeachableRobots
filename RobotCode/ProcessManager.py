@@ -16,16 +16,6 @@ serverSocket.bind((UDP_ADR, UDP_PORT))
 print(serverSocket)
 
 
-#robot as client for netsblox
-socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-socket.setblocking(0)
-server = ("192.168.1.91", 1973)
-mac = hex(uuid.getnode())[2:]
-
-timeNow = lambda: int(round(time.time() * 1000))
-start = timeNow()
-
-
 initialized = False
 pid = -1
 
@@ -55,41 +45,14 @@ def CheckProcess():
 flag = False
 
 while True:
-    t = (timeNow() - start).to_bytes(4, byteorder="little")
-    #print(t)
-    msg = bytearray.fromhex(mac)
-    msg += t
-    msg += b"\x49" # I for identification
-    #print(msg)
-    sent = socket.sendto(msg, server)
-    time.sleep(.95)
-    
-    try:
-        ready = select.select([socket], [], [], .1)
-        if(ready[0]):
-            response = socket.recv(1024)
-            if(response == b'AA'):
-                print("connected to netsblox")
-                flag = True
-                serverSocket.close()
-    except Exception as e:
-        pass
-    finally:
-        pass
+    ready2 = select.select([serverSocket], [], [], .1)
+    if(ready2[0]):
+        data, adr = serverSocket.recvfrom(1024)
+        msg = data.decode("ascii")
+        if(msg == "start robot"):
+            print("connected to gui")
+            flag = True
 
-    try:
-        ready2 = select.select([serverSocket], [], [], .1)
-        if(ready2[0]):
-            data, adr = serverSocket.recvfrom(1024)
-            msg = data.decode("ascii")
-            if(msg == "start robot"):
-                print("connected to gui")
-                flag = True
-                socket.close()
-    except Exception as e:
-        pass
-    finally:
-        pass
 
     if(flag):
         if(not initialized and pid == -1):
