@@ -7,8 +7,8 @@
 
 //right motor (facing with the robot)
 #define MTR_A_EN 6
-#define MTR_A_A 7
-#define MTR_A_B 8
+#define MTR_A_A 8
+#define MTR_A_B 7
 
 //left motor
 #define MTR_B_EN 11
@@ -38,7 +38,7 @@ int ardInt = 2;
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-int OFFSET = 25;  //memAdr 0
+int OFFSET = 30;  //memAdr 0
 int SPEED = 110;  //memAdr 2
 
 //line readings > BLACK = black line, < WHITE = white canvas
@@ -150,6 +150,18 @@ void Stop()
     }
     dir = 0;
 }
+
+void Drive(int rSpeed, int lSpeed)
+{
+    analogWrite(MTR_A_EN, rSpeed);
+    analogWrite(MTR_B_EN, int(lSpeed*.75));
+    digitalWrite(MTR_B_A, HIGH);
+    digitalWrite(MTR_B_B, LOW);
+    digitalWrite(MTR_A_A, HIGH);
+    digitalWrite(MTR_A_B, LOW);
+    dir = 1;
+}
+
 
 /*                                 FORWARD                
  *                   Robot drives forward, accounts for 
@@ -901,10 +913,6 @@ String x = "";
 void loop() 
 {
 
-    //Forward();
-    //delay(3000);
-    //Stop();
-    //delay(3000);
     //Serial.println(testInt);
     //delay(500);
     

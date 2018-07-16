@@ -94,7 +94,7 @@ class Robot(object):
         self.location = self.m.Value(c_char_p, b"(4,1)")
         self.direction = self.m.Value(c_char_p, b"Up")
         self.range = self.m.Value("i", 0)
-        self.distanceTravelled = self.m.Value('i', 28)
+        self.distanceTravelled = self.m.Value('i', 0)
 
           
                                                 

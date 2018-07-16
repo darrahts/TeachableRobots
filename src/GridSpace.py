@@ -35,7 +35,7 @@ class GridSpace(object):
         elif(mode == "gui"):
             pass
         
-        self.vs = WebcamVideoStream(0).start()
+        self.vs = WebcamVideoStream(-1).start()
         self.frame = self.vs.read()[27:467, 125:565]
         self.frameCenter = ((self.frame.shape[1] // 2), (self.frame.shape[0] // 2) + 5)
 

@@ -146,6 +146,7 @@ for i in range(0, 300):
             print(left)
             print(type(left))
             print(right)
+            
         elif(rcv[0] == 87): #send whisker status
             msg = bytearray.fromhex(mac)
             msg += (timeNow() - start).to_bytes(4, byteorder="little")
