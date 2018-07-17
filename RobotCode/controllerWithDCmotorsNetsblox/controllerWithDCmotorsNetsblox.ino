@@ -41,7 +41,7 @@ const int minS = 90;
 const int maxS = 150;
 
 //scaling for left/right motor differences
-const float scale = .75f; 
+const float scale = .8f; 
 /********************************************************************************************************
  *                                             GLOBAL VARIABLES                                         *                                                  
  ********************************************************************************************************/
@@ -57,23 +57,29 @@ int curDir = -1;
 /********************************************************************************************************
  *                                                  FUNCTIONS                                           *
  ********************************************************************************************************/
-
-
-/*                                                   MOTORS                                       *                                                  
- ********************************************************************************************************/
-
-
+/*
+ *
+ */
 int DegToDelay(bool dime, int deg)
 {
     if(dime)
     {
        return int(abs(deg)*2.35 + 40);
     }
+    else
+    {
+      return int(abs(deg)*(111/curSpd));
+    }
 }
 
 
-/*                                  STOP                
- *                         turns off the motors
+/*                                                   MOTORS                                       *                                                  
+ ********************************************************************************************************/
+
+
+//********************************************************* STOP
+/*                                 
+ * turns off the motors
  */
 void Stop()
 {
@@ -91,6 +97,7 @@ void Stop()
     curVal = 0; 
 }
 
+//********************************************************* RAMP
 /*
  * gradually increases speed of motors
  * @param i: velocity counter
@@ -104,11 +111,11 @@ void Ramp(int i, int c, int d)
     analogWrite(MTR_B_EN, int(curVal*scale));
     delay(35);
     
-    if(c == 0)
+    if(c == 0 && curDir == -1)
     {
         if(d == 0) //forward
         {
-            analogWrite(MTR_A_EN, int(.5*curVal));
+            analogWrite(MTR_A_EN, 50);
             digitalWrite(MTR_B_A, HIGH);
             digitalWrite(MTR_B_B, LOW);
             digitalWrite(MTR_A_A, HIGH);
@@ -116,7 +123,7 @@ void Ramp(int i, int c, int d)
         }
         else if(d == 1) //backward
         {
-            analogWrite(MTR_A_EN, int(.5*curVal));
+            analogWrite(MTR_A_EN, 50);
             digitalWrite(MTR_B_B, HIGH);
             digitalWrite(MTR_B_A, LOW);
             digitalWrite(MTR_A_B, HIGH);
@@ -142,16 +149,17 @@ void Drive(int velocity, uint8_t dir)
     }
 
     //changing directions
-    if(curDir != -1 && curDir != dir)
+    if(curDir != -1 && curDir != 2 && curDir != 3 && curDir != dir)
     {
         Stop();
     }
     
 
     //increasing speed
-    if((curDir == -1 || curDir == dir) && velocity > curSpd) 
+    if((curDir == -1 || curDir == dir || curDir == 2 || curDir == 3) && velocity >= curSpd) 
     {
-        for(int i = curSpd+1; i <= velocity; i++)
+     //   Serial.print("increasing");
+        for(int i = curSpd; i <= velocity; i++)
         {
             Ramp(i, c, dir);
             c = 1;
@@ -159,10 +167,10 @@ void Drive(int velocity, uint8_t dir)
     }
 
     //decreasing speed
-    else if((curDir == -1 || curDir == dir) && velocity < curSpd)
+    else if((curDir == -1 || curDir == dir  || curDir == 2 || curDir == 3) && velocity <= curSpd)
     {
-        Serial.println("decreasing.");
-        for(int i = curSpd-1; i >= velocity; i--)
+    //    Serial.println("decreasing.");
+        for(int i = curSpd; i >= velocity; i--)
         {
             Ramp(i, c, dir);
             c = 1; 
@@ -171,6 +179,7 @@ void Drive(int velocity, uint8_t dir)
     
     else
     {
+      //  Serial.println("stopping");
         Stop();
     }
     curSpd = velocity;
@@ -188,15 +197,15 @@ void Turn(uint8_t dir, int deg, bool dime)
 {
     int c = 0; 
 
-    if(!dime && (dir != 2 || dir != 3 || deg < 1 || deg > 180 || deg % 5 != 0 || deg == 0))
+    if(!dime && dir != 2 && dir != 3 && (deg < 1 || deg > 180) && deg % 5 != 0 && deg == 0)
     {
-        Serial.println("bad turn.");
+        Serial.println("bad turn1.");
         return; 
     }
 
     if(dime || curVal == 0)
     {
-        if(dir == 2)
+        if(dir == 2) //left
         {
             analogWrite(MTR_B_EN, 120);
             analogWrite(MTR_A_EN, 120);
@@ -207,7 +216,7 @@ void Turn(uint8_t dir, int deg, bool dime)
             delay(DegToDelay(1, deg));
         }
 
-        else if(dir == 3)
+        else if(dir == 3) //right
         {
             analogWrite(MTR_B_EN, 120);
             analogWrite(MTR_A_EN, 120);
@@ -220,22 +229,45 @@ void Turn(uint8_t dir, int deg, bool dime)
         
         else
         {
-            Serial.println("bad turn.");
+            Serial.println("bad turn2.");
         }
     }
     
-    else if(curVal != 0 && dir == 2)
+    else if(curVal != 0 && dir == 2) //left
     {
-      
-          analogWrite(MTR_B_EN, );
-          analogWrite(MTR_A_EN, 120);
+        //  Serial.println("left");
+          int r = ((curVal*1.2 < 150) ? curVal*1.2 : 150);
+          analogWrite(MTR_B_EN, 70 );
+          analogWrite(MTR_A_EN, r);
           digitalWrite(MTR_B_A, HIGH);
           digitalWrite(MTR_B_B, LOW);
           digitalWrite(MTR_A_A, HIGH);
-          digitalWrite(MTR_A_B, LOW);        
-        
+          digitalWrite(MTR_A_B, LOW); 
+         // int x = DegToDelay(0, deg);
+        // Serial.println(); 
+          delay(DegToDelay(0, deg));
+          analogWrite(MTR_B_EN, curVal*1.10);
+          analogWrite(MTR_A_EN, curVal);
+          curDir = 2;
     }
     
+    else if(curVal != 0 && dir == 3) //left
+    {
+        //  Serial.println("left");
+          int l = ((curVal*.99 < 150) ? curVal*.99 : 150);
+          analogWrite(MTR_B_EN,  l);
+          analogWrite(MTR_A_EN, 70);
+          digitalWrite(MTR_B_A, HIGH);
+          digitalWrite(MTR_B_B, LOW);
+          digitalWrite(MTR_A_A, HIGH);
+          digitalWrite(MTR_A_B, LOW); 
+         // int x = DegToDelay(0, deg);
+        // Serial.println(); 
+          delay(DegToDelay(0, deg));
+          analogWrite(MTR_A_EN, curVal*1.10);
+          analogWrite(MTR_B_EN, curVal);
+          curDir = 2;
+    }
     
 }
 
@@ -248,7 +280,6 @@ void setup()
  
     //enable the serial port
     Serial.begin(38400);
-    //Serial1.begin(9600);
   
     //configure line following sensors
     pinMode(LEFT_IR, INPUT);
@@ -280,10 +311,11 @@ void setup()
  ********************************************************************************************************/
 void loop() 
 {
-   // Turn(3, 90, 1);
+ //Drive(10, 0);
+  //  test();
    // delay(200);
   //  Drive(12, 1);
-    //delay(1000);
+   // delay(3000);
    // Drive(7, 0);
    // delay(1000);
     Stop();
@@ -291,6 +323,17 @@ void loop()
   
 }
 
+void test()
+{
+    Drive(10, 0);
+    delay(700);
+    Turn(2, 45, 0);
+    Drive(10, 0);
+    delay(700);
+    Turn(3, 45, 0);
+    Drive(10, 0);
+    delay(700);
+}
 
 
 
