@@ -21,7 +21,7 @@ pid = -1
 
 def StartProcess():
     try:
-        proc = subprocess.Popen(["python3","/home/pi/teachablerobots/RobotCode/MyRobot.py"])
+        proc = subprocess.Popen(["python3","/home/pi/teachablerobots/RobotCode/NetsbloxController.py"])
         initialized = True
         return proc.pid
     except Exception as e:
@@ -50,7 +50,7 @@ while True:
         data, adr = serverSocket.recvfrom(1024)
         msg = data.decode("ascii")
         if(msg == "start robot"):
-            print("connected to gui")
+            print("connected to netsblox")
             flag = True
 
 

@@ -132,7 +132,7 @@ void ManualControl()
 {  
     int cmd = -1;
     manual = true;
-    int val = 3; //speed val
+    int val = 6; //speed val
     
     while(manual)  
     {
@@ -154,12 +154,12 @@ void ManualControl()
                 if(prevDir == 1) 
                 {  
                     val += 2;
-                    Drive(6, 1);  
+                    Drive(val, 1);  
                 }
                 else
                 {
-                    val = 3;
-                    Drive(6, 1); 
+                    val = 6;
+                    Drive(val, 1); 
                 }             
             }
             else if (cmd == 115) //s
@@ -168,12 +168,12 @@ void ManualControl()
                 if(prevDir == 2) 
                 {  
                     val += 2;
-                    Drive(6, 2);  
+                    Drive(val, 2);  
                 }
                 else
                 {
-                    val = 3;
-                    Drive(6, 2);
+                    val = 6;
+                    Drive(val, 2);
                 }              
             }
             else if (cmd == 97) //a
@@ -211,23 +211,18 @@ void ManualControl()
 }
 
 /*                            Netsblox CONTROL          
- *          executes a single command at a time from serial.
- *          w = forward
- *          s = backward
- *          x = stop
- *          a = left
- *          d = right
- *          q = exit manual control
- *          z = dummy 
+ *
  */
 void NetsbloxControl()
 {  
-    int cmd = -1;
+    char cmd = 0x00;
     manual = true;
-    int val = 3; //speed val
+    int val = 0; //speed val
     
+    char inB = 0x00;
+    int args[] = {0, 0, 0, 0, 0};
     int in = 0;
-    char inB;
+    uint8_t i = 0;
     bool flag = false;
     
     while(manual)  
@@ -236,87 +231,84 @@ void NetsbloxControl()
         //AssertCourse();
         if(Serial.available() > 0)
         {
+            for(int k = 0; k < 5; k++)
+            {
+                args[k] = 0;
+            }
+            i = 0;
             in = 0;
-            cmd = int(Serial.read());
-            Serial.println(cmd);
             while(true)
             {
                 while(!Serial.available()) ;
                 inB = Serial.read();
-                Serial.print("new: ");
-                Serial.println(inB);
+                //Serial.print("new: ");
+                //Serial.println(inB);
                 if(inB == 'n')
                 {
-                    Serial.println("end");
+                   // Serial.println("end");
                     flag = true;
                     break;
                 }   
+                if(inB == 0x20) //space
+                {
+                    i++;
+                    continue;
+                }
                 if(inB == -1) continue;
-                in *= 10;
-                in = ((inB -48) + in);
+                args[i] *= 10;
+                args[i] = ((inB -48) + args[i]);
             }
-            Serial.println(in);
+            //Serial.println(in);
+            for(int j = 0; j < 5; j++)
+            {
+                Serial.println(args[j]);
+            }
         }
         
         if(flag)
         {
-            if(cmd == 120) //x
+            if(args[0] == 5) 
             {
                 Stop();
                 Serial.write('x');    
             }
-            else if (cmd == 119) //w
+            else if (args[0] == 1)
             {
                 Serial.write('w');
-                if(prevDir == 1) 
-                {  
-                    val += 2;
-                    Drive(6, 1);  
-                }
-                else
-                {
-                    val = 3;
-                    Drive(6, 1); 
-                }             
+                Drive(args[1], args[0]); 
             }
-            else if (cmd == 115) //s
+            else if (args[0] == 2)
             {
                 Serial.write('s');
-                if(prevDir == 2) 
-                {  
-                    val += 2;
-                    Drive(6, 2);  
-                }
-                else
-                {
-                    val = 3;
-                    Drive(6, 2);
-                }              
+                Drive(args[1], args[0]);             
             }
-            else if (cmd == 97) //a
+            else if (args[0] == 3) 
             {
                 Serial.write('a');
-                Turn(3, 15, 0);
+                Turn(args[0],args[1],args[2]);
                 Drive(curSpd, prevDir);
             }
-            else if (cmd == 100) //d
+            else if (args[0] == 1)
             {
                 Serial.write('d');
-                Turn(4, 15, 0);
+                Turn(args[0], args[1], args[2]);
                 Drive(curSpd, prevDir);                
             }
-            else if(cmd == 113) //q
+            else if(args[0] == 9)
             {
                 manual = false;
-                //Serial.write('q');
+                Serial.write('q');
             }
-            else if(cmd == 122) //z dime left
+            else if(args[0] == 6)
             {
-                Turn(3, 0, 1);
+                CheckVoltage();
             }
-            else if(cmd == 99) //c dime right
+            else if(args[0] == 7)
             {
-                Turn(4, 90, 1);
+                ReadLineSensors();
+                Serial.write(0x7E);
+                delay(30);
+                Serial.print(readings[0]); Serial.print(" "); Serial.print(readings[1]); Serial.print(" "); Serial.println(readings[2]);
             }
             else
             {
@@ -334,7 +326,7 @@ void ParseCommand()
     //check if theres anything in the stream
     if(Serial.available())
     {
-        Serial.println("available!");
+        //Serial.println("available!");
         //read the stream into the input variable and returns
         //the number of bytes to size_
         byte size_ = Serial.readBytes(input, INPUT_SIZE);
@@ -345,7 +337,11 @@ void ParseCommand()
             {
                 Serial.write(0x6D);
                 ManualControl();
+            }
+            if(input[1] == 0x6E) //n for netsblox control
+            {
                 Serial.write(0x6E);
+                NetsbloxControl();
             }
             if(input[1] == 0x76) //v for CheckVoltage, same as 118
             {
@@ -357,7 +353,7 @@ void ParseCommand()
             {
                 ReadLineSensors();
                 Serial.write(0x7E);
-                delay(50);
+                delay(30);
                 Serial.print(readings[0]); Serial.print("\t"); Serial.print(readings[1]); Serial.print("\t"); Serial.println(readings[2]);
             }
             if(input[1] == 115) //s for SaveParameters, same as 0x73
@@ -426,7 +422,7 @@ void ParseCommand()
             // Find the next command in input string
             command = strtok(0, "_");
          }
-         commands[c] = 5;
+         commands[c] = 5; //5 bc ExecuteCommand() calls Stop() with 5 
          amounts[a] = 0;
     }
 }
@@ -446,9 +442,9 @@ int DegToDelay(bool dime, int deg)
     }
     else
     {
-      int d = abs(deg+5)*(112/curSpd);
-      Serial.println(d);
-      return d;
+      //int d = abs(deg+5)*(112/curSpd);
+      //Serial.println(d);
+      return abs(deg+5)*(112/curSpd);
     }
 }
 
@@ -737,6 +733,7 @@ void setup()
  ********************************************************************************************************/
 void loop() 
 {
+ // NetsbloxControl();
     ParseCommand();
  //Drive(10, 1);
    // test();
