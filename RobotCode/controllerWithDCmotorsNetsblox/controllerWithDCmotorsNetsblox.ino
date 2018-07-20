@@ -43,9 +43,7 @@ const int maxV = 20;
 //min and max motor speed vals
 const int minS = 90;
 const int maxS = 150;
-
-//scaling for left/right motor differences
-const float scale = .8f; 
+ 
 /********************************************************************************************************
  *                                             GLOBAL VARIABLES                                         *                                                  
  ********************************************************************************************************/
@@ -76,6 +74,9 @@ bool execute = true;
 
 //battery voltage
 double voltage = 0.0;
+
+//scaling for left/right motor differences
+double scale = 0.0;
 
 //whether manual control (netsblox, keyboard, etc) or not (using grid)
 bool manual = false;
@@ -112,9 +113,9 @@ void CheckVoltage()
 {
     double v = (analogRead(VOLTAGE_SR) * 5.54) / 1024.0;
     voltage = (v * 12200.0 / 2200.0);
-    Serial.write(0x7E);
+    //Serial.write(0x7E);
     delay(50);
-    Serial.println(voltage);
+    //Serial.println(voltage);
 }
 
 
@@ -199,7 +200,7 @@ void ManualControl()
             }
             else if(cmd == 99) //c dime right
             {
-                Turn(4, 90, 1);
+                Turn(4, 180, 1);
             }
             else
             {
@@ -288,7 +289,7 @@ void NetsbloxControl()
                 Turn(args[0],args[1],args[2]);
                 Drive(curSpd, prevDir);
             }
-            else if (args[0] == 1)
+            else if (args[0] == 4)
             {
                 Serial.write('d');
                 Turn(args[0], args[1], args[2]);
@@ -302,6 +303,7 @@ void NetsbloxControl()
             else if(args[0] == 6)
             {
                 CheckVoltage();
+                Serial.println(voltage);
             }
             else if(args[0] == 7)
             {
@@ -347,6 +349,7 @@ void ParseCommand()
             {
                 //Serial.write(0x7E);
                 CheckVoltage();
+                Serial.println(voltage);
                 //Serial.write(0x76);
             }
             if(input[1] == 114) //r for ReadLineSensors, same as 0x72
@@ -436,15 +439,31 @@ void ParseCommand()
  //TODO fix dime equation, not enough delay, doesnt account for speed
 int DegToDelay(bool dime, int deg)
 {
+    int d = 1;
     if(dime)
     {
-       return int(abs(deg+5)*2.35 + 40);
+        if(curSpd > 0)
+        {
+            return(int(abs(deg+5)*(15/curSpd) + 40));
+        }
+        else
+        {
+            return(int(abs(deg+5)*1.4 + 40));
+            d = 20;
+        }
     }
     else
     {
       //int d = abs(deg+5)*(112/curSpd);
       //Serial.println(d);
-      return abs(deg+5)*(112/curSpd);
+      if(curSpd > 0)
+      {
+          return abs(deg)*(112/curSpd);
+      }
+      else
+      {
+          return abs(deg)*2.5 + 60;
+      }
     }
 }
 
@@ -483,24 +502,26 @@ void Stop()
  */
 void Ramp(int i, int c, int d)
 {
+    CheckVoltage();
     curVal = 90+3*i;
+    scale = curVal - ((voltage*10)/3.75) + 2;
     if(d == 1)
     {
         analogWrite(MTR_A_EN, curVal);
-        analogWrite(MTR_B_EN, int(curVal*scale));
+        analogWrite(MTR_B_EN, int(scale - 1));
     }
     else if(d == 2)
     {
-        analogWrite(MTR_A_EN, curVal);
-        analogWrite(MTR_B_EN, int(curVal*(scale*.95)));
+        analogWrite(MTR_A_EN, int(curVal*1.04));
+        analogWrite(MTR_B_EN, int(scale - 1));
     }      
     delay(35);
     
-    if(c == 0 && curDir == -1)
+    if(c < 2 && curDir == -1)
     {
         if(d == 1) //forward
         {
-            analogWrite(MTR_A_EN, 50);
+            analogWrite(MTR_A_EN, 80);
             digitalWrite(MTR_B_A, HIGH);
             digitalWrite(MTR_B_B, LOW);
             digitalWrite(MTR_A_A, HIGH);
@@ -508,7 +529,7 @@ void Ramp(int i, int c, int d)
         }
         else if(d == 2) //backward
         {
-            analogWrite(MTR_A_EN, 50);
+            analogWrite(MTR_A_EN, 85);
             digitalWrite(MTR_B_B, HIGH);
             digitalWrite(MTR_B_A, LOW);
             digitalWrite(MTR_A_B, HIGH);
@@ -549,7 +570,7 @@ void Drive(int velocity, uint8_t dir)
         for(int i = curSpd; i <= velocity; i++)
         {
             Ramp(i, c, dir);
-            c = 1;
+            c++;
         }
     }
 
@@ -560,7 +581,7 @@ void Drive(int velocity, uint8_t dir)
         for(int i = curSpd; i >= velocity; i--)
         {
             Ramp(i, c, dir);
-            c = 1; 
+            c++; 
         }
     }
     
@@ -596,14 +617,21 @@ void Turn(uint8_t dir, int deg, bool dime)
     {
         if(dir == 3) //left
         {
+            Serial.println("here");
             analogWrite(MTR_B_EN, 100);
             analogWrite(MTR_A_EN, 100);
             digitalWrite(MTR_B_B, HIGH);
             digitalWrite(MTR_B_A, LOW);
             digitalWrite(MTR_A_A, HIGH);
             digitalWrite(MTR_A_B, LOW);
+            //delay(300);//
             delay(DegToDelay(1, deg));
-            if(deg != 0) { Stop(); }
+            if(deg != 0 && curDir == -1) { Serial.println("stop"); Stop(); }
+            else
+            {
+                Serial.print("deg: "); Serial.println(deg);
+                Serial.print("dir: "); Serial.println(curDir);
+            }
         }
 
         else if(dir == 4) //right
@@ -615,7 +643,7 @@ void Turn(uint8_t dir, int deg, bool dime)
             digitalWrite(MTR_A_B, HIGH);
             digitalWrite(MTR_A_A, LOW);
             delay(DegToDelay(1, deg));
-            if(deg != 0) { Stop(); }
+            if(deg != 0 && curDir == -1) { Stop(); }
         }
         
         else
