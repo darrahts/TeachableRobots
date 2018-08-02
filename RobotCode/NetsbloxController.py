@@ -129,7 +129,7 @@ def Quit(l):
     sys.exit(0)
 
 #############################################################
-while(not flag.value):
+while(True):
     try:
         sprint(l, "opening arduino...")
         arduino = serial.Serial("/dev/ttyACM0", 38400)
@@ -139,11 +139,6 @@ while(not flag.value):
         except Exception as e:
             print("couldnt open arduino port.")
             sys.exit(1)
-    time.sleep(1)
-    l.acquire()
-    if(flag.value == True):
-        break
-    l.release()
     
 
 sprint(l, "starting arduino process...")
