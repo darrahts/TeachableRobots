@@ -97,6 +97,14 @@ def HeartBeat():
         time.sleep(.95)
 
 
+def Quit():
+    finished = True
+    arduinoResponse.e.set()
+    arduinoResponse.join()
+    T.join()
+    print("done!")
+    sys.exit(0)
+
 #############################################################
 try:
     arduino = serial.Serial("/dev/ttyACM0", 38400)
@@ -208,13 +216,13 @@ try:
                 msec = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
                 tone = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
                 Buzz(msec, tone)
+
+            elif(rcv[0] == 81): #Q for quit
+                Quit()
+                
                 
 except KeyboardInterrupt:
-    finished = True
-    arduinoResponse.e.set()
-    arduinoResponse.join()
-    T.join()
-    print("done!")
+    Quit()
         
         
 
