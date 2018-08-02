@@ -142,10 +142,10 @@ while(not flag.value):
     time.sleep(.5)
     arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
     time.sleep(.5)
-    lock.acquire()
+    l.acquire()
     if(flag.value == True):
         break
-    lock.release()
+    l.release()
     
 
 sprint(l, "starting arduino process...")
