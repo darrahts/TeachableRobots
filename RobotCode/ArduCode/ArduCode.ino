@@ -889,7 +889,7 @@ void setup()
     
     pinMode(ardInt, INPUT);
     digitalWrite(ardInt, LOW);
-    attachInterrupt(digitalPinToInterrupt(ardInt), InterruptRoutine, RISING);
+    //attachInterrupt(digitalPinToInterrupt(ardInt), InterruptRoutine, RISING);
 }
 
 

@@ -18,13 +18,13 @@ if (__name__ == "__main__"):
     c = object
     try:
         try:
-            c = Controller("/dev/ttyACM1") #, eval(args["mode"]))
+            c = Controller("/dev/ttyACM0") #, eval(args["mode"]))
         except Exception as e:
             print("exception")
             #print(str(e))
             #traceback.print_exc()
             try:
-                c = Controller("/dev/ttyACM0")
+                c = Controller("/dev/ttyACM1")
             except:
                 print("couldnt open arduino port.")
 
