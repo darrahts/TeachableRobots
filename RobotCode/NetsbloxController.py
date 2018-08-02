@@ -66,6 +66,9 @@ def GetArduinoResponse(lock):
     print("ready")
     lock.release()
     while(not finished):
+        lock.acquire()
+        print("here")
+        lock.release()
         ready = select.select(arduino, [], [], 1)
         lock.acquire()
         print("no block")
