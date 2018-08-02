@@ -60,7 +60,7 @@ mac = hex(uuid.getnode())[2:]
 
 finished = False
 
-def GetArduinoResponse(self):
+def GetArduinoResponse():
     ardIn = b""
     while(finished):
         ready = select.select([socket], [], [], .01)
