@@ -61,9 +61,11 @@ mac = hex(uuid.getnode())[2:]
 finished = False
 
 def GetArduinoResponse(lock):
-    ardIn = b""
+    lock.acquire()
+    print("checking")
+    lock.release()
     while(finished):
-        ready = select.select([socket], [], [], .01)
+        ready = select.select([socket], [], [], .001)
         if(ready[0]):
             rcv = socket.recv(1024)
             lock.acquire()
@@ -156,11 +158,11 @@ try:
 
             #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
             #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
-            l.acquire()
-            print("received: ")
-            print(rcv)
-            print("***")
-            l.release()
+            #l.acquire()
+            #print("received: ")
+            #print(rcv)
+            #print("***")
+            #l.release()
             
             if(rcv[0] == 82): #R for send range
                 msg = bytearray.fromhex(mac)
