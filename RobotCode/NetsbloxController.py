@@ -62,6 +62,9 @@ finished = False
 arduino = object
 
 def GetArduinoResponse(lock):
+    lock.acquire()
+    print("ready")
+    lock.release()
     while(not finished):
         ready = select.select(arduino, [], [], 1)
         lock.acquire()
