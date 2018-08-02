@@ -14,7 +14,7 @@ from teachablerobots.src.Sense import Sense
 from teachablerobots.src.Hardware import *
 import ast
 from multiprocessing import Process, Queue, Event, Value, Lock, Manager
-from ctypes import c_char_p
+from ctypes import c_char_p, c_bool
 
 
 ##class NetsbloxController(object):
@@ -42,8 +42,10 @@ from ctypes import c_char_p
 ##            if(ready[0]):
 ##                rcv = socket.recv(1024)
 ##                print(rcv)
-            
-        
+
+
+m = Manager()
+finished = m.Value('c_bool', False)
 
 timeNow = lambda: int(round(time.time() * 1000))
 start = timeNow()
@@ -58,21 +60,13 @@ server = ("192.168.1.91", 1973)
 
 mac = hex(uuid.getnode())[2:]
 
-finished = False
 arduino = object
 
+l = Lock()
+
 def GetArduinoResponse(lock):
-    lock.acquire()
-    print("ready")
-    lock.release()
-    while(not finished):
-        lock.acquire()
-        print("here")
-        lock.release()
+    while(not finished.value):
         ready = select.select([arduino], [], [], .01)
-        lock.acquire()
-        print("no block")
-        lock.release()
         if(ready[0]):
             rcv = arduino.read()
             lock.acquire()
@@ -108,7 +102,10 @@ def HeartBeat():
 
 
 def Quit():
-    finished = True
+    l.acquire()
+    finished.value = True
+    print("finished = true")
+    l.release()
     arduinoResponse.e.set()
     arduinoResponse.join()
     l.acquire()
@@ -132,7 +129,6 @@ except Exception as e:
         print("couldnt open arduino port.")
         sys.exit(1)
 
-l = Lock()
 
 arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
 arduinoResponse.e = Event()
