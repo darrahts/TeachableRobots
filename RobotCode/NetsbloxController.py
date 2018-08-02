@@ -59,7 +59,7 @@ server = ("192.168.1.91", 1973)
 mac = hex(uuid.getnode())[2:]
 
 finished = False
-arduino = object()
+arduino = object
 
 def GetArduinoResponse(lock):
     lock.acquire()
@@ -68,7 +68,7 @@ def GetArduinoResponse(lock):
     while(not finished):
         ready = select.select([arduino], [], [], .001)
         if(ready[0]):
-            rcv = socket.recv(1024)
+            rcv = arduino.read()
             lock.acquire()
             print("received from arduino: ", end="")
             print(rcv)
