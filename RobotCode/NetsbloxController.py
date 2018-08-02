@@ -92,15 +92,16 @@ def Buzz(l, msec, tone):
     time.sleep(msec / 1000)
     return
 
-def HeartBeat():
+def HeartBeat(l):
     while(not finished):
         t = (timeNow() - start).to_bytes(4, byteorder="little")
         #print(t)
         msg = bytearray.fromhex(mac)
         msg += t
         msg += b"\x49" # I for identification
-        #print(msg)
+        sprint(l,msg)
         sent = socket.sendto(msg, server)
+        sprint(l, sent)
         time.sleep(.95)
 
 
@@ -147,7 +148,7 @@ sprint(l, "started netsblox mode...")
 sprint(l, arduino)
 
 sprint(l, "starting heartbeat...")
-heartBeat = Process(target=HeartBeat)
+heartBeat = Process(target=HeartBeat, args=(l,))
 heartBeat.e = Event()
 heartBeat.start()
 
