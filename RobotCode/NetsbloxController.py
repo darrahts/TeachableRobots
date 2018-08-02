@@ -66,7 +66,7 @@ def GetArduinoResponse(lock):
     print("checking")
     lock.release()
     while(not finished):
-        ready = select.select([arduino], [], [], 0)
+        ready = select.select([arduino], [], [], .001)
         if(ready[0]):
             rcv = arduino.read()
             lock.acquire()
