@@ -139,6 +139,7 @@ while(True):
         except Exception as e:
             print("couldnt open arduino port.")
             sys.exit(1)
+    break
     
 
 sprint(l, "starting arduino process...")
