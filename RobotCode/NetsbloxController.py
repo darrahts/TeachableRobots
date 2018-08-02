@@ -64,7 +64,7 @@ def GetArduinoResponse(lock):
     lock.acquire()
     print("checking")
     lock.release()
-    while(finished):
+    while(not finished):
         ready = select.select([socket], [], [], .001)
         if(ready[0]):
             rcv = socket.recv(1024)
