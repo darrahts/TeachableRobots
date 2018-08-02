@@ -166,7 +166,7 @@ rWhisker = 0
 
 sprint(l, "entering main...")
 try:
-    while(True):
+    while(not finished.value):
         if lWhisker == 1 or rWhisker == 1:
             msg = bytearray.fromhex(mac)
             msg += (timeNow() - start).to_bytes(4, byteorder="little")
