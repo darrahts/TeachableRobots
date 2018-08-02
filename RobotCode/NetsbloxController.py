@@ -101,7 +101,7 @@ def HeartBeat():
         msg += b"\x49" # I for identification
         #sprint(l,msg)
         sent = socket.sendto(msg, server)
-        sprint(l, sent)
+        #sprint(l, sent)
         time.sleep(.95)
 
 
