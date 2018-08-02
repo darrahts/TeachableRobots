@@ -66,7 +66,7 @@ def GetArduinoResponse(lock):
     print("checking")
     lock.release()
     while(not finished):
-        ready = select.select([arduino], [], [], .001)
+        ready = select.select([arduino], [], [], 0)
         if(ready[0]):
             rcv = arduino.read()
             lock.acquire()
@@ -159,11 +159,11 @@ try:
 
             #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
             #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
-            #l.acquire()
-            #print("received: ")
-            #print(rcv)
+            l.acquire()
+            print("received from netsblox: ", end = "")
+            print(rcv)
             #print("***")
-            #l.release()
+            l.release()
             
             if(rcv[0] == 82): #R for send range
                 msg = bytearray.fromhex(mac)
