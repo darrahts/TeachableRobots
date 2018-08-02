@@ -27,7 +27,7 @@ if (__name__ == "__main__"):
                 c = Controller("/dev/ttyACM1")
             except:
                 print("couldnt open arduino port.")
-
+        print("running")
         c.Run()
     except Exception as e:
         print("error.")

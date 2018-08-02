@@ -24,8 +24,9 @@ class App():
         self.w = MainWindow(self)
         self.w.setWindowTitle("Robot Command Interface")
         self.running = False
-        self.robotIP = ""
-        self.problemStage = 0 
+        self.robotIP = "1.1.1.1"
+        self.problemStage = 0
+        self.scanned = False
         
         self.updateThread = threading.Thread(target=self.Update)
         self.commSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -54,6 +55,9 @@ class App():
             if(self.w.colorSelection.currentText() == "robot color"):
                 QtWidgets.QMessageBox.about(self.w, "Error", "you must select a color first.")
                 return
+        if not self.scanned:
+            QtWidgets.QMessageBox.about(self.w, "Error", "What is the robots IP address?")
+            return
             
         print(self.robotIP)
         self.w.outputTextBox.setText("attempting to connect...")
@@ -244,6 +248,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         else:
             result = subprocess.check_output(["nmap", "-sn", "129.59.105.0/24"])
         self.outputTextBox.setText(result.decode("ascii"))
+        self.parentApp.scanned = True
         
 
     def InitSliders(self):
