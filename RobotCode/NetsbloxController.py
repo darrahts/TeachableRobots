@@ -129,17 +129,16 @@ def Quit(l):
     sys.exit(0)
 
 #############################################################
-while(True):
+try:
+    sprint(l, "opening arduino...")
+    arduino = serial.Serial("/dev/ttyACM0", 38400)
+except Exception as e:
     try:
-        sprint(l, "opening arduino...")
-        arduino = serial.Serial("/dev/ttyACM0", 38400)
+        arduino = serial.Serial("/dev/ttyACM1", 38400)
     except Exception as e:
-        try:
-            arduino = serial.Serial("/dev/ttyACM1", 38400)
-        except Exception as e:
-            print("couldnt open arduino port.")
-            sys.exit(1)
-    break
+        print("couldnt open arduino port.")
+        sys.exit(1)
+
     
 
 sprint(l, "starting arduino process...")
