@@ -144,8 +144,8 @@ while(not flag.value):
     time.sleep(.5)
     l.acquire()
     if(flag.value == True):
+        l.release()
         break
-    l.release()
     else:
         arduino.write("mv".encode('ascii')) #to check voltage / trigger response
     
