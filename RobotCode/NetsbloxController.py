@@ -74,7 +74,7 @@ def sprint(lock, msg):
 
 def GetArduinoResponse(lock):
     while(not finished.value):
-        ready = select.select([arduino], [], [], .01)
+        ready = select.select([arduino], [], [], .001)
         if(ready[0]):
             rcv = arduino.read()
             lock.acquire()
