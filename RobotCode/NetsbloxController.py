@@ -140,14 +140,10 @@ while(not flag.value):
             print("couldnt open arduino port.")
             sys.exit(1)
     time.sleep(.5)
-    arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
-    time.sleep(.5)
     l.acquire()
     if(flag.value == True):
-        l.release()
         break
-    else:
-        arduino.write("mv".encode('ascii')) #to check voltage / trigger response
+    l.release()
     
 
 sprint(l, "starting arduino process...")
