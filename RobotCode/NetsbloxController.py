@@ -102,7 +102,7 @@ except Exception as e:
         print("couldnt open arduino port.")
         sys.exit(1)
 
-arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
+arduinoResponseThread = threading.Thread(target=GetArduinoResponse)
 arduinoResponseThread.e = threading.Event()
 
 
