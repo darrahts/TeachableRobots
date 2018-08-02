@@ -104,7 +104,7 @@ except Exception as e:
 
 arduinoResponseThread = threading.Thread(target=GetArduinoResponse)
 arduinoResponseThread.e = threading.Event()
-
+arduinoResponseThread.start()
 
 time.sleep(1)
 arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
