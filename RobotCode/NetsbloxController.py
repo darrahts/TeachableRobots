@@ -64,6 +64,13 @@ arduino = object
 
 l = Lock()
 
+def sprint(lock, msg):
+    lock.acquire()
+    print(msg)
+    lock.release()
+    return
+    
+
 def GetArduinoResponse(lock):
     while(not finished.value):
         ready = select.select([arduino], [], [], .01)
@@ -75,17 +82,13 @@ def GetArduinoResponse(lock):
             lock.release()
 
 
-def GetRange():
+def GetRange(l):
     r = random.randint(5, 300)
-    l.acquire()
-    print(r)
-    l.release()
+    sprint(l, r)
     return(r)
 
-def Buzz(msec, tone):
-    l.acquire()
-    print("buzzing at {} hz".format(tone))
-    l.release()
+def Buzz(l, msec, tone):
+    sprint(l, "buzzing at {} hz".format(tone))
     time.sleep(msec / 1000)
     return
 
@@ -101,7 +104,7 @@ def HeartBeat():
         time.sleep(.95)
 
 
-def Quit():
+def Quit(l):
     l.acquire()
     finished.value = True
     print("finished = true")
@@ -129,7 +132,7 @@ except Exception as e:
         print("couldnt open arduino port.")
         sys.exit(1)
 
-
+sprint(l, "starting arduino process...")
 arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
 arduinoResponse.e = Event()
 arduinoResponse.start()
@@ -138,10 +141,11 @@ time.sleep(1)
 arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
 time.sleep(1)
 
-l.acquire()
-print(arduino)
-l.release()
+sprint(l, "started netsblox mode...")
 
+sprint(l, arduino)
+
+sprint(l, "starting heartbeat...")
 T = threading.Thread(target=HeartBeat)
 T.start()
 
@@ -159,6 +163,8 @@ right = 0
 lWhisker = 0
 rWhisker = 0
 
+
+sprint(l, "entering main...")
 try:
     while(True):
         if lWhisker == 1 or rWhisker == 1:
@@ -231,17 +237,15 @@ try:
             elif(rcv[0] == 66): #B for buzz
                 msec = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
                 tone = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
-                Buzz(msec, tone)
+                Buzz(l, msec, tone)
 
             elif(rcv[0] == 81): #Q for quit
-                l.acquire()
-                print("quitting...")
-                l.release()
-                Quit()
+                sprint(l, "quitting...")
+                Quit(l)
                 
                 
 except KeyboardInterrupt:
-    Quit()
+    Quit(l)
         
         
 
