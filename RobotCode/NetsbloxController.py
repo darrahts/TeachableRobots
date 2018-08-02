@@ -46,6 +46,7 @@ from ctypes import c_char_p, c_bool
 
 m = Manager()
 finished = m.Value('c_bool', False)
+flag = m.Value('c_bool', False)
 
 timeNow = lambda: int(round(time.time() * 1000))
 start = timeNow()
@@ -76,6 +77,7 @@ def GetArduinoResponse(lock):
         ready = select.select([arduino], [], [], .01)
         if(ready[0]):
             rcv = arduino.read()
+            flag.value = True
             lock.acquire()
             print("received from arduino: ", end="")
             print(rcv)
@@ -125,14 +127,15 @@ def Quit(l):
     sys.exit(0)
 
 #############################################################
-try:
-    arduino = serial.Serial("/dev/ttyACM0", 38400)
-except Exception as e:
+while(not flag.value):
     try:
-        arduino = serial.Serial("/dev/ttyACM1", 38400)
+        arduino = serial.Serial("/dev/ttyACM0", 38400)
     except Exception as e:
-        print("couldnt open arduino port.")
-        sys.exit(1)
+        try:
+            arduino = serial.Serial("/dev/ttyACM1", 38400)
+        except Exception as e:
+            print("couldnt open arduino port.")
+            sys.exit(1)
 
 sprint(l, "starting arduino process...")
 arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
