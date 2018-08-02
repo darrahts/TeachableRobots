@@ -139,7 +139,7 @@ while(not flag.value):
         except Exception as e:
             print("couldnt open arduino port.")
             sys.exit(1)
-    time.sleep(.5)
+    time.sleep(1)
     l.acquire()
     if(flag.value == True):
         break
