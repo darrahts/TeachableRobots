@@ -115,7 +115,8 @@ def Quit(l):
     print("arduino process done")
     arduino.close()
     print("arduino closed")
-    T.join()
+    heartBeat.e.set()
+    heartBeat.join()
     socket.close()
     print("socket closed")
     print("done!")
@@ -146,8 +147,9 @@ sprint(l, "started netsblox mode...")
 sprint(l, arduino)
 
 sprint(l, "starting heartbeat...")
-T = threading.Thread(target=HeartBeat)
-T.start()
+heartBeat = Process(target=HeartBeat)
+heartBeat.e = Event()
+heartBeat.start()
 
 
 buttonState = 0
