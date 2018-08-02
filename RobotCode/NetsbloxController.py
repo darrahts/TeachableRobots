@@ -69,7 +69,7 @@ def GetArduinoResponse(lock):
         lock.acquire()
         print("here")
         lock.release()
-        ready = select.select(arduino, [], [], 1)
+        ready = select.select([arduino], [], [], .01)
         lock.acquire()
         print("no block")
         lock.release()
