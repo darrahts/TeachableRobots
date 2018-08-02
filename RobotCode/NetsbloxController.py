@@ -63,7 +63,10 @@ arduino = object
 
 def GetArduinoResponse(lock):
     while(not finished):
-        ready = select.select([arduino], [], [], 1)
+        ready = select.select(arduino, [], [], 1)
+        lock.acquire()
+        print("no block")
+        lock.release()
         if(ready[0]):
             rcv = arduino.read()
             lock.acquire()
