@@ -60,14 +60,16 @@ mac = hex(uuid.getnode())[2:]
 
 finished = False
 
-def GetArduinoResponse():
+def GetArduinoResponse(lock):
     ardIn = b""
     while(finished):
         ready = select.select([socket], [], [], .01)
         if(ready[0]):
             rcv = socket.recv(1024)
+            lock.acquire()
             print("received from arduino: ", end="")
             print(rcv)
+            lock.release()
 
 
 def GetRange():
@@ -102,9 +104,11 @@ except Exception as e:
         print("couldnt open arduino port.")
         sys.exit(1)
 
-arduinoResponseThread = threading.Thread(target=GetArduinoResponse)
-arduinoResponseThread.e = threading.Event()
-arduinoResponseThread.start()
+l = Lock()
+
+arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
+arduinoResponse.e = Event()
+arduinoResponse.start()
 
 time.sleep(1)
 arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
@@ -152,16 +156,18 @@ try:
 
             #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
             #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
+            l.acquire()
             print("received: ")
             print(rcv)
             print("***")
-
+            l.release()
+            
             if(rcv[0] == 82): #R for send range
                 msg = bytearray.fromhex(mac)
                 msg += (timeNow() - start).to_bytes(4, byteorder="little")
                 msg += b"\x52"
                 msg += GetRange().to_bytes(2, byteorder="little")
-                print(list(msg))
+               # print(list(msg))
                 socket.sendto(msg, server)
 
             elif(rcv[0] == 83): #S for set speed
@@ -170,20 +176,20 @@ try:
                 #TODO - incorporate drive and turns based off wheel speed
 
             elif(rcv[0] == 100): #d for drive
-                print("drive")
+               # print("drive")
                 cmd = ("%d %d n" % (rcv[1], rcv[2]))
-                print(cmd)
+               # print(cmd)
                 #arduino.write("1 6 n".encode('ascii'))
                 arduino.write(cmd.encode('ascii'))
 
             elif(rcv[0] == 116): #t for turn
-                print("turn")
+              #  print("turn")
                 cmd = ("%d %d %d n" % (rcv[1], rcv[2], rcv[3]))
-                print(cmd)
+              #  print(cmd)
                 arduino.write(cmd.encode('ascii'))
 
             elif(rcv[0] == 115): #s for stop
-                print("stop")
+              #  print("stop")
                 arduino.write("5 n".encode('ascii'))
                 
             elif(rcv[0] == 87): #W for send whisker status
@@ -192,7 +198,7 @@ try:
                 msg += b"\x57"
                 msg += lWhisker().to_bytes(1, byteorder="little")
                 msg += rWhisker().to_bytes(1, byteorder="little")
-                print(list(msg))
+             #   print(list(msg))
                 socket.sendto(msg, server)
 
             elif(rcv[0] == 66): #B for buzz
@@ -202,8 +208,8 @@ try:
                 
 except KeyboardInterrupt:
     finished = True
-    arduinoResponseThread.e.set()
-    arduinoResponseThread.join()
+    arduinoResponse.e.set()
+    arduinoResponse.join()
     T.join()
     print("done!")
         
