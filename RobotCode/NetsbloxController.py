@@ -77,7 +77,9 @@ def GetArduinoResponse(lock):
         ready = select.select([arduino], [], [], .01)
         if(ready[0]):
             rcv = arduino.read()
+            lock.acquire()
             flag.value = True
+            lock.release()
             lock.acquire()
             print("received from arduino: ", end="")
             print(rcv)
@@ -129,6 +131,7 @@ def Quit(l):
 #############################################################
 while(not flag.value):
     try:
+        sprint(l, "opening arduino...")
         arduino = serial.Serial("/dev/ttyACM0", 38400)
     except Exception as e:
         try:
@@ -136,15 +139,21 @@ while(not flag.value):
         except Exception as e:
             print("couldnt open arduino port.")
             sys.exit(1)
+    time.sleep(.5)
+    arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
+    time.sleep(.5)
+    lock.acquire()
+    if(flag.value == True):
+        break
+    lock.release()
+    
 
 sprint(l, "starting arduino process...")
 arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
 arduinoResponse.e = Event()
 arduinoResponse.start()
 
-time.sleep(1)
-arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
-time.sleep(1)
+
 
 sprint(l, "started netsblox mode...")
 
