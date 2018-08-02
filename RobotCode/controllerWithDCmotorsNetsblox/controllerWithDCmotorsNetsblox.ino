@@ -216,6 +216,7 @@ void ManualControl()
  */
 void NetsbloxControl()
 {  
+    Serial.write('N');
     char cmd = 0x00;
     manual = true;
     int val = 0; //speed val
@@ -248,6 +249,7 @@ void NetsbloxControl()
                 {
                    // Serial.println("end");
                     flag = true;
+                    Serial.flush();
                     break;
                 }   
                 if(inB == 0x20) //space
@@ -260,10 +262,10 @@ void NetsbloxControl()
                 args[i] = ((inB -48) + args[i]);
             }
             //Serial.println(in);
-            for(int j = 0; j < 5; j++)
-            {
-                Serial.println(args[j]);
-            }
+//            for(int j = 0; j < 5; j++)
+//            {
+//                Serial.println(args[j]);
+//            }
         }
         
         if(flag)
