@@ -146,6 +146,8 @@ while(not flag.value):
     if(flag.value == True):
         break
     l.release()
+    else:
+        arduino.write("mv".encode('ascii')) #to check voltage / trigger response
     
 
 sprint(l, "starting arduino process...")
