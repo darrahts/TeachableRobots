@@ -77,11 +77,15 @@ def GetArduinoResponse(lock):
 
 def GetRange():
     r = random.randint(5, 300)
+    l.acquire()
     print(r)
+    l.release()
     return(r)
 
 def Buzz(msec, tone):
+    l.acquire()
     print("buzzing at {} hz".format(tone))
+    l.release()
     time.sleep(msec / 1000)
     return
 
@@ -101,8 +105,12 @@ def Quit():
     finished = True
     arduinoResponse.e.set()
     arduinoResponse.join()
+    arduino.close()
+    socket.close()
     T.join()
+    l.acquire()
     print("done!")
+    l.release()
     sys.exit(0)
 
 #############################################################
@@ -124,7 +132,10 @@ arduinoResponse.start()
 time.sleep(1)
 arduino.write("mn".encode('ascii')) #mn to enter netsblox mode
 time.sleep(1)
+
+l.acquire()
 print(arduino)
+l.release()
 
 T = threading.Thread(target=HeartBeat)
 T.start()
@@ -151,7 +162,7 @@ try:
             msg += b"\x57"
             status = ((lWhisker << 1) | rWhisker).to_bytes(1, byteorder="little")
             msg += status
-            print(list(msg))
+            #print(list(msg))
             socket.sendto(msg, server)
             lWhisker = int(bool(not lWhisker))
             rWhisker = int(bool(not rWhisker))
@@ -218,6 +229,9 @@ try:
                 Buzz(msec, tone)
 
             elif(rcv[0] == 81): #Q for quit
+                l.acquire()
+                print("quitting...")
+                l.release()
                 Quit()
                 
                 
