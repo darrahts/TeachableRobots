@@ -66,7 +66,7 @@ class NetsbloxController(object):
                 self.sprint(rcv)
 
     def HeartBeat(self):
-        while(not finished.value):
+        while(not self.finished.value):
             t = (timeNow() - start).to_bytes(4, byteorder="little")
             #print(t)
             msg = bytearray.fromhex(mac)
