@@ -24,7 +24,7 @@ class NetsbloxController(object):
         
         self.m = Manager()
         self.input = self.m.Value(c_char_p, b"")
-        self.finished = m.Value('c_bool', False)
+        self.finished = self.m.Value('c_bool', False)
         self.lock = Lock()
         self.sensors = Sense()
         
