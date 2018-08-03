@@ -41,7 +41,6 @@ class NetsbloxController(object):
         self.moveCount = 0
         self.dir = ""
         self.location = (0,0)
-        self.finished = False
 
         self.timeNow = lambda: int(round(time.time() * 1000))
         self.start = self.timeNow()
