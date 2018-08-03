@@ -67,7 +67,7 @@ class NetsbloxController(object):
 
     def HeartBeat(self):
         while(not self.finished.value):
-            t = (timeNow() - start).to_bytes(4, byteorder="little")
+            t = (self.timeNow() - start).to_bytes(4, byteorder="little")
             #print(t)
             msg = bytearray.fromhex(mac)
             msg += t
@@ -165,7 +165,7 @@ class NetsbloxController(object):
                         
                         
         except KeyboardInterrupt:
-            Quit(l)
+            self.Quit()
 
 
     def Quit(self):
