@@ -268,11 +268,14 @@ class NetsbloxController(object):
 if(__name__ == "__main__"):
     try:
         sprint(l, "opening arduino...")
-        c = NetsbloxController("/dev/ttyACM1")
+        c = NetsbloxController("/dev/ttyACM0")
     except Exception as e:
+        print(e)
         try:
-            c = NetsbloxController("/dev/ttyACM0")
-        except Exception as e:
+            c = NetsbloxController("/dev/ttyACM1")
+        except Exception as f:
+            print("***")
+            print(f)
             print("couldnt open arduino port.")
             sys.exit(1)
     c.Run()
