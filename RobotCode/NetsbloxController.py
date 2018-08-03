@@ -160,7 +160,7 @@ class NetsbloxController(object):
                         #Buzz(l, msec, tone)
 
                     elif(rcv[0] == 81): #Q for quit
-                        sprint(l, "quitting...")
+                        self.sprint(l, "quitting...")
                         Quit(l)
                         
                         
