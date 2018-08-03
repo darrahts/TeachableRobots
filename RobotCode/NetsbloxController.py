@@ -161,7 +161,7 @@ class NetsbloxController(object):
 
                     elif(rcv[0] == 81): #Q for quit
                         self.sprint("quitting...")
-                        Quit(l)
+                        self.Quit()
                         
                         
         except KeyboardInterrupt:
