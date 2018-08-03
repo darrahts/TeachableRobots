@@ -69,7 +69,7 @@ class NetsbloxController(object):
         while(not self.finished.value):
             t = (self.timeNow() - self.start).to_bytes(4, byteorder="little")
             #print(t)
-            msg = bytearray.fromhex(mac)
+            msg = bytearray.fromhex(self.mac)
             msg += t
             msg += b"\x49" # I for identification
             #sprint(l,msg)
@@ -78,7 +78,7 @@ class NetsbloxController(object):
             time.sleep(.96)
 
     def MessageBase():
-        msg = bytearray.fromhex(mac)
+        msg = bytearray.fromhex(self.mac)
         msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
         return msg
         
@@ -96,7 +96,7 @@ class NetsbloxController(object):
         try:
             while(not self.finished.value):
                 if(self.lWhisker == 1 or self.rWhisker == 1):
-                    msg = bytearray.fromhex(mac)
+                    msg = bytearray.fromhex(self.mac)
                     msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
                     msg += b"\x57"
                     status = ((self.lWhisker << 1) | self.rWhisker).to_bytes(1, byteorder="little")
@@ -116,7 +116,7 @@ class NetsbloxController(object):
                     self.sprint(rcv)
                     
                     if(rcv[0] == 82): #R for send range
-                        msg = bytearray.fromhex(mac)
+                        msg = bytearray.fromhex(self.mac)
                         msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
                         msg += b"\x52"
                         #msg += GetRange().to_bytes(2, byteorder="little")
@@ -146,7 +146,7 @@ class NetsbloxController(object):
                         self.arduino.write("5 n".encode('ascii'))
                         
                     elif(rcv[0] == 87): #W for send whisker status
-                        msg = bytearray.fromhex(mac)
+                        msg = bytearray.fromhex(self.mac)
                         msg += (timeNow() - self.start).to_bytes(4, byteorder="little")
                         msg += b"\x57"
                         msg += lWhisker().to_bytes(1, byteorder="little")
