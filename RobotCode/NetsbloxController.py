@@ -264,15 +264,18 @@ class NetsbloxController(object):
 ##    sys.exit(0)
 
 ###############################################################
-##try:
-##    sprint(l, "opening arduino...")
-##    arduino = serial.Serial("/dev/ttyACM0", 38400)
-##except Exception as e:
-##    try:
-##        arduino = serial.Serial("/dev/ttyACM1", 38400)
-##    except Exception as e:
-##        print("couldnt open arduino port.")
-##        sys.exit(1)
+
+if(__name__ == "__main__"):
+    try:
+        sprint(l, "opening arduino...")
+        c = NetsbloxController("/dev/ttyACM0")
+    except Exception as e:
+        try:
+            c = NetsbloxController("/dev/ttyACM0")
+        except Exception as e:
+            print("couldnt open arduino port.")
+            sys.exit(1)
+    c.Run()
 
     
 
