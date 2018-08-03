@@ -63,7 +63,7 @@ class NetsbloxController(object):
             ready = select.select([self.arduino], [], [], .001)
             if(ready[0]):
                 rcv = self.arduino.read()
-                self.sprint(("received from arduino: ", end=""))
+                self.sprint("received from arduino: ")
                 self.sprint(rcv)
 
     def HeartBeat(self):
@@ -113,7 +113,7 @@ class NetsbloxController(object):
                         # something here, informs connection
                         #print("YES")
 
-                    self.sprint(("received from netsblox: ", end = ""))
+                    self.sprint("received from netsblox: ")
                     self.sprint(rcv)
                     
                     if(rcv[0] == 82): #R for send range
