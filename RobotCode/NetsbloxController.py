@@ -268,7 +268,7 @@ class NetsbloxController(object):
 if(__name__ == "__main__"):
     try:
         sprint(l, "opening arduino...")
-        c = NetsbloxController("/dev/ttyACM0")
+        c = NetsbloxController("/dev/ttyACM1")
     except Exception as e:
         try:
             c = NetsbloxController("/dev/ttyACM0")
