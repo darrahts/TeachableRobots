@@ -17,243 +17,378 @@ from multiprocessing import Process, Queue, Event, Value, Lock, Manager
 from ctypes import c_char_p, c_bool
 
 
-##class NetsbloxController(object):
-##    def __init__(self, port):
-##        self.arduino = serial.Serial(port, 38400, timeout=.01)
-##        
-##        self.m = Manager()
-##        self.input = self.m.Value(c_char_p, b"")
-##        self.lock = Lock()
-##        self.sensors = Sense()
-##        
-##        self.arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
-##        self.arduinoResponseThread.e = threading.Event()
-##
-##        self.moveCount = 0
-##        self.dir = ""
-##        self.location = (0,0)
-##        self.finished = False
-##
-##
-##    def GetArduinoResponse(self):
-##        ardIn = b""
-##        while(not self.finished):
-##            ready = select.select([socket], [], [], .01)
-##            if(ready[0]):
-##                rcv = socket.recv(1024)
-##                print(rcv)
+
+class NetsbloxController(object):
+    def __init__(self, arduinoPort):
+        self.arduino = serial.Serial(arduinoPort, 38400)
+        
+        self.m = Manager()
+        self.input = self.m.Value(c_char_p, b"")
+        self.finished = m.Value('c_bool', False)
+        self.lock = Lock()
+        self.sensors = Sense()
+        
+        self.arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
+        self.arduinoResponseThread.e = threading.Event()
+
+        self.lWheelSpeed = 0
+        self.rWheelSpeed = 0
+        self.lWhisker = 0
+        self.rWhisker = 0
+
+        self.buttonState = 0
+        
+        self.moveCount = 0
+        self.dir = ""
+        self.location = (0,0)
+        self.finished = False
+
+        self.timeNow = lambda: int(round(time.time() * 1000))
+        self.start = self.timeNow()
+
+        self.netsbloxSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.netsbloxServer = ("192.168.1.91", 1973)
+
+        self.mac = hex(uuid.getnode())[2:]
+
+    def sprint(self, msg):
+        self.lock.acquire()
+        print(msg)
+        self.lock.release()
+        return
 
 
-m = Manager()
-finished = m.Value('c_bool', False)
-flag = m.Value('c_bool', False)
+    def GetArduinoResponse(self):
+        while(not self.finished.value):
+            ready = select.select([self.arduino], [], [], .001)
+            if(ready[0]):
+                rcv = self.arduino.read()
+                self.sprint(("received from arduino: ", end=""))
+                self.sprint(rcv)
 
-timeNow = lambda: int(round(time.time() * 1000))
-start = timeNow()
+    def HeartBeat(self):
+        while(not finished.value):
+            t = (timeNow() - start).to_bytes(4, byteorder="little")
+            #print(t)
+            msg = bytearray.fromhex(mac)
+            msg += t
+            msg += b"\x49" # I for identification
+            #sprint(l,msg)
+            self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+            #sprint(l, sent)
+            time.sleep(.96)
 
-socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-socket.setblocking(0)
+    def MessageBase():
+        msg = bytearray.fromhex(mac)
+        msg += (self.timeNow() - start).to_bytes(4, byteorder="little")
+        return msg
+        
+
+
+    def Run(self):
+        self.arduinoResponseP = Process(target=self.GetArduinoResponse)
+        self.arduinoResponseP.e = Event()
+        self.arduinoResponseP.start()
+
+        self.heartBeatP = Process(target=self.HeartBeat)
+        self.heartBeatP.e = Event()
+        self.heartBeatP.start()
+
+        try:
+            while(not self.finished.value):
+                if(self.lWhisker == 1 or self.rWhisker == 1):
+                    msg = bytearray.fromhex(mac)
+                    msg += (self.timeNow() - start).to_bytes(4, byteorder="little")
+                    msg += b"\x57"
+                    status = ((self.lWhisker << 1) | self.rWhisker).to_bytes(1, byteorder="little")
+                    msg += status
+                    self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+                    
+
+                ready = select.select([socket], [], [], .1)
+                if(ready[0]):
+                    rcv = self.netsbloxSocket.recv(1024)
+                    if(rcv == b'AA'):
+                        pass
+                        # something here, informs connection
+                        #print("YES")
+
+                    self.sprint(("received from netsblox: ", end = ""))
+                    self.sprint(rcv)
+                    
+                    if(rcv[0] == 82): #R for send range
+                        msg = bytearray.fromhex(mac)
+                        msg += (self.timeNow() - start).to_bytes(4, byteorder="little")
+                        msg += b"\x52"
+                        #msg += GetRange().to_bytes(2, byteorder="little")
+                       # print(list(msg))
+                        self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+
+                    elif(rcv[0] == 83): #S for set speed
+                        left = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
+                        right = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
+                        #TODO - incorporate drive and turns based off wheel speed
+
+                    elif(rcv[0] == 100): #d for drive
+                       # print("drive")
+                        cmd = ("%d %d n" % (rcv[1], rcv[2]))
+                       # print(cmd)
+                        #arduino.write("1 6 n".encode('ascii'))
+                        self.arduino.write(cmd.encode('ascii'))
+
+                    elif(rcv[0] == 116): #t for turn
+                      #  print("turn")
+                        cmd = ("%d %d %d n" % (rcv[1], rcv[2], rcv[3]))
+                      #  print(cmd)
+                        self.arduino.write(cmd.encode('ascii'))
+
+                    elif(rcv[0] == 115): #s for stop
+                      #  print("stop")
+                        self.arduino.write("5 n".encode('ascii'))
+                        
+                    elif(rcv[0] == 87): #W for send whisker status
+                        msg = bytearray.fromhex(mac)
+                        msg += (timeNow() - start).to_bytes(4, byteorder="little")
+                        msg += b"\x57"
+                        msg += lWhisker().to_bytes(1, byteorder="little")
+                        msg += rWhisker().to_bytes(1, byteorder="little")
+                     #   print(list(msg))
+                        self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+
+                    elif(rcv[0] == 66): #B for buzz
+                        msec = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
+                        tone = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
+                        #Buzz(l, msec, tone)
+
+                    elif(rcv[0] == 81): #Q for quit
+                        sprint(l, "quitting...")
+                        Quit(l)
+                        
+                        
+        except KeyboardInterrupt:
+            Quit(l)
+
+
+    def Quit(self):
+        self.finished.value = True
+        self.arduinoResponseP.e.set()
+        self.arduinoResponseP.join()
+        self.sprint("arduino process done")
+        self.arduino.close()
+        self.sprint("arduino closed")
+        self.heartBeatP.e.set()
+        self.heartBeatP.join()
+        self.netsbloxSocket.close()
+        print("socket closed")
+        print("done!")
+        sys.exit(0)
+
+
+
+#m = Manager()
+#finished = m.Value('c_bool', False)
+
+#timeNow = lambda: int(round(time.time() * 1000))
+#start = timeNow()
+
+#socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#socket.setblocking(0)
 
 #server = ("52.73.65.98", 1973)
 
 #server = ("localhost", 1973)
-server = ("192.168.1.91", 1973)
+#server = ("192.168.1.91", 1973)
 
-mac = hex(uuid.getnode())[2:]
+#mac = hex(uuid.getnode())[2:]
 
-arduino = object
+##arduino = object
 
-l = Lock()
-
-def sprint(lock, msg):
-    lock.acquire()
-    print(msg)
-    lock.release()
-    return
-    
-
-def GetArduinoResponse(lock):
-    while(not finished.value):
-        ready = select.select([arduino], [], [], .001)
-        if(ready[0]):
-            rcv = arduino.read()
-            lock.acquire()
-            flag.value = True
-            lock.release()
-            lock.acquire()
-            print("received from arduino: ", end="")
-            print(rcv)
-            lock.release()
-
-
-def GetRange(l):
-    r = random.randint(5, 300)
-    sprint(l, r)
-    return(r)
-
-def Buzz(l, msec, tone):
-    sprint(l, "buzzing at {} hz".format(tone))
-    time.sleep(msec / 1000)
-    return
-
-def HeartBeat():
-    while(not finished.value):
-        t = (timeNow() - start).to_bytes(4, byteorder="little")
-        #print(t)
-        msg = bytearray.fromhex(mac)
-        msg += t
-        msg += b"\x49" # I for identification
-        #sprint(l,msg)
-        sent = socket.sendto(msg, server)
-        #sprint(l, sent)
-        time.sleep(.95)
-
-
-def Quit(l):
-    l.acquire()
-    finished.value = True
-    print("finished = true")
-    l.release()
-    arduinoResponse.e.set()
-    arduinoResponse.join()
-    l.acquire()
-    print("arduino process done")
-    arduino.close()
-    print("arduino closed")
-    heartBeat.e.set()
-    heartBeat.join()
-    socket.close()
-    print("socket closed")
-    print("done!")
-    l.release()
-    sys.exit(0)
-
-#############################################################
-try:
-    sprint(l, "opening arduino...")
-    arduino = serial.Serial("/dev/ttyACM0", 38400)
-except Exception as e:
-    try:
-        arduino = serial.Serial("/dev/ttyACM1", 38400)
-    except Exception as e:
-        print("couldnt open arduino port.")
-        sys.exit(1)
+#l = Lock()
 
     
 
-sprint(l, "starting arduino process...")
-arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
-arduinoResponse.e = Event()
-arduinoResponse.start()
+##def GetArduinoResponse(lock):
+##    while(not finished.value):
+##        ready = select.select([arduino], [], [], .001)
+##        if(ready[0]):
+##            rcv = arduino.read()
+##            lock.acquire()
+##            flag.value = True
+##            lock.release()
+##            lock.acquire()
+##            print("received from arduino: ", end="")
+##            print(rcv)
+##            lock.release()
+
+
+##def GetRange(l):
+##    r = random.randint(5, 300)
+##    sprint(l, r)
+##    return(r)
+##
+##def Buzz(l, msec, tone):
+##    sprint(l, "buzzing at {} hz".format(tone))
+##    time.sleep(msec / 1000)
+##    return
+
+##def HeartBeat():
+##    while(not finished.value):
+##        t = (timeNow() - start).to_bytes(4, byteorder="little")
+##        #print(t)
+##        msg = bytearray.fromhex(mac)
+##        msg += t
+##        msg += b"\x49" # I for identification
+##        #sprint(l,msg)
+##        sent = socket.sendto(msg, server)
+##        #sprint(l, sent)
+##        time.sleep(.95)
+
+
+##def Quit(l):
+##    l.acquire()
+##    finished.value = True
+##    print("finished = true")
+##    l.release()
+##    arduinoResponse.e.set()
+##    arduinoResponse.join()
+##    l.acquire()
+##    print("arduino process done")
+##    arduino.close()
+##    print("arduino closed")
+##    heartBeat.e.set()
+##    heartBeat.join()
+##    socket.close()
+##    print("socket closed")
+##    print("done!")
+##    l.release()
+##    sys.exit(0)
+
+###############################################################
+##try:
+##    sprint(l, "opening arduino...")
+##    arduino = serial.Serial("/dev/ttyACM0", 38400)
+##except Exception as e:
+##    try:
+##        arduino = serial.Serial("/dev/ttyACM1", 38400)
+##    except Exception as e:
+##        print("couldnt open arduino port.")
+##        sys.exit(1)
+
+    
+
+##sprint(l, "starting arduino process...")
+##arduinoResponse = Process(target=GetArduinoResponse, args=(l,))
+##arduinoResponse.e = Event()
+##arduinoResponse.start()
 
 
 
-sprint(l, "started netsblox mode...")
+##sprint(l, "started netsblox mode...")
 
-sprint(l, arduino)
+##sprint(l, arduino)
 
-sprint(l, "starting heartbeat...")
-heartBeat = Process(target=HeartBeat)
-heartBeat.e = Event()
-heartBeat.start()
-
-
-buttonState = 0
-
-#wheel speeds
-left = 0
-right = 0
-
-#whiskers
-#lWhisker = lambda: math.ceil(random.random() - .5)
-#rWhisker = lambda: math.ceil(random.random() - .5)
-
-lWhisker = 0
-rWhisker = 0
+##sprint(l, "starting heartbeat...")
+##heartBeat = Process(target=HeartBeat)
+##heartBeat.e = Event()
+##heartBeat.start()
 
 
-sprint(l, "entering main...")
-try:
-    while(not finished.value):
-        if lWhisker == 1 or rWhisker == 1:
-            msg = bytearray.fromhex(mac)
-            msg += (timeNow() - start).to_bytes(4, byteorder="little")
-            msg += b"\x57"
-            status = ((lWhisker << 1) | rWhisker).to_bytes(1, byteorder="little")
-            msg += status
-            #print(list(msg))
-            socket.sendto(msg, server)
-            lWhisker = int(bool(not lWhisker))
-            rWhisker = int(bool(not rWhisker))
+##buttonState = 0
+
+###wheel speeds
+##left = 0
+##right = 0
+
+###whiskers
+##lWhisker = lambda: math.ceil(random.random() - .5)
+##rWhisker = lambda: math.ceil(random.random() - .5)
+
+##lWhisker = 0
+##rWhisker = 0
 
 
-        ready = select.select([socket], [], [], .1)
-        if(ready[0]):
-            rcv = socket.recv(1024)
-            if(rcv == b'AA'):
-                pass
-                # something here, informs connection
-                #print("YES")
-
-            #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
-            #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
-            l.acquire()
-            print("received from netsblox: ", end = "")
-            print(rcv)
-            #print("***")
-            l.release()
-            
-            if(rcv[0] == 82): #R for send range
-                msg = bytearray.fromhex(mac)
-                msg += (timeNow() - start).to_bytes(4, byteorder="little")
-                msg += b"\x52"
-                msg += GetRange().to_bytes(2, byteorder="little")
-               # print(list(msg))
-                socket.sendto(msg, server)
-
-            elif(rcv[0] == 83): #S for set speed
-                left = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
-                right = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
-                #TODO - incorporate drive and turns based off wheel speed
-
-            elif(rcv[0] == 100): #d for drive
-               # print("drive")
-                cmd = ("%d %d n" % (rcv[1], rcv[2]))
-               # print(cmd)
-                #arduino.write("1 6 n".encode('ascii'))
-                arduino.write(cmd.encode('ascii'))
-
-            elif(rcv[0] == 116): #t for turn
-              #  print("turn")
-                cmd = ("%d %d %d n" % (rcv[1], rcv[2], rcv[3]))
-              #  print(cmd)
-                arduino.write(cmd.encode('ascii'))
-
-            elif(rcv[0] == 115): #s for stop
-              #  print("stop")
-                arduino.write("5 n".encode('ascii'))
-                
-            elif(rcv[0] == 87): #W for send whisker status
-                msg = bytearray.fromhex(mac)
-                msg += (timeNow() - start).to_bytes(4, byteorder="little")
-                msg += b"\x57"
-                msg += lWhisker().to_bytes(1, byteorder="little")
-                msg += rWhisker().to_bytes(1, byteorder="little")
-             #   print(list(msg))
-                socket.sendto(msg, server)
-
-            elif(rcv[0] == 66): #B for buzz
-                msec = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
-                tone = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
-                Buzz(l, msec, tone)
-
-            elif(rcv[0] == 81): #Q for quit
-                sprint(l, "quitting...")
-                Quit(l)
-                
-                
-except KeyboardInterrupt:
-    Quit(l)
+##sprint(l, "entering main...")
+##try:
+##    while(not finished.value):
+##        if lWhisker == 1 or rWhisker == 1:
+##            msg = bytearray.fromhex(mac)
+##            msg += (timeNow() - start).to_bytes(4, byteorder="little")
+##            msg += b"\x57"
+##            status = ((lWhisker << 1) | rWhisker).to_bytes(1, byteorder="little")
+##            msg += status
+##            #print(list(msg))
+##            socket.sendto(msg, server)
+##            lWhisker = int(bool(not lWhisker))
+##            rWhisker = int(bool(not rWhisker))
+##
+##
+##        ready = select.select([socket], [], [], .1)
+##        if(ready[0]):
+##            rcv = socket.recv(1024)
+##            if(rcv == b'AA'):
+##                pass
+##                # something here, informs connection
+##                #print("YES")
+##
+##            #print(int.from_bytes([rcv[1], rcv[2]], byteorder="little", signed=True))
+##            #print(int.from_bytes([rcv[2], rcv[1]], byteorder="little", signed=True))
+##            l.acquire()
+##            print("received from netsblox: ", end = "")
+##            print(rcv)
+##            #print("***")
+##            l.release()
+##            
+##            if(rcv[0] == 82): #R for send range
+##                msg = bytearray.fromhex(mac)
+##                msg += (timeNow() - start).to_bytes(4, byteorder="little")
+##                msg += b"\x52"
+##                msg += GetRange().to_bytes(2, byteorder="little")
+##               # print(list(msg))
+##                socket.sendto(msg, server)
+##
+##            elif(rcv[0] == 83): #S for set speed
+##                left = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
+##                right = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
+##                #TODO - incorporate drive and turns based off wheel speed
+##
+##            elif(rcv[0] == 100): #d for drive
+##               # print("drive")
+##                cmd = ("%d %d n" % (rcv[1], rcv[2]))
+##               # print(cmd)
+##                #arduino.write("1 6 n".encode('ascii'))
+##                arduino.write(cmd.encode('ascii'))
+##
+##            elif(rcv[0] == 116): #t for turn
+##              #  print("turn")
+##                cmd = ("%d %d %d n" % (rcv[1], rcv[2], rcv[3]))
+##              #  print(cmd)
+##                arduino.write(cmd.encode('ascii'))
+##
+##            elif(rcv[0] == 115): #s for stop
+##              #  print("stop")
+##                arduino.write("5 n".encode('ascii'))
+##                
+##            elif(rcv[0] == 87): #W for send whisker status
+##                msg = bytearray.fromhex(mac)
+##                msg += (timeNow() - start).to_bytes(4, byteorder="little")
+##                msg += b"\x57"
+##                msg += lWhisker().to_bytes(1, byteorder="little")
+##                msg += rWhisker().to_bytes(1, byteorder="little")
+##             #   print(list(msg))
+##                socket.sendto(msg, server)
+##
+##            elif(rcv[0] == 66): #B for buzz
+##                msec = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
+##                tone = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
+##                Buzz(l, msec, tone)
+##
+##            elif(rcv[0] == 81): #Q for quit
+##                sprint(l, "quitting...")
+##                Quit(l)
+##                
+##                
+##except KeyboardInterrupt:
+##    Quit(l)
         
         
 
