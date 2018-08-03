@@ -104,7 +104,7 @@ class NetsbloxController(object):
                     self.netsbloxSocket.sendto(msg, self.netsbloxServer)
                     
 
-                ready = select.select([socket], [], [], .1)
+                ready = select.select([self.netsbloxSocket], [], [], .1)
                 if(ready[0]):
                     rcv = self.netsbloxSocket.recv(1024)
                     if(rcv == b'AA'):
