@@ -24,8 +24,8 @@ class App():
         self.w = MainWindow(self)
         self.w.setWindowTitle("Robot Command Interface")
         self.running = False
-        self.robotIP = "1.1.1.1"
-        self.problemStage = 0
+        #self.robotIP = "1.1.1.1"
+        #self.problemStage = 0
         self.scanned = False
         
         self.updateThread = threading.Thread(target=self.Update)
@@ -55,7 +55,7 @@ class App():
             if(self.w.colorSelection.currentText() == "robot color"):
                 QtWidgets.QMessageBox.about(self.w, "Error", "you must select a color first.")
                 return
-        if not self.scanned:
+        if not self.scanned and self.problemStage == 0:
             QtWidgets.QMessageBox.about(self.w, "Error", "What is the robots IP address?")
             return
             

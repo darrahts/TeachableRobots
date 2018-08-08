@@ -179,6 +179,7 @@ class NetsbloxController(object):
         self.heartBeatP.join()
         self.netsbloxSocket.close()
         print("socket closed")
+        self.sensors.Cleanup()
         print("done!")
         sys.exit(0)
 
