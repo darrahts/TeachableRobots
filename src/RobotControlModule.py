@@ -81,12 +81,12 @@ class Controller(object):
         prevRange = 0
         while(not self.finished):
             #print(r.value)
-            if(r.value == prevRange):
-                pass
+            if(r.value == prevRange or r.value < 8): #bad readings give 7 or 6
+                continue
             else:
                 prevRange = r.value
                 self.appComm.SendRange()
-            if(not triggered and r.value > 10 and r.value < 15):
+            if(not triggered and r.value > 8 and r.value < 15):
                 TriggerInterrupt()
                 triggered = True
                 print("Too Close!")
