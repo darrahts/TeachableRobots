@@ -53,8 +53,8 @@ class Sense(object):
             stop = time.time()
 
         duration = stop - start
-        distanceTravelled = (duration * 34300)
-        objectDistance = distanceTravelled / 2
+        distanceTravelled = (duration / 34300)
+        objectDistance = distanceTravelled * 2
 
         
         return objectDistance
@@ -77,7 +77,7 @@ class Sense(object):
 
         if(printAll):
             print("______")
-        print(rangeVals)
+            print(rangeVals)
         return int(statistics.median_grouped(rangeVals))
 
     
