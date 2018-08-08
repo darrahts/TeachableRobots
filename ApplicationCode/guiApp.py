@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from teachablerobots.src.RobotTracker import *
 from teachablerobots.src.GUI import *
-
+import argparse
 
 # ************************* MAIN ************************* #
 
@@ -15,8 +15,13 @@ def InitialCondition(a):
     return
 
 if(__name__ == "__main__"):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-r", "--resume", required=False, help="resume previous")
+    args = vars(ap.parse_args())
+    
     a = App()
-    InitialCondition(a)
+    if(args["resume"] == "true"):
+        InitialCondition(a)
     a.Run()
 
 
