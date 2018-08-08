@@ -28,7 +28,7 @@ class Sense(object):
         while(not self.finished.value):
             self.lock.acquire()
             try:
-                r.value = self.GetAvgRange(False)
+                r.value = self.GetAvgRange()
             finally:
                 self.lock.release()
         return
@@ -54,37 +54,65 @@ class Sense(object):
 
         return
 
+    def _GetRange(self):
+        GPIO.output(TRIG, GPIO.LOW)
+        time.sleep(.005)
+        GPIO.output(TRIG, GPIO.HIGH)
+        time.sleep(.000012)
+        GPIO.output(TRIG, GPIO.LOW)
+        time.sleep(.00006)
+
+        start = time.time()
+        timer = time.time()
+        
+        while(GPIO.input(ECHO) == 0 and time.time() - timer < .05):
+            start = time.time()
+
+
+        stop = time.time()
+        timer = time.time()
+        
+        while(GPIO.input(ECHO) == 1 and time.time() - timer < .05):
+            stop = time.time()
+
+        total = stop - start
+        dist = (total * 34300) / 2
+        return dist
+
     def _getRange(self):
         '''the actual function to detect the range of an object.
             returns -1 if it takes too long (i.e. random error) '''
         pulseStart = time.time()
         pulseEnd = time.time()
 
+        GPIO.output(TRIG, GPIO.LOW)
+        time.sleep(.1)
+
         GPIO.output(TRIG, GPIO.HIGH)
-        time.sleep(.00002)
+        time.sleep(.00001)
         GPIO.output(TRIG, GPIO.LOW)
 
         while(GPIO.input(ECHO) == 0):
-            if(time.time() - pulseStart > .02):
+            if(time.time() - pulseStart > .04):
                 return -1
             pass
 
         pulseStart = time.time()
 
         while(GPIO.input(ECHO) == 1):
-            if(time.time() - pulseStart > .02):
+            if(time.time() - pulseStart > .04):
                 return -1
             pass
 
         pulseEnd = time.time()
 
-##        duration = pulseEnd - pulseStart
-##        totalDistance = duration * 34300 #distance sound travels in cm per second
-##        objDistance = totalDistance / 2
+        duration = pulseEnd - pulseStart
+        totalDistance = duration * 34300 #distance sound travels in cm per second
+        objDistance = totalDistance / 2
 
-        duration = pulseStart + pulseEnd
-        totalDistance = duration / 34300
-        objDistance = totalDistance * 2
+##        duration = pulseStart + pulseEnd
+##        totalDistance = duration / 34300
+##        objDistance = totalDistance * 2
 
         return int(objDistance)
 
@@ -94,28 +122,19 @@ class Sense(object):
         total = 0.0
         #prevVal = -1
         i = 0
-        rangeVals = [0,0,0,0]
-        while(i < 4):
-            val = self._getRange()
+        rangeVals = [0,0,0,0,0]
+        while(i < 5):
+            val = self._GetRange()
             if(printAll):
                 print(val)
-                
-            if(val > 0):
-                rangeVals[i] = val
-                #if(prevVal == -1 or abs(prevVal - val) < 10):
-                 #   prevVal = val
-                  #  total += val
-                #else:
-                #    i -= 1
-            else:
-                i -= 1
+            rangeVals[i] = val
             time.sleep(.06)
             i+=1
 
         if(printAll):
             print("______")
-        #print(rangeVals)
-        return int(statistics.median_grouped(rangeVals))#int(total / 5.0)
+        print(rangeVals)
+        return int(statistics.median_grouped(rangeVals))
 
     def CleanUp(self):
         HardwareCleanup()
@@ -124,8 +143,18 @@ class Sense(object):
 ##if (__name__ == "__main__"):
 ##    s = Sense()
 ##    time.sleep(2)
-##    for i in range(0, 2):
-##        print(s.GetAvgRange(True))
+##    for i in range(0, 100):
+##        print(s.GetAvgRange())
+####    rangeVals = [0,0,0,0,0]
+####    rangeVals[0] = s._GetRange()
+####    for i in range(1, 31):
+####        rangeVals[i%5] = s._GetRange()
+####        if(i%5 == 0):
+####            print(rangeVals)
+####            print(": ", end= "")
+####            print(int(statistics.median_grouped(rangeVals)))
+####        
+####        time.sleep(.1)
 ##    HardwareCleanup()
     
 

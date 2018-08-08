@@ -22,6 +22,7 @@ ECHO = 22
 TRIG = 13
 
 ARDINT = 40
+BUZZER = 18
 
 
 
@@ -40,12 +41,14 @@ def Setup():
     #GPIO.setup(tiltServo, GPIO.OUT)
 
     GPIO.setup(ARDINT, GPIO.OUT)
-    
+    GPIO.setup(BUZZER, GPIO.OUT)
     GPIO.setup(TRIG,GPIO.OUT)
     GPIO.setup(ECHO,GPIO.IN)
 
     GPIO.output(TRIG, GPIO.LOW)
     GPIO.output(ARDINT, GPIO.LOW)
+    GPIO.output(BUZZER, GPIO.LOW)
+    
 
     return
 

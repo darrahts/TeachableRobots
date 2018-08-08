@@ -215,8 +215,11 @@ void ManualControl()
  *
  */
 void NetsbloxControl()
-{  
+{  // Serial.flush();
+    delay(250);
     Serial.write('N');
+    delay(250);
+  //  Serial.flush();
     char cmd = 0x00;
     manual = true;
     int val = 0; //speed val
@@ -231,6 +234,7 @@ void NetsbloxControl()
     {
         //ReadLineSensors();
         //AssertCourse();
+       // while(!Serial.available()) ; //*
         if(Serial.available() > 0)
         {
             for(int k = 0; k < 5; k++)
@@ -270,6 +274,8 @@ void NetsbloxControl()
         
         if(flag)
         {
+            Serial.flush();
+            delay(5);
             if(args[0] == 5) 
             {
                 Stop();
@@ -619,7 +625,7 @@ void Turn(uint8_t dir, int deg, bool dime)
     {
         if(dir == 3) //left
         {
-            Serial.println("here");
+            //Serial.println("here");
             analogWrite(MTR_B_EN, 100);
             analogWrite(MTR_A_EN, 100);
             digitalWrite(MTR_B_B, HIGH);
@@ -690,7 +696,7 @@ void Turn(uint8_t dir, int deg, bool dime)
     
     else if(curVal != 0 && curDir == 2 && dir == 3) //backward and left
     {
-          Serial.println("left");
+          //Serial.println("left");
           int r = ((curVal*1.2 < 150) ? curVal*1.2 : 150);
           analogWrite(MTR_B_EN, 70 );
           analogWrite(MTR_A_EN, r);
@@ -763,8 +769,10 @@ void setup()
  ********************************************************************************************************/
 void loop() 
 {
- // NetsbloxControl();
-    ParseCommand();
+  Serial.flush();
+  delay(50);
+  NetsbloxControl();
+   // ParseCommand();
  //Drive(10, 1);
    // test();
    // delay(200);

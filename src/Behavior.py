@@ -1,6 +1,6 @@
 ######    IMPORTS    ######
 import time
-from time import sleep
+from time import time, sleep
 import multiprocessing
 from Hardware import *
 import os
@@ -22,11 +22,12 @@ class Behave(object):
     ######     SETUP     ######
     #this initializes the board and output pins
     def __init__(self):
-        self.buzzer = buzzer
-        self.green = greenLED
-        self.green1 = green1LED
-        self.yellow = yellowLED
-        self.red = redLED
+        Setup()
+        self.buzzer = BUZZER
+        #self.green = greenLED
+        #self.green1 = green1LED
+        #self.yellow = yellowLED
+        #self.red = redLED
 
     ######     TEST     ######
     #this moves the servo, buzzes, and illumantes all the leds
@@ -233,11 +234,13 @@ class Behave(object):
     def refuse(self):
         print("not doing it")
         
-    def buzz(self, tone):
+    def buzz(self, msec, tone):
         period = 1.0 / int(tone)
         delay = period / 2
-        cycles = int(.25 * int(tone))
-        for i in range(cycles):
+        cycles = int(.5 * int(tone))
+        t1 = time.time()
+        #for i in range(cycles):
+        while(time.time()-t1 < (msec/1000)):
             GPIO.output(self.buzzer, True)
             sleep(delay)
             GPIO.output(self.buzzer, False)
@@ -247,7 +250,12 @@ class Behave(object):
 
 
 
+b = Behave()
+b.buzz(125, 400)
+sleep(.1)
+b.buzz(250, 800)
 
+GPIO.cleanup()
 
 
 
