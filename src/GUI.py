@@ -24,8 +24,8 @@ class App():
         self.w = MainWindow(self)
         self.w.setWindowTitle("Robot Command Interface")
         self.running = False
-        #self.robotIP = "1.1.1.1"
-        #self.problemStage = 0
+        self.robotIP = "1.1.1.1"
+        self.problemStage = 0
         self.scanned = False
         
         self.updateThread = threading.Thread(target=self.Update)
