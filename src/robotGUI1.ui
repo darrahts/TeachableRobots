@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1400</width>
-    <height>960</height>
+    <height>857</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -764,7 +764,7 @@
      <rect>
       <x>274</x>
       <y>585</y>
-      <width>31</width>
+      <width>40</width>
       <height>21</height>
      </rect>
     </property>
@@ -851,9 +851,9 @@
    <widget class="QLabel" name="rangeLabel_2">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>590</y>
-      <width>21</width>
+      <x>317</x>
+      <y>587</y>
+      <width>20</width>
       <height>21</height>
      </rect>
     </property>
@@ -873,8 +873,8 @@
    <widget class="QGroupBox" name="networkGroupBox">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>680</y>
+      <x>10</x>
+      <y>610</y>
       <width>211</width>
       <height>201</height>
      </rect>
