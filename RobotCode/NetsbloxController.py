@@ -65,6 +65,7 @@ class NetsbloxController(object):
         time.sleep(2)
         triggered = False
         prevRange = 0
+        self.sprint("monitoring range...")
         while(not self.finished.value):
             time.sleep(.25)
             #print(r.value)
@@ -76,6 +77,7 @@ class NetsbloxController(object):
                 msg += b"\x52"
                 msg += (r.value).to_bytes(2, byteorder="little")
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+                self.sprint(r.value)
             if(not triggered and r.value > 8 and r.value < 15):
                 TriggerInterrupt() #hardware
                 triggered = True
