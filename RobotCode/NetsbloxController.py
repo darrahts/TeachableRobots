@@ -68,7 +68,7 @@ class NetsbloxController(object):
         self.sprint("monitoring range...")
         while(not self.finished.value):
             time.sleep(.25)
-            self.sprint(r.value)
+            #self.sprint(r.value)
             if(r.value == prevRange or r.value < 8): #bad readings give 7 or 6
                 continue
             else:
@@ -77,7 +77,7 @@ class NetsbloxController(object):
                 msg += b"\x52"
                 msg += (r.value).to_bytes(2, byteorder="little")
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
-                self.sprint(r.value)
+                #self.sprint(r.value)
             if(not triggered and r.value > 8 and r.value < 15):
                 TriggerInterrupt() #hardware
                 triggered = True
@@ -85,7 +85,7 @@ class NetsbloxController(object):
                 msg += b"\x4D" # M for message
                 msg += b"\x54\x43" #TC for too close
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
-                #print("Too Close!")
+                sprint("Too Close!")
             if(triggered and r.value > 15):
                 triggered = False
 
