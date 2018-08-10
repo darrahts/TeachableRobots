@@ -128,6 +128,7 @@ class NetsbloxController(object):
     def Run(self):
         self.arduinoResponseP.start()
         self.heartBeatP.start()
+        self.sensors.getRangeP.start()
         self.rangeP.start()
         
         try:
@@ -218,6 +219,8 @@ class NetsbloxController(object):
         print("socket closed")
         self.rangeP.e.set()
         self.rangeP.join()
+        self.sensors.getRangeP.e.set()
+        self.sensors.getRangeP.join()
         self.sensors.Cleanup()
         print("done!")
         sys.exit(0)
