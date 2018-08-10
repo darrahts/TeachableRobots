@@ -81,7 +81,7 @@ class NetsbloxController(object):
             if(not triggered and r.value > 8 and r.value < 15):
                 TriggerInterrupt() #hardware
                 triggered = True
-                msg = self.MessageBase(self)
+                msg = self.MessageBase()
                 msg += b"\x4D" # M for message
                 msg += b"\x54\x43" #TC for too close
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
