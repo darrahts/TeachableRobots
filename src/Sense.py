@@ -33,11 +33,11 @@ class Sense(object):
     def _GetRange(self):
         '''Gets range from sensor'''
         GPIO.output(TRIG, GPIO.LOW)
-        time.sleep(.005)
+        time.sleep(.01)
         GPIO.output(TRIG, GPIO.HIGH)
-        time.sleep(.000012)
+        time.sleep(.000011)
         GPIO.output(TRIG, GPIO.LOW)
-        time.sleep(.00006)
+        time.sleep(.00003)
 
         start = time.time()
         timer = time.time()
@@ -45,16 +45,19 @@ class Sense(object):
         while(GPIO.input(ECHO) == 0 and time.time() - timer < .05):
             start = time.time()
 
-
+        #start = time.time()
         stop = time.time()
         timer = time.time()
         
         while(GPIO.input(ECHO) == 1 and time.time() - timer < .05):
             stop = time.time()
 
+        #stop = time.time()
         duration = stop - start
-        distanceTravelled = (duration / 34300)
-        objectDistance = distanceTravelled * 2
+        print(duration)
+        distanceTravelled = (duration * 34300)
+        objectDistance = distanceTravelled / 2
+        print(objectDistance)
 
         
         return int(objectDistance)
@@ -89,8 +92,8 @@ class Sense(object):
 if (__name__ == "__main__"):
     s = Sense()
     time.sleep(2)
-    for i in range(0, 10):
-        print(s.GetAvgRange())
+    for i in range(0, 1):
+        print(s._GetRange())
 ##    rangeVals = [0,0,0,0,0]
 ##    rangeVals[0] = s._GetRange()
 ##    for i in range(1, 31):
