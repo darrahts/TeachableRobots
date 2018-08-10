@@ -108,9 +108,9 @@ def Buzz(msec, tone):
     t1 = time.time()
     #for i in range(cycles):
     while(time.time()-t1 < (msec/1000)):
-        GPIO.output(self.buzzer, True)
+        GPIO.output(BUZZER, True)
         sleep(delay)
-        GPIO.output(self.buzzer, False)
+        GPIO.output(BUZZER, False)
         sleep(delay)
     return
 
