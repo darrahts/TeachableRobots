@@ -73,7 +73,7 @@ class NetsbloxController(object):
                 continue
             else:
                 prevRange = r.value
-                msg = self.MessageBase(self)
+                msg = self.MessageBase()
                 msg += b"\x52"
                 msg += (r.value).to_bytes(2, byteorder="little")
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
@@ -118,7 +118,7 @@ class NetsbloxController(object):
             #sprint(l, sent)
             time.sleep(.96)
 
-    def MessageBase():
+    def MessageBase(self):
         msg = bytearray.fromhex(self.mac)
         msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
         return msg
@@ -208,6 +208,7 @@ class NetsbloxController(object):
 
     def Quit(self):
         self.finished.value = True
+        self.sensors.finished.value = True
         self.arduinoResponseP.e.set()
         self.arduinoResponseP.join()
         self.sprint("arduino process done")
