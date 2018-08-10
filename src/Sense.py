@@ -25,7 +25,7 @@ class Sense(object):
             self.lock.acquire()
             try:
                 r.value = self.GetAvgRange()
-                print(r.value)
+                #print(r.value)
             finally:
                 self.lock.release()
         return
@@ -81,7 +81,7 @@ class Sense(object):
 
         if(printAll):
             print("______")
-        print(rangeVals)
+        #print(rangeVals)
         return int(statistics.median_grouped(rangeVals))
 
     
