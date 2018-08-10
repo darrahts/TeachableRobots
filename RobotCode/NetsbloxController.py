@@ -9,7 +9,7 @@ import serial
 import sys
 import traceback
 from teachablerobots.src.Sense import Sense
-import teachablerobots.src.Hardware
+from teachablerobots.src.Hardware import *
 import ast
 from multiprocessing import Process, Queue, Event, Value, Lock, Manager
 from ctypes import c_char_p, c_bool
@@ -18,7 +18,7 @@ from ctypes import c_char_p, c_bool
 
 class NetsbloxController(object):
     def __init__(self, arduinoPort):
-        Hardware.Setup()
+        Setup() #hardware
         self.arduino = serial.Serial(arduinoPort, 38400)
         
         self.m = Manager()
@@ -77,7 +77,7 @@ class NetsbloxController(object):
                 msg += (r.value).to_bytes(2, byteorder="little")
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
             if(not triggered and r.value > 8 and r.value < 15):
-                Hardware.TriggerInterrupt()
+                TriggerInterrupt() #hardware
                 triggered = True
                 msg = self.MessageBase(self)
                 msg += b"\x4D" # M for message
