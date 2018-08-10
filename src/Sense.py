@@ -14,8 +14,8 @@ class Sense(object):
         self.finished.value = False
 
         #   args=self.currentRange means the currentRange gets passed to the function
-        self.rangeProcess = Process(target=self.GetRangeContinuous, args=(self.currentRange,))
-        self.rangeProcess.e = Event()
+        self.getRangeP = Process(target=self.GetRangeContinuous, args=(self.currentRange,))
+        self.getRangeP.e = Event()
         #self.rangeProcess.daemon = True
         
 
@@ -25,6 +25,7 @@ class Sense(object):
             self.lock.acquire()
             try:
                 r.value = self.GetAvgRange()
+                print(r.value)
             finally:
                 self.lock.release()
         return
@@ -54,10 +55,10 @@ class Sense(object):
 
         #stop = time.time()
         duration = stop - start
-        print(duration)
+        #print(duration)
         distanceTravelled = (duration * 34300)
         objectDistance = distanceTravelled / 2
-        print(objectDistance)
+        #print(objectDistance)
 
         
         return int(objectDistance)
@@ -88,6 +89,13 @@ class Sense(object):
     def Cleanup(self):
         HardwareCleanup()
 
+        
+##
+##if (__name__ == "__main__"):
+##    s = Sense()
+##    for i in range(0, 10):
+##        s.currentRange.value = s.GetAvgRange()
+##        print(s.currentRange.value)
 
 ##if (__name__ == "__main__"):
 ##    s = Sense()
