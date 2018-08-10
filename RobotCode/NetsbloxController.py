@@ -68,7 +68,7 @@ class NetsbloxController(object):
         self.sprint("monitoring range...")
         while(not self.finished.value):
             time.sleep(.25)
-            sprint(r.value)
+            self.sprint(r.value)
             if(r.value == prevRange or r.value < 8): #bad readings give 7 or 6
                 continue
             else:
