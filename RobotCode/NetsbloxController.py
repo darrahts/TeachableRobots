@@ -195,7 +195,7 @@ class NetsbloxController(object):
                     elif(rcv[0] == 66): #B for buzz
                         msec = int.from_bytes([rcv[1], rcv[2]], byteorder="little")
                         tone = int.from_bytes([rcv[3], rcv[4]], byteorder="little")
-                        #Buzz(l, msec, tone)
+                        Buzz(msec, tone)
 
                     elif(rcv[0] == 81): #Q for quit
                         self.sprint("quitting...")
