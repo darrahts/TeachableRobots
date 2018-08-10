@@ -126,7 +126,8 @@ class NetsbloxController(object):
     def Run(self):
         self.arduinoResponseP.start()
         self.heartBeatP.start()
-
+        self.rangeP.start()
+        
         try:
             while(not self.finished.value):
                 if(self.lWhisker == 1 or self.rWhisker == 1):
@@ -213,6 +214,8 @@ class NetsbloxController(object):
         self.heartBeatP.join()
         self.netsbloxSocket.close()
         print("socket closed")
+        self.rangeP.e.set()
+        self.rangeP.join()
         self.sensors.Cleanup()
         print("done!")
         sys.exit(0)
