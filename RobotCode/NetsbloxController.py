@@ -6,12 +6,10 @@ import select
 import random
 import math
 import serial
-import threading
 import sys
 import traceback
-from teachablerobots.src.Communicate import AppComm
 from teachablerobots.src.Sense import Sense
-from teachablerobots.src.Hardware import *
+import teachablerobots.src.Hardware
 import ast
 from multiprocessing import Process, Queue, Event, Value, Lock, Manager
 from ctypes import c_char_p, c_bool
@@ -20,6 +18,7 @@ from ctypes import c_char_p, c_bool
 
 class NetsbloxController(object):
     def __init__(self, arduinoPort):
+        Hardware.Setup()
         self.arduino = serial.Serial(arduinoPort, 38400)
         
         self.m = Manager()
@@ -27,9 +26,18 @@ class NetsbloxController(object):
         self.finished = self.m.Value('c_bool', False)
         self.lock = Lock()
         self.sensors = Sense()
-        
-        self.arduinoResponseThread = threading.Thread(target=self.GetArduinoResponse)
-        self.arduinoResponseThread.e = threading.Event()
+
+        #   arduino communication
+        self.arduinoResponseP = Process(target=self.GetArduinoResponse)
+        self.arduinoResponseP.e = Event()
+
+        #   heartbeat for netsblox (i.e. keepalive)
+        self.heartBeatP = Process(target=self.HeartBeat)
+        self.heartBeatP.e = Event()
+
+        #   monitors the range sensor
+        self.rangeP = Process(target=self.WatchRange, args=(self.sensors.currentRange,))
+        self.rangeP.e = Event()       
 
         self.lWheelSpeed = 0
         self.rWheelSpeed = 0
@@ -49,6 +57,37 @@ class NetsbloxController(object):
         self.netsbloxServer = ("192.168.1.91", 1973)
 
         self.mac = hex(uuid.getnode())[2:]
+
+
+
+    def WatchRange(self, r):
+        '''monitors the robot's range and stops it if necessary'''
+        time.sleep(2)
+        triggered = False
+        prevRange = 0
+        while(not self.finished.value):
+            time.sleep(.25)
+            #print(r.value)
+            if(r.value == prevRange or r.value < 8): #bad readings give 7 or 6
+                continue
+            else:
+                prevRange = r.value
+                msg = self.MessageBase(self)
+                msg += b"\x52"
+                msg += (r.value).to_bytes(2, byteorder="little")
+                self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+            if(not triggered and r.value > 8 and r.value < 15):
+                Hardware.TriggerInterrupt()
+                triggered = True
+                msg = self.MessageBase(self)
+                msg += b"\x4D" # M for message
+                msg += b"\x54\x43" #TC for too close
+                self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+                #print("Too Close!")
+            if(triggered and r.value > 15):
+                triggered = False
+
+                
 
     def sprint(self, msg):
         self.lock.acquire()
@@ -85,12 +124,7 @@ class NetsbloxController(object):
 
 
     def Run(self):
-        self.arduinoResponseP = Process(target=self.GetArduinoResponse)
-        self.arduinoResponseP.e = Event()
         self.arduinoResponseP.start()
-
-        self.heartBeatP = Process(target=self.HeartBeat)
-        self.heartBeatP.e = Event()
         self.heartBeatP.start()
 
         try:
@@ -119,7 +153,7 @@ class NetsbloxController(object):
                         msg = bytearray.fromhex(self.mac)
                         msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
                         msg += b"\x52"
-                        #msg += GetRange().to_bytes(2, byteorder="little")
+                        msg += GetRange().to_bytes(2, byteorder="little")
                        # print(list(msg))
                         self.netsbloxSocket.sendto(msg, self.netsbloxServer)
 
