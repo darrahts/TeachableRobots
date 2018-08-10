@@ -100,6 +100,20 @@ def Pan(direction):
         os.system("echo 1=-1 > /dev/servoblaster")
     return
 
+
+def Buzz(msec, tone):
+    period = 1.0 / int(tone)
+    delay = period / 2
+    cycles = int(.5 * int(tone))
+    t1 = time.time()
+    #for i in range(cycles):
+    while(time.time()-t1 < (msec/1000)):
+        GPIO.output(self.buzzer, True)
+        sleep(delay)
+        GPIO.output(self.buzzer, False)
+        sleep(delay)
+    return
+
 #os.system("sudo ./ServoBlaster/user/servod")
 #os.system("echo 0=135 > /dev/servoblaster")
 #os.system("echo 1=150 > /dev/servoblaster")
