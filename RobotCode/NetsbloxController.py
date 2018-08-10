@@ -156,7 +156,7 @@ class NetsbloxController(object):
                         msg = bytearray.fromhex(self.mac)
                         msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
                         msg += b"\x52"
-                        msg += GetRange().to_bytes(2, byteorder="little")
+                        msg += self.sensors.currentRange.to_bytes(2, byteorder="little")
                        # print(list(msg))
                         self.netsbloxSocket.sendto(msg, self.netsbloxServer)
 

@@ -57,7 +57,7 @@ class Sense(object):
         objectDistance = distanceTravelled * 2
 
         
-        return objectDistance
+        return int(objectDistance)
 
 
     def GetAvgRange(self, printAll=False):
