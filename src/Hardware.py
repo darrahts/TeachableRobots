@@ -109,9 +109,9 @@ def Buzz(msec, tone):
     #for i in range(cycles):
     while(time.time()-t1 < (msec/1000)):
         GPIO.output(BUZZER, True)
-        sleep(delay)
+        time.sleep(delay)
         GPIO.output(BUZZER, False)
-        sleep(delay)
+        time.sleep(delay)
     return
 
 #os.system("sudo ./ServoBlaster/user/servod")
