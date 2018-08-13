@@ -771,12 +771,12 @@ void ReadLineSensors()
  *        Reads the VIN voltage (i.e. direct from battery)
  *        5.5 is an approximation from the voltage divider
  *        analog read gives 0-1024 so need to divide by 1024
- *        12200 = r1 + r2 2200 = r2
+ *        11500 = r1 + r2 1500 = r2
  */
 void CheckVoltage()
 {
-    double v = (analogRead(VOLTAGE_SR) * 5.54) / 1024.0;
-    voltage = (v * 12200.0 / 2200.0);
+    double v = (analogRead(VOLTAGE_SR) * 5.0) / 1024.0;
+    voltage = v * 10000 / 1500;
     Serial.write(0x7E);
     delay(50);
     Serial.println(voltage);
