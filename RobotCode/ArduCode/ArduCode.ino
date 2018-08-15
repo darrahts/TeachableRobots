@@ -38,8 +38,8 @@ int ardInt = 2;
 //the offset and speed values should be calibrated for every
 //motor pair.  the robot should drive straight for a minimum
 //distance of 5ft to be considered calibrated
-int OFFSET = 30;  //memAdr 0
-int SPEED = 110;  //memAdr 2
+int OFFSET = 22;  //memAdr 0
+int SPEED = 100;  //memAdr 2
 
 //line readings > BLACK = black line, < WHITE = white canvas
 int BLACK = 260; //memAdr 4
@@ -150,6 +150,8 @@ void Stop()
     }
     dir = 0;
 }
+
+
 
 void Drive(int rSpeed, int lSpeed)
 {
