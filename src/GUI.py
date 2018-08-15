@@ -324,6 +324,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
         
         if(self.showRange):
             self.rangeLabel.setText(str(self.parentApp.r.range.value))
+            #print(str(self.parentApp.r.range.value))
 
 
         if(self.parentApp.running):
