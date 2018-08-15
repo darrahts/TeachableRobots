@@ -290,7 +290,7 @@ class Controller(object):
             print("not with app.")
             condition = "not self.finished"
 
-        self.sensors.rangeProcess.start()
+        self.sensors.getRangeP.start()
         self.rangeProcess.start()
         self.arduinoResponseThread.start()
         self.Write("ml") #load parameters before beginning
@@ -355,10 +355,10 @@ class Controller(object):
         try:
             self.finished = True
             self.sensors.finished.value = True
-            if(self.sensors.rangeProcess.is_alive()):
-                self.sensors.rangeProcess.e.set()
-                self.sensors.rangeProcess.terminate()
-                self.sensors.rangeProcess.join()
+            if(self.sensors.getRangeP.is_alive()):
+                self.sensors.getRangeP.e.set()
+               # self.sensors.getRangeP.terminate()
+                self.sensors.getRangeP.join()
             if(self.rangeProcess.is_alive()):
                 self.rangeProcess.e.set()
                 self.rangeProcess.terminate()
