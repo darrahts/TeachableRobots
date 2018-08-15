@@ -318,6 +318,7 @@ class MainWindow(QtWidgets.QMainWindow, formXML):
             self.problemDescription.setText("Now that the robot can navigate through a virtual " +
                                             "world, it's ready to navigate the real word. But " +
                                             "first, ensure it won't run into any obstacles!\n\n" +
+                                            "Check out the range sensor and ensure it works.\n\n" +
                                             "HINT: go to (2,2) and face the wall...")
         else:
             self.problemDescription.setText("")
