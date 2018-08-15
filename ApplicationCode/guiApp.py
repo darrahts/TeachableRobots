@@ -9,7 +9,8 @@ import argparse
 def InitialCondition(a):
     a.robotIP = "192.168.1.41"
     a.problemStage = 2
-    a.w.rangeSensorButton.setEnabled(True)
+    a.w.rangeSensorButton.setEnabled(False)
+    a.w.showRange = True
     a.w.Start()
     a.ConnectRobot()
     return

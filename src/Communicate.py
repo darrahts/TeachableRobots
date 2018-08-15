@@ -156,18 +156,18 @@ class SocketComm(object):
         return
 
 
-
+##
 ##if(__name__ == "__main__"):
-##    robotClient = SocketComm()
+##    robotClient = SocketComm(5555)
 ##    robotClient.setupLine("127.0.0.1")
 ##    while(True):
 ##        val = input("enter something: ")
 ##        robotClient.sendMessage(val)
-
-
+##
+##
 ##if(__name__ == "__main__"):
 ##    try:
-##        robotServer = SocketComm()
+##        robotServer = SocketComm(5555)
 ##        print("waiting for client to connect...")
 ##        robotServer.setupLine("")
 ##        print("connected!")
