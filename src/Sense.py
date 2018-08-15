@@ -52,8 +52,8 @@ class Sense(object):
         while(GPIO.input(ECHO) == 1 and time.time() - timer < .05):
             stop = time.time()
 
-        duration = stop + start
-        distanceTravelled = (duration * 343)
+        duration = stop - start
+        distanceTravelled = (duration * 34300)
         objectDistance = distanceTravelled / 2
 
         
