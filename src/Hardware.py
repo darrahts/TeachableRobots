@@ -49,7 +49,7 @@ def Setup():
     GPIO.output(ARDINT, GPIO.LOW)
     GPIO.output(BUZZER, GPIO.LOW)
         
-    os.system("sudo ./ServoBlaster/user/servod")
+    os.system("sudo ./home/pi/teachablerobots/src/ServoBlaster/user/servod")
     os.system("echo 0=135 > /dev/servoblaster")
     os.system("echo 1=150 > /dev/servoblaster")
     print("initialized.")
