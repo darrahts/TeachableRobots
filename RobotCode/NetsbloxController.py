@@ -110,7 +110,7 @@ class NetsbloxController(object):
                 if(rcv == b'~'):
                     #print("voltage: ")
                     time.sleep(.01)
-                    self.voltage.value = float(self.arduino.readline())
+                    self.voltage.value = float(self.arduino.readline().replace(b'~', ""))
                     #self.sprint(self.voltage.value)
 
 

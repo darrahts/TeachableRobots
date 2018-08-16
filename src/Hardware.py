@@ -52,6 +52,7 @@ def Setup():
     os.system("sudo ./ServoBlaster/user/servod")
     os.system("echo 0=135 > /dev/servoblaster")
     os.system("echo 1=150 > /dev/servoblaster")
+    print("initialized.")
 
     return
 
@@ -118,29 +119,3 @@ def Buzz(msec, tone):
         time.sleep(delay)
     return
 
-#print("done")
-
-#os.system("sudo killall servod")
-
-'''
-try:
-    while(True):
-        direction = GetKey()
-        
-        if direction == "u":
-            os.system("echo 0=-1 > /dev/servoblaster")
-        elif direction == "j":
-            os.system("echo 0=130 > /dev/servoblaster")
-        elif direction == "m":
-            os.system("echo 0=+1 > /dev/servoblaster")
-            
-        if direction == "h":
-            os.system("echo 1=+1 > /dev/servoblaster")
-        elif direction == "k":
-            os.system("echo 1=150 > /dev/servoblaster")
-        elif direction == "l":
-            os.system("echo 1=-1 > /dev/servoblaster")
-
-except KeyboardInterrupt:
-    GPIO.cleanup()
-'''
