@@ -7,6 +7,8 @@ import random
 import math
 import serial
 import sys
+sys.path.append("/home/pi/")
+#print(sys.path)
 import traceback
 from teachablerobots.src.Sense import Sense
 from teachablerobots.src.Hardware import *
@@ -18,7 +20,7 @@ from ctypes import c_char_p, c_bool
 
 class NetsbloxController(object):
     def __init__(self, arduinoPort):
-        Setup() #hardware
+        #Setup() #hardware
         self.arduino = serial.Serial(arduinoPort, 38400)
         
         self.m = Manager()
@@ -110,7 +112,7 @@ class NetsbloxController(object):
                 if(rcv == b'~'):
                     #print("voltage: ")
                     time.sleep(.01)
-                    self.voltage.value = float(self.arduino.readline().replace(b'~', ""))
+                    self.voltage.value = float(self.arduino.readline())
                     #self.sprint(self.voltage.value)
 
 
@@ -219,6 +221,7 @@ class NetsbloxController(object):
                         msg += int(v[1]).to_bytes(1, byteorder="little")
                         msg += int(v[0]).to_bytes(1, byteorder="little")
                         self.netsbloxSocket.sendto(msg, self.netsbloxServer)
+                        Tilt('u')
                         
         except KeyboardInterrupt:
             self.Quit()
@@ -241,7 +244,6 @@ class NetsbloxController(object):
         self.sensors.getRangeP.e.set()
         self.sensors.getRangeP.join()
         self.sensors.Cleanup()
-        HardwareCleanup()
         print("done!")
         sys.exit(0)
 

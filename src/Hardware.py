@@ -18,8 +18,8 @@ import time
 panServo = 11
 tiltServo = 7
 
-ECHO = 22
-TRIG = 13
+ECHO = 31
+TRIG = 33
 
 ARDINT = 40
 BUZZER = 18
@@ -48,11 +48,14 @@ def Setup():
     GPIO.output(TRIG, GPIO.LOW)
     GPIO.output(ARDINT, GPIO.LOW)
     GPIO.output(BUZZER, GPIO.LOW)
-        
-    os.system("sudo ./home/pi/teachablerobots/src/ServoBlaster/user/servod")
+
+    print(os.getcwd())
+    os.chdir("../src")
+    os.system("sudo ./ServoBlaster/user/servod")
     os.system("echo 0=135 > /dev/servoblaster")
     os.system("echo 1=150 > /dev/servoblaster")
     print("initialized.")
+    os.chdir("../RobotCode")
 
     return
 
@@ -88,6 +91,7 @@ def HardwareCleanup():
 
 def Tilt(direction):
     if direction == "u":
+        print("tilting up")
         os.system("echo 0=-1 > /dev/servoblaster")
     elif direction == "c":
         os.system("echo 0=130 > /dev/servoblaster")

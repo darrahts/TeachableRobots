@@ -17,6 +17,11 @@ class Sense(object):
         self.getRangeP = Process(target=self.GetRangeContinuous, args=(self.currentRange,))
         self.getRangeP.e = Event()
         #self.rangeProcess.daemon = True
+
+        #self._getrangep = Process(target=self._GetRange)
+        #self._getrangep.e = Event()
+        #self._getrangep.start()
+        #self._range = self.m.Value('i', 0)
         
 
     def GetRangeContinuous(self, r):
@@ -25,20 +30,22 @@ class Sense(object):
             self.lock.acquire()
             try:
                 r.value = self.GetAvgRange()
-                #print(r.value)
+                #r.value = self._range.value
+                print(r.value)
             finally:
                 self.lock.release()
+                time.sleep(.5)
         return
 
 
     def _GetRange(self):
         '''Gets range from sensor'''
         GPIO.output(TRIG, GPIO.LOW)
-        time.sleep(.01)
+        time.sleep(.06)
         GPIO.output(TRIG, GPIO.HIGH)
-        time.sleep(.000011)
+        time.sleep(.00001)
         GPIO.output(TRIG, GPIO.LOW)
-        time.sleep(.00003)
+        time.sleep(.00001)
 
         start = time.time()
         timer = time.time()
@@ -56,6 +63,9 @@ class Sense(object):
         distanceTravelled = (duration * 34300)
         objectDistance = distanceTravelled / 2
 
+     #   with self.lock:
+     #       self._range.value = int(objectDistance)
+        print(objectDistance)
         
         return int(objectDistance)
 
@@ -72,26 +82,29 @@ class Sense(object):
             if(printAll):
                 print(val)
             rangeVals[i] = val
-            time.sleep(.06)
             i+=1
 
         if(printAll):
             print("______")
-        #print(rangeVals)
+        print(rangeVals)
         return int(statistics.median_grouped(rangeVals))
 
     
 
     def Cleanup(self):
+        #self._getrangep.e.set()
+        #self._getrangep.join()
         HardwareCleanup()
 
         
-##
-##if (__name__ == "__main__"):
-##    s = Sense()
-##    for i in range(0, 10):
-##        s.currentRange.value = s.GetAvgRange()
-##        print(s.currentRange.value)
+
+if (__name__ == "__main__"):
+    s = Sense()
+    time.sleep(2)
+    for i in range(0, 10):
+        s.currentRange.value = s.GetAvgRange()
+        print(s.currentRange.value)
+    s.Cleanup()
 
 ##if (__name__ == "__main__"):
 ##    s = Sense()
