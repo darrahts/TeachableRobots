@@ -16,13 +16,8 @@ class Sense(object):
         #   args=self.currentRange means the currentRange gets passed to the function
         self.getRangeP = Process(target=self.GetRangeContinuous, args=(self.currentRange,))
         self.getRangeP.e = Event()
-        #self.rangeProcess.daemon = True
+        self.getRangeP.daemon = True      
 
-        #self._getrangep = Process(target=self._GetRange)
-        #self._getrangep.e = Event()
-        #self._getrangep.start()
-        #self._range = self.m.Value('i', 0)
-        
 
     def GetRangeContinuous(self, r):
         '''Continuously updates the currentRange (r) with an averaging grouped median'''
@@ -31,10 +26,10 @@ class Sense(object):
             try:
                 r.value = self.GetAvgRange()
                 #r.value = self._range.value
-                print(r.value)
+                #print(r.value)
             finally:
                 self.lock.release()
-                time.sleep(.5)
+                time.sleep(.2)
         return
 
 
@@ -62,10 +57,7 @@ class Sense(object):
         duration = stop - start
         distanceTravelled = (duration * 34300)
         objectDistance = distanceTravelled / 2
-
-     #   with self.lock:
-     #       self._range.value = int(objectDistance)
-        print(objectDistance)
+        #print(objectDistance)
         
         return int(objectDistance)
 
@@ -86,10 +78,9 @@ class Sense(object):
 
         if(printAll):
             print("______")
-        print(rangeVals)
+        #print(rangeVals)
         return int(statistics.median_grouped(rangeVals))
 
-    
 
     def Cleanup(self):
         #self._getrangep.e.set()
@@ -98,13 +89,13 @@ class Sense(object):
 
         
 
-if (__name__ == "__main__"):
-    s = Sense()
-    time.sleep(2)
-    for i in range(0, 10):
-        s.currentRange.value = s.GetAvgRange()
-        print(s.currentRange.value)
-    s.Cleanup()
+##if (__name__ == "__main__"):
+##    s = Sense()
+##    time.sleep(2)
+##    for i in range(0, 10):
+##        s.currentRange.value = s.GetAvgRange()
+##        print(s.currentRange.value)
+##    s.Cleanup()
 
 ##if (__name__ == "__main__"):
 ##    s = Sense()
