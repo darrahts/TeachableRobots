@@ -37,8 +37,8 @@ def Setup():
     #GPIO.setup(yellowLED, GPIO.OUT)
     #GPIO.setup(redLED, GPIO.OUT)
 
-    #GPIO.setup(panServo, GPIO.OUT)
-    #GPIO.setup(tiltServo, GPIO.OUT)
+    GPIO.setup(panServo, GPIO.OUT)
+    GPIO.setup(tiltServo, GPIO.OUT)
 
     GPIO.setup(ARDINT, GPIO.OUT)
     GPIO.setup(BUZZER, GPIO.OUT)
@@ -48,7 +48,10 @@ def Setup():
     GPIO.output(TRIG, GPIO.LOW)
     GPIO.output(ARDINT, GPIO.LOW)
     GPIO.output(BUZZER, GPIO.LOW)
-    
+        
+    os.system("sudo ./ServoBlaster/user/servod")
+    os.system("echo 0=135 > /dev/servoblaster")
+    os.system("echo 1=150 > /dev/servoblaster")
 
     return
 
@@ -79,7 +82,7 @@ def GetKey():
 
 def HardwareCleanup():
     GPIO.cleanup()
-    #os.system("sudo killall servod")
+    os.system("sudo killall servod")
     return
 
 def Tilt(direction):
@@ -101,6 +104,7 @@ def Pan(direction):
     return
 
 
+
 def Buzz(msec, tone):
     period = 1.0 / int(tone)
     delay = period / 2
@@ -113,10 +117,6 @@ def Buzz(msec, tone):
         GPIO.output(BUZZER, False)
         time.sleep(delay)
     return
-
-#os.system("sudo ./ServoBlaster/user/servod")
-#os.system("echo 0=135 > /dev/servoblaster")
-#os.system("echo 1=150 > /dev/servoblaster")
 
 #print("done")
 

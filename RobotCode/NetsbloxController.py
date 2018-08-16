@@ -241,6 +241,7 @@ class NetsbloxController(object):
         self.sensors.getRangeP.e.set()
         self.sensors.getRangeP.join()
         self.sensors.Cleanup()
+        HardwareCleanup()
         print("done!")
         sys.exit(0)
 

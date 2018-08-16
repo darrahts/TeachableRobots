@@ -6,6 +6,7 @@ import weakref
 import time
 import traceback
 import ast
+import sys
 
 
 #this class manages the communication between the robot and the application
@@ -133,7 +134,7 @@ class SocketComm(object):
                         self.finished.value = True
                     else:
                         self.inbox.put(decoded)
-                        print("received: " + str(decoded))
+                        print("\nreceived: " + str(decoded))
             except socket.error as e:
                 if(type(e).__name__ == "timeout"):
                     pass
@@ -153,6 +154,7 @@ class SocketComm(object):
             except:
                 pass
             self.connection.close()
+            print("connection closed.")
         return
 
 
@@ -160,9 +162,10 @@ class SocketComm(object):
 ##if(__name__ == "__main__"):
 ##    robotClient = SocketComm(5555)
 ##    robotClient.setupLine("127.0.0.1")
-##    while(True):
+##    while(robotClient.finished.value == False):
 ##        val = input("enter something: ")
-##        robotClient.sendMessage(val)
+##        if(len(val) > 0):
+##            robotClient.sendMessage(val)
 ##
 ##
 ##if(__name__ == "__main__"):
@@ -171,16 +174,15 @@ class SocketComm(object):
 ##        print("waiting for client to connect...")
 ##        robotServer.setupLine("")
 ##        print("connected!")
-##        while(True):
-##            if(len(robotServer.inbox) > 0):
-##                print(robotServer.inbox.pop())
-##            if(robotServer.finished):
-##                break
-##                #robotServer.closeConnection()
+##        while(robotServer.finished.value == False):
+##            val = input("enter something: ")
+##            if(len(val) > 0):
+##                robotServer.sendMessage(val)
 ##    except:
 ##        pass
 ##    finally:
 ##        robotServer.closeConnection()
+##        sys.exit(0)
 
 
 
