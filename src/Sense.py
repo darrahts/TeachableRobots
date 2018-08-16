@@ -83,8 +83,6 @@ class Sense(object):
 
 
     def Cleanup(self):
-        #self._getrangep.e.set()
-        #self._getrangep.join()
         HardwareCleanup()
 
         
