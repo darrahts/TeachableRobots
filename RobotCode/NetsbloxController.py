@@ -24,6 +24,7 @@ class NetsbloxController(object):
         self.m = Manager()
         self.input = self.m.Value(c_char_p, b"")
         self.finished = self.m.Value('c_bool', False)
+        self.voltage = self.m.Value('d', 0.0)
         self.lock = Lock()
         self.sensors = Sense()
 
@@ -70,6 +71,7 @@ class NetsbloxController(object):
             time.sleep(.25)
             #self.sprint(r.value)
             if(r.value == prevRange or r.value < 8): #bad readings give 7 or 6
+                #self.sprint("bad reading")
                 continue
             else:
                 prevRange = r.value
@@ -85,7 +87,7 @@ class NetsbloxController(object):
                 msg += b"\x4D" # M for message
                 msg += b"\x54\x43" #TC for too close
                 self.netsbloxSocket.sendto(msg, self.netsbloxServer)
-                sprint("Too Close!")
+                self.sprint("Too Close!")
             if(triggered and r.value > 15):
                 triggered = False
 
@@ -105,7 +107,14 @@ class NetsbloxController(object):
                 rcv = self.arduino.read()
                 self.sprint("received from arduino: ")
                 self.sprint(rcv)
+                if(rcv == b'~'):
+                    #print("voltage: ")
+                    time.sleep(.01)
+                    self.voltage.value = float(self.arduino.readline())
+                    #self.sprint(self.voltage.value)
 
+
+                    
     def HeartBeat(self):
         while(not self.finished.value):
             t = (self.timeNow() - self.start).to_bytes(4, byteorder="little")
@@ -134,8 +143,7 @@ class NetsbloxController(object):
         try:
             while(not self.finished.value):
                 if(self.lWhisker == 1 or self.rWhisker == 1):
-                    msg = bytearray.fromhex(self.mac)
-                    msg += (self.timeNow() - self.start).to_bytes(4, byteorder="little")
+                    msg = MessageBase()
                     msg += b"\x57"
                     status = ((self.lWhisker << 1) | self.rWhisker).to_bytes(1, byteorder="little")
                     msg += status
@@ -200,7 +208,17 @@ class NetsbloxController(object):
                     elif(rcv[0] == 81): #Q for quit
                         self.sprint("quitting...")
                         self.Quit()
-                        
+
+                    elif(rcv[0] == 86): #V for get voltage
+                        self.sprint("checking voltage...")
+                        self.arduino.write("6 n".encode('ascii'))
+                        time.sleep(.1)
+                        msg = self.MessageBase()
+                        msg += b"\x56"
+                        v = str(self.voltage.value).split('.')
+                        msg += int(v[1]).to_bytes(1, byteorder="little")
+                        msg += int(v[0]).to_bytes(1, byteorder="little")
+                        self.netsbloxSocket.sendto(msg, self.netsbloxServer)
                         
         except KeyboardInterrupt:
             self.Quit()
