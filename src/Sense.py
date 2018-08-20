@@ -95,22 +95,4 @@ class Sense(object):
 ##        print(s.currentRange.value)
 ##    s.Cleanup()
 
-##if (__name__ == "__main__"):
-##    s = Sense()
-##    time.sleep(2)
-##    for i in range(0, 1):
-##        print(s._GetRange())
-####    rangeVals = [0,0,0,0,0]
-####    rangeVals[0] = s._GetRange()
-####    for i in range(1, 31):
-####        rangeVals[i%5] = s._GetRange()
-####        if(i%5 == 0):
-####            print(rangeVals)
-####            print(": ", end= "")
-####            print(int(statistics.median_grouped(rangeVals)))
-####        
-####        time.sleep(.1)
-##    HardwareCleanup()
-    
-
     

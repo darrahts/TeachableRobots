@@ -24,7 +24,16 @@ TRIG = 33
 ARDINT = 40
 BUZZER = 18
 
+TILT_DOWN_MAX = 160
+TILT_CENTER = 135
+TILT_UP_MAX = 70
 
+PAN_LEFT_MAX = 180
+PAN_CENTER = 145
+PAN_RIGHT_MAX = 70
+
+panPos = PAN_CENTER
+tiltPos = TILT_CENTER
 
 
 def Setup():
@@ -52,8 +61,8 @@ def Setup():
     print(os.getcwd())
     os.chdir("../src")
     os.system("sudo ./ServoBlaster/user/servod")
-    os.system("echo 0=135 > /dev/servoblaster")
-    os.system("echo 1=150 > /dev/servoblaster")
+    os.system("echo 0={} > /dev/servoblaster".format(TILT_CENTER))
+    os.system("echo 1={} > /dev/servoblaster".format(PAN_CENTER))
     print("initialized.")
     os.chdir("../RobotCode")
 
@@ -90,24 +99,38 @@ def HardwareCleanup():
     return
 
 def Tilt(direction):
-    if direction == "u":
-        print("tilting up")
+    global tiltPos
+    if direction == 1: #up
         os.system("echo 0=-1 > /dev/servoblaster")
-    elif direction == "c":
-        os.system("echo 0=130 > /dev/servoblaster")
-    elif direction == "d":
+        tiltPos -= 1
+    elif direction == 0: #center
+        os.system("echo 0={} > /dev/servoblaster".format(TILT_CENTER))
+        tiltPos = TILT_CENTER
+    elif direction == 2: #down
         os.system("echo 0=+1 > /dev/servoblaster")
+        tiltPos += 1
     return
 
 def Pan(direction):
-    if direction == "l":
+    global panPos
+    if direction == 3: #left
         os.system("echo 1=+1 > /dev/servoblaster")
-    elif direction == "c":
-        os.system("echo 1=150 > /dev/servoblaster")
-    elif direction == "r":
+        panPos += 1
+    elif direction == 0: #center
+        os.system("echo 1={} > /dev/servoblaster".format(PAN_CENTER))
+        panPos = PAN_CENTER
+    elif direction == 4: #right
         os.system("echo 1=-1 > /dev/servoblaster")
+        panPos -= 1
     return
 
+def PanPos():
+    global panPos
+    return panPos
+
+def TiltPos():
+    global tiltPos
+    return tiltPos
 
 
 def Buzz(msec, tone):
