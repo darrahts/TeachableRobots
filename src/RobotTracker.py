@@ -165,7 +165,6 @@ class Robot(object):
         c = 0
         i = 0
         if(self.robotServer.connected):
-            #self.P.start()
             self.robotCommThread.start()
             print("starting comm thread")
         print("starting...")
@@ -173,7 +172,8 @@ class Robot(object):
             #print("length of inbox in loop: " + str(len(self.robotServer.inbox)))
             self.gs.Update(self.FrameOverlay)
             #self.FindRobot()
-            #cv2.imshow(self.gs.title, self.gs.window)
+            #self.gs.ShowFrame(title=self.gs.title)
+            
             
             key = cv2.waitKey(1) & 0xFF
             if(key == ord("q")):
@@ -249,6 +249,9 @@ class Robot(object):
 
 
 
+#r = Robot(GridSpace(mode=""), "green")
+
+#r.Run()
 
 
 

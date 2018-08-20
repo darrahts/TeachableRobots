@@ -318,6 +318,7 @@ class GridSpace(object):
     def Update(self, callback):
 
         self.frame = self.vs.read()[27:467, 125:565]
+        #self.ProcessFrame((48, 52, 149), (89, 325, 340))
         self.FrameOverlay()
         callback()
 
