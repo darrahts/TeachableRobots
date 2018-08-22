@@ -132,9 +132,10 @@ class SocketComm(object):
                 if len(decoded) > 0:
                     if(decoded == "end"):
                         self.finished.value = True
+                        self.closeConnection()
                     else:
                         self.inbox.put(decoded)
-                        print("\nreceived: " + str(decoded))
+                        print("\nreceived: " + str(decoded) + "\n")
             except socket.error as e:
                 if(type(e).__name__ == "timeout"):
                     pass
@@ -148,17 +149,18 @@ class SocketComm(object):
             self.finished.value = True
             self.e.set()
             self.getMessagesProcess._stop_event.set()
-            self.sendMessage("end")
             try:
-                self.getMessagesProcess.join()
+                self.sendMessage("end")
             except:
                 pass
-            self.connection.close()
-            print("connection closed.")
+            finally:
+                self.getMessagesProcess.join()
+                self.connection.close()
+                print("connection closed.")
         return
 
 
-##
+
 ##if(__name__ == "__main__"):
 ##    robotClient = SocketComm(5555)
 ##    robotClient.setupLine("127.0.0.1")
@@ -166,7 +168,7 @@ class SocketComm(object):
 ##        val = input("enter something: ")
 ##        if(len(val) > 0):
 ##            robotClient.sendMessage(val)
-##
+
 ##
 ##if(__name__ == "__main__"):
 ##    try:
